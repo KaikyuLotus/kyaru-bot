@@ -7,12 +7,7 @@ class Kyaru extends KyaruBrain {
     onUpdate(_updatesHandler);
   }
 
-  @override
-  Future<Bot> init() {
-    return super.init();
-  }
-
-  Future _updatesHandler(Update update) async {
+  Future<void> _updatesHandler(Update update) async {
     try {
       if (update.callbackQuery != null) {
         // await handleCallbackQuery(update);
@@ -49,14 +44,15 @@ class Kyaru extends KyaruBrain {
     return quoteQuoted ? update.message.replyToMessage.messageId : quote ? update.message.messageId : null;
   }
 
-  void noticeOwner(Update update, e, s) {
-    print('${e}\n${s}');
-    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '${e}\n${s}').catchError((e, s) => print('${e}\n${s}'));
+  void noticeOwner(Update update, Exception e, StackTrace s) {
+    print('$e\n$s');
+    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s')
+        .catchError((Exception e, StackTrace s) => print('$e\n$s'));
   }
 
-  void onError(Update update, e, s) {
+  void onError(Update update, Exception e, StackTrace s) {
     reply(update, 'Sorry, an error has occourred...\nMy owner has been already informed.\nThanks for your patience.')
-        .catchError((e, s) => print('${e}\n${s}'));
+        .catchError((Exception e, StackTrace s) => print('${e}\n${s}'));
     noticeOwner(update, e, s);
   }
 
@@ -76,7 +72,7 @@ class Kyaru extends KyaruBrain {
         replyMarkup: replyMarkup);
   }
 
-  Future replySticker(
+  Future<void> replySticker(
     Update update,
     String fileId, {
     ParseMode parseMode,
@@ -94,7 +90,7 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future replyPhoto(
+  Future<void> replyPhoto(
     Update update,
     HttpFile httpFile, {
     String caption,
@@ -111,7 +107,7 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future replyVideo(
+  Future<void> replyVideo(
     Update update,
     HttpFile httpFile, {
     ParseMode parseMode,
@@ -128,7 +124,7 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future replyAnimation(
+  Future<void> replyAnimation(
     Update update,
     HttpFile httpFile, {
     String caption,
@@ -145,7 +141,7 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future replyDocument(
+  Future<void> replyDocument(
     Update update,
     HttpFile httpFile, {
     String caption,

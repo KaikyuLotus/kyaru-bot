@@ -5,17 +5,17 @@ import 'package:http/http.dart';
 import 'post.dart';
 
 class YandereClient {
-  final base_url = 'yande.re';
-
-  final _client = Client();
-
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
-    var response = await _client.get(uri).timeout(Duration(seconds: 120));
+    final Response response = await _client.get(uri).timeout(const Duration(seconds: 120));
     if (response.statusCode != 200) {
       throw Exception(response.body); // TODO specialize
     }
-    return mapper(json.decode(await response.body));
+    return mapper(json.decode(response.body));
   }
+
+  final String baseUrl = 'yande.re';
+
+  final Client _client = Client();
 
   Future<List<Post>> getPosts({
     List<String> tags,
@@ -24,15 +24,15 @@ class YandereClient {
   }) async {
     return await _get(
       Uri.https(
-        base_url,
+        baseUrl,
         '/post.json',
-        {
-          'tags': (tags ?? []).join(' '),
-          'limit': '${limit}',
-          'random': '${random}',
+        <String, String>{
+          'tags': (tags ?? <String>[]).join(' '),
+          'limit': '$limit',
+          'random': '$random',
         },
       ),
-      (d) => Post.listFromJsonArray(d),
+      (dynamic d) => Post.listFromJsonArray(d as List<dynamic>),
     );
   }
 }

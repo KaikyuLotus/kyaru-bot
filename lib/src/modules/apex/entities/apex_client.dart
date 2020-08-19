@@ -6,28 +6,33 @@ import 'package:http/http.dart';
 import 'apex_data.dart';
 
 class ApexClient {
-  final api_base_url = 'api.mozambiquehe.re';
+  ApexClient(this._key);
 
-  final _client = Client();
+  final String apiBaseUrl = 'api.mozambiquehe.re';
+
+  final Client _client = Client();
 
   final String _key;
 
-  ApexClient(this._key);
-
   Future<Uint8List> downloadImage(String imageLink) async {
-    var response = await _client.get(imageLink).timeout(Duration(seconds: 120));
+    final Response response = await _client.get(imageLink).timeout(const Duration(seconds: 120));
     return response.bodyBytes;
   }
 
-  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper, [no_init = false]) async {
-    var response = await _client.get(uri).timeout(Duration(seconds: 120));
-    return mapper(json.decode(await response.body));
+  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper, [bool noInit = false]) async {
+    final Response response = await _client.get(uri).timeout(const Duration(seconds: 120));
+    return mapper(json.decode(response.body));
   }
 
   Future<ApexData> bridge(String player, {int version = 4, String platform = 'PC'}) async {
     return await _get(
-      Uri.https(api_base_url, '/bridge', {'version': '$version', 'platform': platform, 'auth': _key, 'player': player}),
-      (d) => ApexData.fromJson(d),
+      Uri.https(apiBaseUrl, '/bridge', <String, String>{
+        'version': '$version',
+        'platform': platform,
+        'auth': _key,
+        'player': player,
+      }),
+      (dynamic d) => ApexData.fromJson(d as Map<String, dynamic>),
     );
   }
 }
