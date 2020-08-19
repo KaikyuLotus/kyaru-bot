@@ -1,0 +1,10 @@
+export 'modules/admins/admins_module.dart';
+export 'modules/apex/apex_module.dart';
+export 'modules/danbooru/danbooru_module.dart';
+export 'modules/github/github_module.dart';
+export 'modules/insults/insults_module.dart';
+export 'modules/jikan/jikan_module.dart';
+export 'modules/lol/lol_module.dart';
+export 'modules/owner/owner_module.dart';
+export 'modules/regex/regex_module.dart';
+export 'modules/yandere/yandere_module.dart';

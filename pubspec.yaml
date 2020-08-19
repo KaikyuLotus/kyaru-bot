@@ -1,0 +1,15 @@
+name: kyaru_bot
+description: Kyaru is a waifu Telegram utility bot
+version: 0.0.1
+
+environment:
+  sdk: '>=2.7.0 <3.0.0'
+
+dependencies:
+  dart_telegram_bot: 0.2.0
+  #  path: "C:/Users/Kaikyu/IdeaProjects/dart-telegram-bot"
+  dart_mongo_lite: ^0.0.3+3
+  http: ^0.12.1
+  uuid: 2.0.4
+  image: ^2.1.13
+  jiffy: ^3.0.1
