@@ -3,7 +3,6 @@ import 'small_entities/battlepass.dart';
 import 'small_entities/rank.dart';
 
 class GlobalData {
-
   GlobalData(
     this.name,
     this.uid,
@@ -17,17 +16,19 @@ class GlobalData {
   );
 
   factory GlobalData.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return GlobalData(
-      json['name'] as String,
-      json['uid'] as int,
-      json['platform'] as String,
-      json['level'] as int,
-      json['toNextLevelPercent'] as int,
-      json['internalUpdateCount'] as int,
-      Bans.fromJson(json['bans'] as Map<String, dynamic>),
-      Rank.fromJson(json['rank'] as Map<String, dynamic>),
-      Battlepass.fromJson(json['battlepass'] as Map<String, dynamic>),
+      json['name'],
+      json['uid'],
+      json['platform'],
+      json['level'],
+      json['toNextLevelPercent'],
+      json['internalUpdateCount'],
+      Bans.fromJson(json['bans']),
+      Rank.fromJson(json['rank']),
+      Battlepass.fromJson(json['battlepass']),
     );
   }
 
@@ -41,5 +42,4 @@ class GlobalData {
   Bans bans;
   Rank rank;
   Battlepass battlepass;
-
 }

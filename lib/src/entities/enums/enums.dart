@@ -1,3 +1,3 @@
-enum InstructionType { MESSAGE_CONTENT, COMMAND, REGEX, EVENT }
-enum InstructionEventType { USER_JOINED, USER_LEFT, KYARU_JOINED }
-enum CommandType { IMAGE, VIDEO, STICKER, TEXT, PHOTO, ANIMATION, UNKNOWN, DOCUMENT } // TODO more...
+enum InstructionType { messageContent, command, regex, event }
+enum InstructionEventType { userJoined, userLeft, kyaruJoined }
+enum CommandType { image, video, sticker, text, photo, animation, unknown, document }

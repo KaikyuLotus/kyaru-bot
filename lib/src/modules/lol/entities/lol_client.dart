@@ -9,8 +9,8 @@ import 'match_info.dart';
 import 'summoner.dart';
 
 class LOLClient {
-  final data_base_url = 'ddragon.leagueoflegends.com';
-  final api_base_url = 'euw1.api.riotgames.com';
+  final String dataBaseUrl = 'ddragon.leagueoflegends.com';
+  final String apiBaseUrl = 'euw1.api.riotgames.com';
 
   final _client = Client();
 
@@ -27,63 +27,65 @@ class LOLClient {
 
   Future _init() async {
     print('Initing LoL client...');
-    version = version ?? await _get_latest_version();
-    champions = await _get_champions();
+    version = version ?? await _getLatestVersion();
+    champions = await _getChampions();
 
-    print('Loaded champions of version ${version}');
+    print('Loaded champions of version $version');
     print('Loaded ${champions.length} champions');
     _inited = true;
     print('Done');
   }
 
-  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper, [no_init = false]) async {
-    if (!_inited && !no_init) await _init();
+  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper, [bool noInit = false]) async {
+    if (!_inited && !noInit) {
+      await _init();
+    }
     var response = await _client.get(uri, headers: {'X-Riot-Token': key}).timeout(Duration(seconds: 120));
-    return mapper(json.decode(await response.body));
+    return mapper(json.decode(response.body));
   }
 
-  Future<String> _get_latest_version() async {
-    return (await _get_versions()).first;
+  Future<String> _getLatestVersion() async {
+    return (await _getVersions()).first;
   }
 
-  Future<List<String>> _get_versions() async {
-    return await _get(Uri.https(data_base_url, '/api/versions.json'), (d) => List.from(d), true);
+  Future<List<String>> _getVersions() async {
+    return await _get(Uri.https(dataBaseUrl, '/api/versions.json'), (d) => List.from(d), true);
   }
 
-  Future<List<Champion>> _get_champions() async {
+  Future<List<Champion>> _getChampions() async {
     return await _get(
-      Uri.https(data_base_url, '/cdn/${version}/data/en_US/champion.json'),
-      (d) => Champion.listFromResponse(d),
+      Uri.https(dataBaseUrl, '/cdn/$version/data/en_US/champion.json'),
+      Champion.listFromResponse,
       true,
     );
   }
 
-  Champion findChampionById(String champ_id) => champions.firstWhere((c) => c.key == champ_id);
+  Champion findChampionById(String champId) => champions.firstWhere((c) => c.key == champId);
 
   Future<List<ChampionMastery>> getChampionsMasteryBySummonerId(String summonerId) async {
     return await _get(
-      Uri.https(api_base_url, '/lol/champion-mastery/v4/champion-masteries/by-summoner/${summonerId}'),
-      (d) => ChampionMastery.listFromJsonArray(d),
+      Uri.https(apiBaseUrl, '/lol/champion-mastery/v4/champion-masteries/by-summoner/$summonerId'),
+      ChampionMastery.listFromJsonArray,
     );
   }
 
   Future<Summoner> getSummoner(String name) async {
     return await _get(
-      Uri.https(api_base_url, '/lol/summoner/v4/summoners/by-name/${name}'),
+      Uri.https(apiBaseUrl, '/lol/summoner/v4/summoners/by-name/$name'),
       (d) => Summoner.fromJson(d),
     );
   }
 
   Future<List<Match>> getMatches(String summonerAccount) async {
     return await _get(
-      Uri.https(api_base_url, '/lol/match/v4/matchlists/by-account/${summonerAccount}'),
+      Uri.https(apiBaseUrl, '/lol/match/v4/matchlists/by-account/$summonerAccount'),
       (d) => Match.listFromJsonArray(d['matches']),
     );
   }
 
   Future<MatchInfo> getMatch(int matchId) async {
     return await _get(
-      Uri.https(api_base_url, '/lol/match/v4/matches/${matchId}'),
+      Uri.https(apiBaseUrl, '/lol/match/v4/matches/$matchId'),
       (d) => MatchInfo.fromJson(d),
     );
   }

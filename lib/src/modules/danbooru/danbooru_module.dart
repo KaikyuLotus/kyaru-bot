@@ -10,7 +10,7 @@ class DanbooruModule implements IModule {
   final Kyaru _kyaru;
   final DanbooruClient danbooruClient = DanbooruClient();
 
-  final slowDownChats = <int>[];
+  final List<int> slowDownChats = <int>[];
 
   List<ModuleFunction> _moduleFunctions;
 
@@ -28,11 +28,12 @@ class DanbooruModule implements IModule {
   bool isEnabled() => true;
 
   Future danbooru(Update update, Instruction instruction) async {
-    var args = update.message.text.split(' ');
-    args.removeAt(0);
+    var args = update.message.text.split(' ')..removeAt(0);
 
     // If no args are specified then assume it's a random post request
-    if (args.isEmpty) return await randomPostAsync(update, instruction);
+    if (args.isEmpty) {
+      return await randomPostAsync(update, instruction);
+    }
 
     var specifiedMode = args[0].toLowerCase();
 
@@ -52,41 +53,47 @@ class DanbooruModule implements IModule {
   }
 
   Future randomPostAsync(Update update, Instruction instruction, {List<String> tags}) async {
-    if (tags != null) {
-      tags = List.from(tags.map((t) => t.toLowerCase()));
-      if (tags.isEmpty) {
+    var elaboratedTags = <String>[];
+    if (elaboratedTags != null) {
+      elaboratedTags = List.from(elaboratedTags.map((t) => t.toLowerCase()));
+      if (elaboratedTags.isEmpty) {
         return _kyaru.reply(update, 'You must specify at least a tag');
-      } else if (tags.contains('loli') || tags.contains('shota') || tags.contains('toddlercon')) {
+      } else if (elaboratedTags.contains('loli') ||
+          elaboratedTags.contains('shota') ||
+          elaboratedTags.contains('toddlercon')) {
         return _kyaru.reply(update, "You've specified a forbidden tag:\nDanbooru censors loli/shota/toddlercon tags.");
       }
     }
 
-    tags ??= [];
+    elaboratedTags ??= [];
 
     var imagesCount = 1;
-    if (tags.isNotEmpty) {
-      var firstTagNum = int.tryParse(tags.first);
+    if (elaboratedTags.isNotEmpty) {
+      var firstTagNum = int.tryParse(elaboratedTags.first);
       if (firstTagNum != null) {
-        tags.removeAt(0);
+        elaboratedTags.removeAt(0);
         imagesCount = firstTagNum;
       }
     }
 
-    var hasRating = tags.any((e) => e.contains('rating:'));
-    if (tags.length > 3 || (tags.length == 3 && !hasRating)) {
+    var hasRating = elaboratedTags.any((e) => e.contains('rating:'));
+    if (elaboratedTags.length > 3 || (elaboratedTags.length == 3 && !hasRating)) {
       return _kyaru.reply(update, 'You can specify up to two tags, sorry.');
     }
 
-    if (imagesCount > 10) return _kyaru.reply(update, 'I\'m allowed to send 10 max posts at a time, try again.');
+    if (imagesCount > 10) {
+      return _kyaru.reply(update, 'I\'m allowed to send 10 max posts at a time, try again.');
+    }
 
     if (!AdminUtils.isNsfwAllowed(_kyaru, update.message.chat)) {
-      tags.removeWhere((t) => t.contains('rating'));
-      tags.add('rating:s');
+      elaboratedTags.removeWhere((t) => t.contains('rating'));
+      // ignore: cascade_invocations
+      elaboratedTags.add('rating:s');
     }
 
     var sentMessage = await _kyaru.reply(update, 'Give me a second...');
 
-    var randomPostList = await danbooruClient.getPosts(tags: tags, limit: 100);
+    var randomPostList = await danbooruClient.getPosts(tags: elaboratedTags, limit: 100);
     if (randomPostList.isEmpty) {
       return _kyaru.editMessageText(
         'No post found with the specified tags',
@@ -95,15 +102,14 @@ class DanbooruModule implements IModule {
       );
     }
 
-    var captionMaker = (Post post) {
+    String captionMaker(Post post) {
       var tagText = post.tagString.split(' ').take(imagesCount > 3 ? 5 : 10).map((t) => '`$t`').join(' ');
-      return '${tagText}\n\n[Post](https://danbooru.donmai.us/posts/${post.id}) - [File](${post.fileUrl})';
-    };
+      return '$tagText\n\n[Post](https://danbooru.donmai.us/posts/${post.id}) - [File](${post.fileUrl})';
+    }
 
     var compatiblePostList =
-        List.from(randomPostList.where((p) => !['webm', 'gif'].contains(p.fileExt) && p.largeFileUrl != null));
-
-    compatiblePostList.shuffle();
+        List.from(randomPostList.where((p) => !['webm', 'gif'].contains(p.fileExt) && p.largeFileUrl != null))
+          ..shuffle();
 
     var httpFiles = compatiblePostList
         .take(imagesCount)

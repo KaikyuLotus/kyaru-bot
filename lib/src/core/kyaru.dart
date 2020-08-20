@@ -20,22 +20,30 @@ class Kyaru extends KyaruBrain {
       }
 
       // TODO decide what to do with forwarded messages
-      if (update?.message?.forwardDate != null) return;
+      if (update?.message?.forwardDate != null) {
+        return;
+      }
 
       // TODO maybe work in channels too?
-      if (update?.message?.chat?.type == 'channel') return; // Ignore channels
+      if (update?.message?.chat?.type == 'channel') {
+        return;
+      } // Ignore channels
 
       // TODO owner stuff
       // if (isOwner) {
       //   await checkDialogUpdate(update);
       // }
 
-      if (await readEvents(update)) return; // Was an event
+      if (await readEvents(update)) {
+        return;
+      } // Was an event
 
-      if (update.message?.text == null || update.message?.from == null) return;
+      if (update.message?.text == null || update.message?.from == null) {
+        return;
+      }
 
       await readMessage(update);
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('My life is a failure: $e:\n$s');
     }
   }
@@ -46,13 +54,12 @@ class Kyaru extends KyaruBrain {
 
   void noticeOwner(Update update, Exception e, StackTrace s) {
     print('$e\n$s');
-    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s')
-        .catchError((Exception e, StackTrace s) => print('$e\n$s'));
+    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s').catchError((e, s) => print('$e\n$s'));
   }
 
   void onError(Update update, Exception e, StackTrace s) {
     reply(update, 'Sorry, an error has occourred...\nMy owner has been already informed.\nThanks for your patience.')
-        .catchError((Exception e, StackTrace s) => print('${e}\n${s}'));
+        .catchError((e, s) => print('$e\n$s'));
     noticeOwner(update, e, s);
   }
 

@@ -5,16 +5,18 @@ class ParticipantStats {
   int deaths;
   int assists;
 
-  ParticipantStats(this.participantId, this.win, this.kills, this.deaths, this.assists);
+  ParticipantStats(this.participantId, this.kills, this.deaths, this.assists, {this.win});
 
-  factory ParticipantStats.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+  factory ParticipantStats.fromJson(dynamic json) {
+    if (json == null) {
+      return null;
+    }
     return ParticipantStats(
       json['participantId'],
-      json['win'],
       json['kills'],
       json['deaths'],
       json['assists'],
+      win: json['win'],
     );
   }
 }

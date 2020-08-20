@@ -8,9 +8,10 @@ class MarkdownUtils {
   }
 
   static String escape(String string) {
+    var finalString = string;
     for (var c in ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']) {
-      string = string.replaceAll(c, '\\$c');
+      finalString = finalString.replaceAll(c, '\\$c');
     }
-    return string;
+    return finalString;
   }
 }

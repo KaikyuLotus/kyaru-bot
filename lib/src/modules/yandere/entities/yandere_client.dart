@@ -6,7 +6,7 @@ import 'post.dart';
 
 class YandereClient {
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
-    final Response response = await _client.get(uri).timeout(const Duration(seconds: 120));
+    final response = await _client.get(uri).timeout(const Duration(seconds: 120));
     if (response.statusCode != 200) {
       throw Exception(response.body); // TODO specialize
     }
@@ -32,7 +32,7 @@ class YandereClient {
           'random': '$random',
         },
       ),
-      (dynamic d) => Post.listFromJsonArray(d as List<dynamic>),
+      Post.listFromJsonArray,
     );
   }
 }

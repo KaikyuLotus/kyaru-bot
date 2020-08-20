@@ -5,19 +5,19 @@ import '../../kyaru.dart';
 class MessageUtils {
   static CommandType getMessageCommandType(Message message) {
     if (message.sticker != null) {
-      return CommandType.STICKER;
+      return CommandType.sticker;
     } else if (message.text != null) {
-      return CommandType.TEXT;
+      return CommandType.text;
     } else if (message.photo != null && message.photo.isNotEmpty) {
-      return CommandType.PHOTO;
+      return CommandType.photo;
     } else if (message.video != null) {
-      return CommandType.VIDEO;
+      return CommandType.video;
     } else if (message.animation != null) {
-      return CommandType.ANIMATION;
+      return CommandType.animation;
     } else if (message.document != null) {
-      return CommandType.DOCUMENT;
+      return CommandType.document;
     }
-    return CommandType.UNKNOWN;
+    return CommandType.unknown;
   }
 
   static String getMessageMediaFileId(Message message) {

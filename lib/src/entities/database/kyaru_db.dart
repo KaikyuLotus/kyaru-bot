@@ -7,11 +7,11 @@ import '../instruction.dart';
 import '../settings.dart';
 
 class KyaruDB {
-  static final _settingsCollection = 'settings';
-  static final _instructionsCollection = 'instructions';
-  static final _repositoryCollection = 'repositories';
-  static final _chatDataCollection = 'chat_data';
-  static final _sinoAliceDataCollection = 'sinoalice_data';
+  static const _settingsCollection = 'settings';
+  static const _instructionsCollection = 'instructions';
+  static const _repositoryCollection = 'repositories';
+  static const _chatDataCollection = 'chat_data';
+  static const _sinoAliceDataCollection = 'sinoalice_data';
 
   final Database _database = Database('database/database.json');
 
@@ -48,7 +48,8 @@ class KyaruDB {
   }
 
   UserSinoAliceData getUserSinoAliceData(int userId) {
-    return _database[_sinoAliceDataCollection].findOneAs((json) => UserSinoAliceData.fromJson(json), filter: {'user_id': userId});
+    return _database[_sinoAliceDataCollection]
+        .findOneAs((json) => UserSinoAliceData.fromJson(json), filter: {'user_id': userId});
   }
 
   void updateUserSinoAliceData(UserSinoAliceData data) {
@@ -70,7 +71,9 @@ class KyaruDB {
 
   List<Instruction> getInstructions(InstructionType type, int chatId, {InstructionEventType eventType}) {
     var filter = {'type': EnumHelper.encode(type), 'chat_id': chatId};
-    if (eventType != null) filter['event_type'] = EnumHelper.encode(eventType);
+    if (eventType != null) {
+      filter['event_type'] = EnumHelper.encode(eventType);
+    }
     return _database[_instructionsCollection].findAs((json) => Instruction.fromJson(json), filter: filter);
   }
 }

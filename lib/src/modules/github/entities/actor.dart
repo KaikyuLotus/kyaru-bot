@@ -16,7 +16,9 @@ class Actor {
   );
 
   factory Actor.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Actor(
       json['id'],
       json['login'],

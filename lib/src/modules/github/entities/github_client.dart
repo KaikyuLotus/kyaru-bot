@@ -10,7 +10,7 @@ import 'github_event.dart';
 import 'github_events_response.dart';
 
 class GithubClient {
-  final api_base_url = 'api.github.com';
+  final String apiBaseUrl = 'api.github.com';
 
   final _client = Client();
 
@@ -20,7 +20,7 @@ class GithubClient {
 
   Future<GithubEventsResponse> events(String user, String repo, {String etag}) async {
     return _get(
-      Uri.https(api_base_url, '/networks/$user/$repo/events'),
+      Uri.https(apiBaseUrl, '/networks/$user/$repo/events'),
       headers: {'If-None-Match': '$etag'},
     ).then((httpResponse) {
       // TODO remove redundant int.tryParse ...
@@ -33,7 +33,9 @@ class GithubClient {
           int.tryParse(httpResponse.headers['x-ratelimit-reset']),
         );
       }
-      if (httpResponse.statusCode == 404) throw GithubNotFoundException(json.decode(httpResponse.body)['message']);
+      if (httpResponse.statusCode == 404) {
+        throw GithubNotFoundException(json.decode(httpResponse.body)['message']);
+      }
       if (httpResponse.statusCode == 304) {
         throw GithubNotChangedException(
           repo,

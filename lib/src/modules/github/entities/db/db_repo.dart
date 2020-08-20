@@ -6,7 +6,9 @@ class DBRepo {
   DBRepo(this.chatID, this.user, this.repo);
 
   factory DBRepo.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return DBRepo(
       json['chat_id'],
       json['user'],
@@ -15,7 +17,9 @@ class DBRepo {
   }
 
   static List<DBRepo> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) return null;
+    if (jsonArray == null) {
+      return null;
+    }
     return List.generate(jsonArray.length, (i) => DBRepo.fromJson(jsonArray[i]));
   }
 

@@ -6,7 +6,7 @@ import '../../kyaru.dart';
 
 class ModuleFunction {
 
-  ModuleFunction(this.function, this.description, this.name, {bool public = true, this.core = false});
+  ModuleFunction(this.function, this.description, this.name, {this.core = false});
 
   Future<dynamic> Function(Update, Instruction) function;
 

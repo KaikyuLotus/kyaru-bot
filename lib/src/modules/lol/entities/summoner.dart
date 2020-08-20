@@ -9,8 +9,10 @@ class Summoner {
 
   Summoner(this.id, this.accountId, this.puuid, this.name, this.profileIconId, this.revisionDate, this.summonerLevel);
 
-  factory Summoner.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+  factory Summoner.fromJson(dynamic json) {
+    if (json == null) {
+      return null;
+    }
     return Summoner(
       json['id'],
       json['accountId'],

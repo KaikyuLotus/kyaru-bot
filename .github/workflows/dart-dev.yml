@@ -1,0 +1,96 @@
+name: Dart CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  check_quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+
+    env:
+      BOT_TOKEN: ${{ secrets.DEPLOY_BOT_TOKEN }}
+      TARGET_CHAT_IDS: ${{ secrets.TARGET_CHAT_IDS }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      ARTIFACT: kyaru-dev
+
+    steps:
+      - name: Github Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Dart SDK
+        uses: cedx/setup-dart@v2
+
+      - name: Install Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install requirements
+        run: pip install -r .github/workflows/requirements.txt
+
+      - name: Install Pub Spec
+        run: pub get
+
+      - name: Dartanalyzer
+        id: analysis
+        run: dartanalyzer --format machine . 2>&1 >/dev/null | python3 .github/workflows/deployer.py check_analyzer_output
+
+      # TODO add a step on failure
+
+  # Maybe do this only on master?
+  compile:
+    needs: [check_quality]
+    if: success()
+    name: Compile Kyaru
+    runs-on: ubuntu-latest
+
+    env:
+      BOT_TOKEN: ${{ secrets.DEPLOY_BOT_TOKEN }}
+      TARGET_CHAT_IDS: ${{ secrets.TARGET_CHAT_IDS }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      ARTIFACT: kyaru-dev
+
+    steps:
+      - name: Github Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Dart SDK
+        uses: cedx/setup-dart@v2
+
+      - name: Install Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install requirements
+        run: pip install -r .github/workflows/requirements.txt
+
+      - name: Install Pub Spec
+        run: pub get
+
+      - name: Build Executable
+        run: dart2native main.dart -o kyaru-dev
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kyaru-dev
+          path: kyaru-dev
+
+      - name: Dart build failed
+        if: failure()
+        run: python3 .github/workflows/deployer.py build_failed
+
+      - name: Dart build succeeded
+        if: success()
+        run: python3 .github/workflows/deployer.py build_succeeded
+
+  # TODO deploy
+  # - name: Deploy to Server
+  #   run: python3 .github/workflows/deployer.py deploy_to_telegram
+  # - name: Telegram deploy failed
+  #   if: failure()
+  #   run: python3 .github/workflows/deployer.py telegram_deploy_failed

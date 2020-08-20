@@ -23,10 +23,11 @@ class LoLModule implements IModule {
   bool isEnabled() => true;
 
   Future getMe(Update update, Instruction instruction) async {
-    var args = update.message.text.split(' ');
-    args.removeAt(0); // Remove user command
+    var args = update.message.text.split(' ')..removeAt(0); // Remove user command
 
-    if (args.isEmpty) return await _kyaru.reply(update, 'Please specify your username');
+    if (args.isEmpty) {
+      return await _kyaru.reply(update, 'Please specify your username');
+    }
 
     var user = args[0];
     var playIndex = args.length > 1 ? args[1] : '1';
@@ -47,7 +48,6 @@ class LoLModule implements IModule {
 
     var durationMinutes = (matchInfo.gameDuration / 60).floor();
     var durationSeconds = (matchInfo.gameDuration - durationMinutes * 60).floor();
-    ;
 
     var kda = '${participant.stats.kills}/${participant.stats.deaths}/${participant.stats.assists}';
     var creationDate = matchInfo.gameCreation.toString().split('.')[0];
@@ -55,23 +55,23 @@ class LoLModule implements IModule {
     var y = ymd.split('-')[0];
     var mo = ymd.split('-')[1];
     var d = ymd.split('-')[2];
-    ymd = '${d}-${mo}-${y}';
+    ymd = '$d-$mo-$y';
     var hm = creationDate.split(' ')[1];
     var h = hm.split(':')[0];
     var m = hm.split(':')[1];
-    hm = '${h}:${m}';
+    hm = '$h:$m';
 
     var masteries = await _client.getChampionsMasteryBySummonerId(summoner.id);
     var mainChamp = _client.findChampionById(masteries.first.championId.toString());
 
-    var firstPart = '*Summoner ${user}*\nLevel: *${summoner.summonerLevel}*\n'
+    var firstPart = '*Summoner $user*\nLevel: *${summoner.summonerLevel}*\n'
         'Main champ: *${mainChamp.name}* mastery *${masteries.first.championLevel}*';
 
     var matchPhrase = playIndexInt == 0 ? 'Last match' : 'Match number ${playIndexInt + 1}';
 
-    var message = '${firstPart}\n\n*${matchPhrase}*\nPlayed at *${hm}* on the *${ymd}* with *${usedChampion.name}*\n'
-        '*${matchInfo.gameMode}* - ${kda} - *${participant.stats.win ? 'Win' : 'Lost'}*\n'
-        'Match lasted ${durationMinutes} minutes and ${durationSeconds} seconds';
+    var message = '$firstPart\n\n*$matchPhrase*\nPlayed at *$hm* on the *$ymd* with *${usedChampion.name}*\n'
+        '*${matchInfo.gameMode}* - $kda - *${participant.stats.win ? 'Win' : 'Lost'}*\n'
+        'Match lasted $durationMinutes minutes and $durationSeconds seconds';
 
     await _kyaru.reply(update, message, parseMode: ParseMode.Markdown());
   }
