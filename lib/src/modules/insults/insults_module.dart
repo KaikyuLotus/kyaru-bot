@@ -25,6 +25,6 @@ class InsultsModule implements IModule {
 
   Future insult(Update update, Instruction instruction) async {
     var insult = await insultsClient.getInsult();
-    await _kyaru.reply(update, '${insult}', quoteQuoted: update.message.replyToMessage != null);
+    await _kyaru.reply(update, '$insult', quoteQuoted: update.message.replyToMessage != null);
   }
 }

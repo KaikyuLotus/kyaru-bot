@@ -7,7 +7,9 @@ class Settings {
   Settings(this.token, this.lolToken, this.apexToken, this.ownerId);
 
   factory Settings.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Settings(
       json['token'],
       json['lol_token'],

@@ -5,13 +5,13 @@ import 'package:http/http.dart';
 import 'post.dart';
 
 class DanbooruClient {
-  final base_url = 'danbooru.donmai.us';
+  final String baseUrl = 'danbooru.donmai.us';
 
   final _client = Client();
 
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
     var response = await _client.get(uri).timeout(Duration(seconds: 120));
-    return mapper(json.decode(await response.body));
+    return mapper(json.decode(response.body));
   }
 
   Future<List<Post>> getPosts({
@@ -21,15 +21,15 @@ class DanbooruClient {
   }) async {
     return await _get(
       Uri.https(
-        base_url,
+        baseUrl,
         '/posts.json',
         {
           'tags': (tags ?? []).join(' '),
-          'limit': '${limit}',
-          'random': '${random}',
+          'limit': '$limit',
+          'random': '$random',
         },
       ),
-      (d) => Post.listFromJsonArray(d),
+      Post.listFromJsonArray,
     );
   }
 }

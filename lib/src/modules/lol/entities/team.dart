@@ -18,32 +18,28 @@ class Team {
   Team(
     this.teamId,
     this.win,
-    this.firstBlood,
-    this.firstTower,
-    this.firstInhibitor,
-    this.firstBaron,
-    this.firstDragon,
-    this.firstRiftHerald,
     this.towerKills,
     this.inhibitorKills,
     this.baronKills,
     this.dragonKills,
     this.vilemawKills,
     this.riftHeraldKills,
-    this.dominionVictoryScore,
-  );
+    this.dominionVictoryScore, {
+    this.firstBaron,
+    this.firstDragon,
+    this.firstRiftHerald,
+    this.firstInhibitor,
+    this.firstTower,
+    this.firstBlood,
+  });
 
   factory Team.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Team(
       json['teamId'],
       json['win'],
-      json['firstBlood'],
-      json['firstTower'],
-      json['firstInhibitor'],
-      json['firstBaron'],
-      json['firstDragon'],
-      json['firstRiftHerald'],
       json['towerKills'],
       json['inhibitorKills'],
       json['baronKills'],
@@ -51,11 +47,19 @@ class Team {
       json['vilemawKills'],
       json['riftHeraldKills'],
       json['dominionVictoryScore'],
+      firstBlood: json['firstBlood'],
+      firstTower: json['firstTower'],
+      firstInhibitor: json['firstInhibitor'],
+      firstBaron: json['firstBaron'],
+      firstDragon: json['firstDragon'],
+      firstRiftHerald: json['firstRiftHerald'],
     );
   }
 
-  static List<Team> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) return null;
+  static List<Team> listFromJsonArray(dynamic jsonArray) {
+    if (jsonArray == null) {
+      return null;
+    }
     return List.generate(jsonArray.length, (i) => Team.fromJson(jsonArray[i]));
   }
 }

@@ -5,12 +5,11 @@ import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import '../../../kyaru.dart';
 
 class DatabaseModule implements IModule {
-  final Kyaru _kyaru;
   List<ModuleFunction> _moduleFunctions;
 
-  DatabaseModule(this._kyaru) {
+  DatabaseModule() {
     _moduleFunctions = [
-      ModuleFunction(registerChat, 'Adds chats to the db', 'registerChat', public: false),
+      ModuleFunction(registerChat, 'Adds chats to the db', 'registerChat'), // public: false
     ];
   }
 

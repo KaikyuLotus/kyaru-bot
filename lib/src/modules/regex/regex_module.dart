@@ -10,7 +10,7 @@ class RegexModule implements IModule {
 
   RegexModule(this._kyaru) {
     _moduleFunctions = [
-      ModuleFunction(regexReplace, 'asd', 'regexReplace', public: false),
+      ModuleFunction(regexReplace, 'asd', 'regexReplace'), // public: false
     ];
   }
 
@@ -31,9 +31,11 @@ class RegexModule implements IModule {
 
     var fixed = quotedText.replaceAll(first, second);
 
-    if (fixed == quotedText) return;
+    if (fixed == quotedText) {
+      return;
+    }
 
-    var reply = '"${fixed}"\n\nFixed!';
+    var reply = '"$fixed"\n\nFixed!';
     await _kyaru.sendMessage(
       ChatID(update.message.chat.id),
       reply,

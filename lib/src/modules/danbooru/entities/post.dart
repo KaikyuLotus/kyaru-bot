@@ -10,7 +10,9 @@ class Post {
   Post(this.id, this.rating, this.tagString, this.fileUrl, this.largeFileUrl, this.previewFileUrl, this.fileExt);
 
   factory Post.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Post(
       json['id'],
       json['rating'],
@@ -22,8 +24,10 @@ class Post {
     );
   }
 
-  static List<Post> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) return null;
+  static List<Post> listFromJsonArray(dynamic jsonArray) {
+    if (jsonArray == null) {
+      return null;
+    }
     return List.generate(jsonArray.length, (i) => Post.fromJson(jsonArray[i]));
   }
 }

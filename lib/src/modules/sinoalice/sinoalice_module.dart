@@ -43,12 +43,13 @@ class SinoAliceModule implements IModule {
         // Pass
       }
     }
-    var message = '';
+    final buffer = StringBuffer();
     for (var entry in okUserData.entries) {
-      var nameLink = MarkdownUtils.generateUrl(MarkdownUtils.escape(entry.value.user.firstName), 'tg://user?id=${entry.value.user.id}');
-      message += '\n${nameLink}: `${entry.key}`';
+      var nameLink = MarkdownUtils.generateUrl(
+          MarkdownUtils.escape(entry.value.user.firstName), 'tg://user?id=${entry.value.user.id}');
+      buffer.write('\n$nameLink: `${entry.key}`');
     }
-    return _kyaru.reply(update, message, parseMode: ParseMode.MarkdownV2());
+    return _kyaru.reply(update, buffer.toString(), parseMode: ParseMode.MarkdownV2());
   }
 
   Future sinid(Update update, Instruction instruction) {
@@ -73,7 +74,7 @@ class SinoAliceModule implements IModule {
     var quote = update.message.replyToMessage != null;
     var firstName = quote ? update.message.replyToMessage.from.firstName : update.message.from.firstName;
     var userId = update.message.from.id;
-    var nameLink = MarkdownUtils.generateUrl(firstName, 'tg://user?id=${userId}');
+    var nameLink = MarkdownUtils.generateUrl(firstName, 'tg://user?id=$userId');
     if (quote) {
       userId = update.message.replyToMessage.from.id;
     }
@@ -86,6 +87,6 @@ class SinoAliceModule implements IModule {
       return _kyaru.reply(update, quote ? quoteError : normalError, quote: true);
     }
 
-    return _kyaru.reply(update, '${nameLink} ID: `${userData.gameId}`', parseMode: ParseMode.Markdown(), quote: true);
+    return _kyaru.reply(update, '$nameLink ID: `${userData.gameId}`', parseMode: ParseMode.Markdown(), quote: true);
   }
 }

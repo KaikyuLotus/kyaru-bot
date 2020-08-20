@@ -11,7 +11,9 @@ class Participant {
   Participant(this.participantId, this.teamId, this.championId, this.spell1Id, this.spell2Id, this.stats);
 
   factory Participant.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Participant(
       json['participantId'],
       json['teamId'],
@@ -23,7 +25,9 @@ class Participant {
   }
 
   static List<Participant> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) return null;
+    if (jsonArray == null) {
+      return null;
+    }
     return List.generate(jsonArray.length, (i) => Participant.fromJson(jsonArray[i]));
   }
 }

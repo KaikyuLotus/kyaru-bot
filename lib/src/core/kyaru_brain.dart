@@ -7,16 +7,16 @@ class KyaruBrain extends Bot {
   KyaruBrain(this._kyaruDB) : super(_kyaruDB.getSettings().token) {
     // Find a better way to register modules
     modules.addAll(<IModule>[
-      RegexModule(this as Kyaru),
-      OwnerModule(this as Kyaru),
-      AdminsModule(this as Kyaru),
-      LoLModule(this as Kyaru),
-      InsultsModule(this as Kyaru),
-      DanbooruModule(this as Kyaru),
-      YandereModule(this as Kyaru),
-      JikanModule(this as Kyaru),
-      ApexModule(this as Kyaru),
-      GithubModule(this as Kyaru),
+      RegexModule(this),
+      OwnerModule(this),
+      AdminsModule(this),
+      LoLModule(this),
+      InsultsModule(this),
+      DanbooruModule(this),
+      YandereModule(this),
+      JikanModule(this),
+      ApexModule(this),
+      GithubModule(this),
     ]);
 
     setupModules();
@@ -33,25 +33,25 @@ class KyaruBrain extends Bot {
   void updateTelegramCommands() {
     setMyCommands(
       List<BotCommand>.of(
-        modulesFunctions.values.where((ModuleFunction m) => m.core).map(
-              (ModuleFunction m) => BotCommand(m.name, m.description.length >= 3 ? m.description : 'No description'),
+        modulesFunctions.values.where((m) => m.core).map(
+              (m) => BotCommand(m.name, m.description.length >= 3 ? m.description : 'No description'),
             ),
       ),
-    ).catchError((Exception e, StackTrace s) => print('Could not update Telegram commands: $e\n$s'));
+    ).catchError((e, s) => print('Could not update Telegram commands: $e\n$s'));
   }
 
   void setupModules() {
-    for (final IModule module in modules) {
+    for (final module in modules) {
       print(module.runtimeType);
-      final List<ModuleFunction> moduleFunctions = module.getModuleFunctions();
-      for (final ModuleFunction moduleFunction in moduleFunctions) {
+      final moduleFunctions = module.getModuleFunctions();
+      for (final moduleFunction in moduleFunctions) {
         print('- ${moduleFunction.name}');
         modulesFunctions[moduleFunction.name] = moduleFunction;
         if (moduleFunction.core) {
           coreFunctions.add(moduleFunction.name);
           onCommand(
             moduleFunction.name,
-            (Update u) => moduleFunction.function(u, null).then((dynamic v) => print('Function executed')),
+            (u) => moduleFunction.function(u, null).then((dynamic v) => print('Function executed')),
           );
         }
       }
@@ -62,7 +62,7 @@ class KyaruBrain extends Bot {
 
   Future<bool> readEvents(Update update) async {
     if (update?.message != null && update?.message?.newChatMembers != null) {
-      if (update.message?.newChatMembers?.map((User u) => u.id)?.contains(id) == true) {
+      if (update.message?.newChatMembers?.map((u) => u.id)?.contains(id) == true) {
         await onNewGroup(update);
         return true;
       }
@@ -78,19 +78,23 @@ class KyaruBrain extends Bot {
   }
 
   Future<void> readMessage(Update update) async {
-    final String text = update.message?.text;
-    if (text == null) return;
+    final text = update.message?.text;
+    if (text == null) {
+      return;
+    }
 
-    final int chatId = update.message?.chat?.id;
+    final chatId = update.message?.chat?.id;
     if (chatId == null) {
       print('Cannot proceed if chat id is null');
       return;
     }
 
-    final BotCommandParser botCommand = BotCommandParser.fromMessage(update.message);
-    final bool isCommandToBot = botCommand != null && botCommand.isToBot(username);
+    final botCommand = BotCommandParser.fromMessage(update.message);
+    final isCommandToBot = botCommand != null && botCommand.isToBot(username);
 
-    if (isCommandToBot) return onCommandToBot(update, botCommand, chatId);
+    if (isCommandToBot) {
+      return onCommandToBot(update, botCommand, chatId);
+    }
 
     await onTextMessage(update, chatId);
   }
@@ -100,7 +104,7 @@ class KyaruBrain extends Bot {
       if (modulesFunctions.containsKey(instruction.function)) {
         modulesFunctions[instruction.function]
             .function(update, instruction)
-            .catchError((Exception e, StackTrace s) => print('Function ${instruction.function} crashed: $e\n$s'));
+            .catchError((e, s) => print('Function ${instruction.function} crashed: $e\n$s'));
         print('Function ${instruction.function} executed');
         return true; // Something got executed
       } else {
@@ -118,47 +122,57 @@ class KyaruBrain extends Bot {
   }
 
   Future<bool> execRegexInstructions(Update update, int chatId) async {
-    final List<Instruction> regexInstructions = getInstructions(InstructionType.REGEX, chatId);
+    final regexInstructions = getInstructions(InstructionType.regex, chatId);
 
-    final String text = update.message.text;
+    final text = update.message.text;
 
-    final List<Instruction> validInstructions = regexInstructions.where((Instruction i) {
+    final validInstructions = regexInstructions.where((i) {
       return RegExp(i.regex).firstMatch(text) != null && i.checkRequirements(update, kyaruDB.getSettings());
     }).toList();
 
-    if (validInstructions.isEmpty) return false;
-    runInstructionFunction(update, RandomUtils.choose(validInstructions));
+    if (validInstructions.isEmpty) {
+      return false;
+    }
+    runInstructionFunction(update, choose(validInstructions));
     return true;
   }
 
   Future<bool> execCommandInstructions(Update update, BotCommandParser botCommand, int chatId) async {
-    final List<Instruction> commandInstructions = getInstructions(InstructionType.COMMAND, chatId);
-    final List<Instruction> validInstructions = commandInstructions.where((Instruction i) {
+    final commandInstructions = getInstructions(InstructionType.command, chatId);
+    final validInstructions = commandInstructions.where((i) {
       return botCommand.matchesCommand(i.command.command) && i.checkRequirements(update, kyaruDB.getSettings());
     }).toList();
 
-    if (validInstructions.isEmpty) return false;
+    if (validInstructions.isEmpty) {
+      return false;
+    }
 
-    runInstructionFunction(update, RandomUtils.choose(validInstructions));
+    runInstructionFunction(update, choose(validInstructions));
     return true;
   }
 
   Future<void> execEventInstructions(Update update, InstructionEventType eventType, int chatId) async {
-    final List<Instruction> instructions = getInstructions(InstructionType.EVENT, chatId, eventType: eventType);
-    if (instructions.isEmpty) return false;
+    final instructions = getInstructions(InstructionType.event, chatId, eventType: eventType);
+    if (instructions.isEmpty) {
+      return false;
+    }
 
-    runInstructionFunction(update, RandomUtils.choose(instructions));
+    runInstructionFunction(update, choose(instructions));
     return true;
   }
 
   Future<void> onTextMessage(Update update, int chatId) async {
     // First check contents
     // Then check equals
-    if (await execRegexInstructions(update, chatId)) return; // Then check regex
+    if (await execRegexInstructions(update, chatId)) {
+      return;
+    } // Then check regex
   }
 
   Future<void> onCommandToBot(Update update, BotCommandParser botCommand, int chatId) async {
-    if (await execCommandInstructions(update, botCommand, chatId)) return;
+    if (await execCommandInstructions(update, botCommand, chatId)) {
+      return;
+    }
   }
 
   Future<void> onLeftGroup(Update update) {
@@ -166,10 +180,10 @@ class KyaruBrain extends Bot {
   }
 
   Future<void> onNewGroup(Update update) async {
-    await execEventInstructions(update, InstructionEventType.KYARU_JOINED, update.message.chat.id);
+    await execEventInstructions(update, InstructionEventType.kyaruJoined, update.message.chat.id);
   }
 
   Future<void> onNewUsers(Update update) async {
-    await execEventInstructions(update, InstructionEventType.USER_JOINED, update.message.chat.id);
+    await execEventInstructions(update, InstructionEventType.userJoined, update.message.chat.id);
   }
 }

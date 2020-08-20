@@ -19,11 +19,13 @@ void eventsIsolateLoop(SendPort sendPort) {
   final etagStore = <String, String>{};
   final readUpdates = <String>[];
 
-  var elaborateResponse = (DBRepo repo, GithubEventsResponse githubEventsResp) {
+  void elaborateResponse(DBRepo repo, GithubEventsResponse githubEventsResp) {
     print('Elaborating events for ${repo.repo}...');
     var events = githubEventsResp.events.where((e) => !readUpdates.contains(e.id));
 
-    if (events.isEmpty) return;
+    if (events.isEmpty) {
+      return;
+    }
     if (etagStore.containsKey(repo.repo)) {
       var message = '';
       if (events.length == 1) {
@@ -37,9 +39,9 @@ void eventsIsolateLoop(SendPort sendPort) {
     etagStore[repo.repo] = githubEventsResp.etag;
     readUpdates.addAll(List<String>.from(events.map((e) => e.id)));
     print('Elaborating events for ${repo.repo} done');
-  };
+  }
 
-  var timerFunction = (t) {
+  void timerFunction(t) {
     print('Checking github updates...');
     for (var repo in db.getRepos()) {
       githubClient
@@ -61,7 +63,7 @@ void eventsIsolateLoop(SendPort sendPort) {
             test: (e) => e.runtimeType != GithubForbiddenException,
           );
     }
-  };
+  }
 
   Function() loopBootstrapperFoo;
   loopBootstrapperFoo = () {
@@ -91,7 +93,7 @@ void eventsIsolateLoop(SendPort sendPort) {
 
 class GithubModule implements IModule {
   final Kyaru _kyaru;
-  final githubClient = GithubClient();
+  final _githubClient = GithubClient();
 
   List<ModuleFunction> _moduleFunctions;
 
@@ -135,14 +137,14 @@ class GithubModule implements IModule {
     var repo = args[1];
 
     try {
-      var githubEventsResp = await githubClient.events(username, repo);
+      await _githubClient.events(username, repo);
       _kyaru.kyaruDB.addRepo(DBRepo(update.message.chat.id, username, repo));
       await _kyaru.reply(update, 'From now on i\'ll send updates on new events for this repository in this chat');
     } on GithubNotFoundException {
       await _kyaru.reply(update, 'Repository or user not found');
     } on GithubNotChangedException {
       await _kyaru.reply(update, 'There are no new events for this repository');
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('Could not get repo events: $e\n$s');
       await _kyaru.reply(update, 'Something went terribly wrong...');
     }

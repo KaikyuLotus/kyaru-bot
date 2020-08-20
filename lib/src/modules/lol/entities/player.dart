@@ -19,8 +19,10 @@ class Player {
     this.profileIcon,
   );
 
-  factory Player.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+  factory Player.fromJson(dynamic json) {
+    if (json == null) {
+      return null;
+    }
     return Player(
       json['platformId'],
       json['accountId'],
@@ -33,8 +35,10 @@ class Player {
     );
   }
 
-  static List<Player> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) return null;
+  static List<Player> listFromJsonArray(dynamic jsonArray) {
+    if (jsonArray == null) {
+      return null;
+    }
     return List.generate(jsonArray.length, (i) => Player.fromJson(jsonArray[i]));
   }
 }

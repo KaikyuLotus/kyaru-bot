@@ -40,6 +40,8 @@ class Instruction {
     this._command,
     this._function,
     this._regex,
+    // Private boolean parameters
+    // ignore: avoid_positional_boolean_parameters
     this._requireQuote,
     this._ownerOnly,
   ) {
@@ -60,16 +62,22 @@ class Instruction {
 
   bool checkRequirements(Update update, Settings settings) {
     if (requireQuote) {
-      if (update?.message?.replyToMessage == null) return false;
+      if (update?.message?.replyToMessage == null) {
+        return false;
+      }
     }
     if (ownerOnly) {
-      if (update?.message?.from?.id != settings.ownerId) return false;
+      if (update?.message?.from?.id != settings.ownerId) {
+        return false;
+      }
     }
     return true;
   }
 
   factory Instruction.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return Instruction._(
       json['uuid'],
       json['chat_id'],

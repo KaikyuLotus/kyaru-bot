@@ -15,12 +15,12 @@ class ApexClient {
   final String _key;
 
   Future<Uint8List> downloadImage(String imageLink) async {
-    final Response response = await _client.get(imageLink).timeout(const Duration(seconds: 120));
+    final response = await _client.get(imageLink).timeout(const Duration(seconds: 120));
     return response.bodyBytes;
   }
 
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper, [bool noInit = false]) async {
-    final Response response = await _client.get(uri).timeout(const Duration(seconds: 120));
+    final response = await _client.get(uri).timeout(const Duration(seconds: 120));
     return mapper(json.decode(response.body));
   }
 
@@ -32,7 +32,7 @@ class ApexClient {
         'auth': _key,
         'player': player,
       }),
-      (dynamic d) => ApexData.fromJson(d as Map<String, dynamic>),
+      (dynamic d) => ApexData.fromJson(d),
     );
   }
 }

@@ -34,7 +34,9 @@ class MatchInfo {
   );
 
   factory MatchInfo.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return MatchInfo(
       json['gameId'],
       json['platformId'],

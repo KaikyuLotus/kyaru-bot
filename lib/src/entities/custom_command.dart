@@ -1,6 +1,7 @@
 import '../../kyaru.dart';
 
 class CustomCommand {
+
   String command;
   String fileId;
   String text;
@@ -11,7 +12,9 @@ class CustomCommand {
   CustomCommand(this.command, this.commandType, {this.quote, this.quoteQuoted, this.fileId, this.text});
 
   factory CustomCommand.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
+    if (json == null) {
+      return null;
+    }
     return CustomCommand(
       json['command'],
       EnumHelper.get(CommandType.values, json['command_type']),
@@ -23,7 +26,7 @@ class CustomCommand {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    return <String, dynamic>{
       'command': command,
       'command_type': EnumHelper.encode(commandType),
       'quote': quote ?? false,
