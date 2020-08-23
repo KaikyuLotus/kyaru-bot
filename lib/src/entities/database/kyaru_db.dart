@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dart_mongo_lite/dart_mongo_lite.dart';
 import 'package:kyaru_bot/src/modules/github/entities/db/db_repo.dart';
 import 'package:kyaru_bot/src/modules/sinoalice/entities/user.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../kyaru.dart';
 import '../instruction.dart';
@@ -15,8 +18,20 @@ class KyaruDB {
 
   final Database _database = Database('database/database.json');
 
-  Settings getSettings() {
-    return _database[_settingsCollection].findOneAs((json) => Settings.fromJson(json));
+  Db _db;
+
+  KyaruDB() {
+    var host = Platform.environment['MONGO_DART_DRIVER_HOST'] ?? 'mongo';
+    var port = Platform.environment['MONGO_DART_DRIVER_PORT'] ?? '27017';
+    _db = Db('mongodb://$host:$port/testingphase');
+  }
+
+  Future init() async {
+    await _db.open();
+  }
+
+  Future<Settings> getSettings() async {
+    return Settings.fromJson(await _db.collection(_settingsCollection).findOne());
   }
 
   void deleteCustomInstruction(Instruction instruction) {

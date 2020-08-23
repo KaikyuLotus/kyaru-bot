@@ -3,7 +3,7 @@ import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import '../../kyaru.dart';
 
 class Kyaru extends KyaruBrain {
-  Kyaru() : super(KyaruDB()) {
+  Kyaru(KyaruDB db, String token) : super(db, token) {
     onUpdate(_updatesHandler);
   }
 
@@ -52,9 +52,9 @@ class Kyaru extends KyaruBrain {
     return quoteQuoted ? update.message.replyToMessage.messageId : quote ? update.message.messageId : null;
   }
 
-  void noticeOwner(Update update, Exception e, StackTrace s) {
+  Future<void> noticeOwner(Update update, Exception e, StackTrace s) async {
     print('$e\n$s');
-    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s').catchError((e, s) => print('$e\n$s'));
+    await sendMessage(ChatID((await kyaruDB.getSettings()).ownerId), '$e\n$s').catchError((e, s) => print('$e\n$s'));
   }
 
   void onError(Update update, Exception e, StackTrace s) {

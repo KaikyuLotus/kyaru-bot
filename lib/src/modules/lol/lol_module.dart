@@ -10,7 +10,8 @@ class LoLModule implements IModule {
   List<ModuleFunction> _moduleFunctions;
 
   LoLModule(this._kyaru) {
-    _client = LOLClient(_kyaru.kyaruDB.getSettings().lolToken);
+    // TODO as apex
+    // _client = LOLClient(_kyaru.kyaruDB.getSettings().lolToken);
     _moduleFunctions = [
       ModuleFunction(getMe, 'Gets user stats from LoL', 'lol', core: true),
     ];

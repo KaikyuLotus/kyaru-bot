@@ -4,7 +4,7 @@ import '../../kyaru.dart';
 import '../entities/i_module.dart';
 
 class KyaruBrain extends Bot {
-  KyaruBrain(this._kyaruDB) : super(_kyaruDB.getSettings().token) {
+  KyaruBrain(this._kyaruDB, String token) : super(token) {
     // Find a better way to register modules
     modules.addAll(<IModule>[
       RegexModule(this),
@@ -123,11 +123,11 @@ class KyaruBrain extends Bot {
 
   Future<bool> execRegexInstructions(Update update, int chatId) async {
     final regexInstructions = getInstructions(InstructionType.regex, chatId);
-
     final text = update.message.text;
+    final settings = await kyaruDB.getSettings();
 
     final validInstructions = regexInstructions.where((i) {
-      return RegExp(i.regex).firstMatch(text) != null && i.checkRequirements(update, kyaruDB.getSettings());
+      return RegExp(i.regex).firstMatch(text) != null && i.checkRequirements(update, settings);
     }).toList();
 
     if (validInstructions.isEmpty) {
@@ -139,8 +139,9 @@ class KyaruBrain extends Bot {
 
   Future<bool> execCommandInstructions(Update update, BotCommandParser botCommand, int chatId) async {
     final commandInstructions = getInstructions(InstructionType.command, chatId);
+    final settings = await kyaruDB.getSettings();
     final validInstructions = commandInstructions.where((i) {
-      return botCommand.matchesCommand(i.command.command) && i.checkRequirements(update, kyaruDB.getSettings());
+      return botCommand.matchesCommand(i.command.command) && i.checkRequirements(update, settings);
     }).toList();
 
     if (validInstructions.isEmpty) {

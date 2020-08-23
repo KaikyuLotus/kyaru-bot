@@ -61,7 +61,7 @@ class OwnerModule implements IModule {
         var file = await _kyaru.getFile(newChat.photo.bigFileId);
         var bytes = await _kyaru.download(file.filePath);
         await _kyaru.sendPhoto(
-          ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+          ChatID((await _kyaru.kyaruDB.getSettings()).ownerId),
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
           parseMode: ParseMode.Markdown(),
@@ -71,14 +71,14 @@ class OwnerModule implements IModule {
         if (update.message.chat.description != null) {
           message += '\nDescription: `${update.message.chat.description}`';
         }
-        await _kyaru.sendMessage(ChatID(_kyaru.kyaruDB.getSettings().ownerId), message,
+        await _kyaru.sendMessage(ChatID((await _kyaru.kyaruDB.getSettings()).ownerId), message,
             parseMode: ParseMode.Markdown());
       }
     } on Exception catch (e, s) {
       print('$e\n$s');
 
       await _kyaru.sendMessage(
-        ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+        ChatID((await _kyaru.kyaruDB.getSettings()).ownerId),
         'New group: `${update.message.chat.title}`\nID: `${chat.id}`',
         parseMode: ParseMode.Markdown(),
       );

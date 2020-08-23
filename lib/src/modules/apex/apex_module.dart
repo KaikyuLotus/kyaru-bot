@@ -14,7 +14,8 @@ class ApexModule implements IModule {
   List<ModuleFunction> _moduleFunctions;
 
   ApexModule(this._kyaru) {
-    _apexClient = ApexClient(_kyaru.kyaruDB.getSettings().apexToken);
+    // TODO an async function for setup on each module
+    // _apexClient = ApexClient(_kyaru.kyaruDB.getSettings().apexToken);
     _moduleFunctions = [
       ModuleFunction(apex, 'Returns currents stats for the given player', 'apex', core: true),
     ];

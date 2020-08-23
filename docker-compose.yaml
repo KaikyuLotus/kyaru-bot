@@ -1,0 +1,28 @@
+version: '3'
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    hostname: mongo
+    environment:
+      MONGODB_KYARU_USER: kyaru
+      MONGODB_KYARU_PSWD: testing
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+      - ./mongo-volume:/data/db
+    ports:
+      - 27017:27017
+      - 27019:27019
+  kyaru:
+    container_name: kyaru
+    build: .
+    entrypoint:
+      - ./wait-for-it.sh
+      - mongo:27017
+      - --timeout=30
+      - --
+      - ./kyaru-dev
+    links:
+      - mongo
+    depends_on:
+      - mongo
