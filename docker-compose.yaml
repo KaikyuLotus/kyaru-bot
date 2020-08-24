@@ -1,28 +1,38 @@
 version: '3'
 services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    hostname: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_USER}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PSWD}"
+    volumes:
+      - ./grafana-storage:/var/lib/grafana
+    ports:
+      - 3000:3000
+
   mongo:
     container_name: mongo
     image: mongo:latest
     hostname: mongo
     environment:
-      MONGODB_KYARU_USER: kyaru
-      MONGODB_KYARU_PSWD: testing
+      DB_KYARU_USER: "${DB_KYARU_USER}"
+      DB_KYARU_PSWD: "${DB_KYARU_PSWD}"
     volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
       - ./mongo-volume:/data/db
     ports:
       - 27017:27017
       - 27019:27019
+
+  mongografana:
+    container_name: mongografana
+    hostname: mongografana
+    build:
+      context: .
+      dockerfile: ./docker/MongoPluginServerDockerfile
+
   kyaru:
     container_name: kyaru
     build: .
-    entrypoint:
-      - ./wait-for-it.sh
-      - mongo:27017
-      - --timeout=30
-      - --
-      - ./kyaru-dev
-    links:
-      - mongo
-    depends_on:
-      - mongo

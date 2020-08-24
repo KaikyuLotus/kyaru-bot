@@ -72,7 +72,7 @@ jobs:
         run: pub get
 
       - name: Build Executable
-        run: dart2native main.dart -o kyaru-dev
+        run: dart2native lib/main.dart -o kyaru-dev
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v2

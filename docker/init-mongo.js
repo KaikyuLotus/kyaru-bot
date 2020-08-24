@@ -8,8 +8,8 @@ function getEnvValue(envVar) {
 
 db.createUser(
     {
-        user  : getEnvValue('MONGODB_KYARU_USER'),
-        pwd   : getEnvValue('MONGODB_KYARU_PSWD'),
+        user  : getEnvValue('DB_KYARU_USER'),
+        pwd   : getEnvValue('DB_KYARU_PSWD'),
         roles : [
             {
                 role : "readWrite",

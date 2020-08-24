@@ -11,5 +11,7 @@ build/
 doc/api/
 /database/database.json
 .idea
+.env
 kyaru-bot.iml
 mongo-volume
+grafana-storage
