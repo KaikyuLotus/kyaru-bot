@@ -14,10 +14,12 @@ COPY . /workspace
 WORKDIR /workspace
 
 RUN pub get
-RUN dart2native main.dart -o ../kyaru-dev
+RUN dart2native lib/main.dart -o /kyaru-dev
 
 WORKDIR /
 
 RUN rm -rf /workspace
 
-COPY wait-for-it.sh wait-for-it.sh
+COPY docker/wait-for-it.sh wait-for-it.sh
+
+ENTRYPOINT ["./wait-for-it.sh", "mongo:27017", "--timeout=30", "--", "./kyaru-dev"]
