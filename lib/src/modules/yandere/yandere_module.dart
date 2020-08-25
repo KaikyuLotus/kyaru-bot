@@ -6,6 +6,11 @@ import '../../../kyaru.dart';
 import 'entities/yandere_client.dart';
 
 class YandereModule implements IModule {
+  final Kyaru _kyaru;
+  final YandereClient yandereClient = YandereClient();
+
+  List<ModuleFunction> _moduleFunctions;
+
   YandereModule(this._kyaru) {
     _moduleFunctions = <ModuleFunction>[
       ModuleFunction(yandere, 'Search images from yande.re', 'yandere', core: true),
@@ -13,10 +18,8 @@ class YandereModule implements IModule {
     ];
   }
 
-  final Kyaru _kyaru;
-  final YandereClient yandereClient = YandereClient();
-
-  List<ModuleFunction> _moduleFunctions;
+  @override
+  Future<void> init() async {}
 
   @override
   List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
@@ -25,8 +28,7 @@ class YandereModule implements IModule {
   bool isEnabled() => true;
 
   Future<void> yandere(Update update, Instruction instruction) async {
-    final args = update.message.text.split(' ')
-      ..removeAt(0);
+    final args = update.message.text.split(' ')..removeAt(0);
 
     // If no args are specified then assume it's a random post request
     if (args.isEmpty) {
@@ -47,32 +49,35 @@ class YandereModule implements IModule {
   }
 
   Future<void> randomFromTags(Update update, Instruction instruction) async {
-    randomPost(update, instruction, tags: update.message.text.split(' ')
-      ..removeAt(0)..removeAt(0));
+    return randomPost(
+      update,
+      instruction,
+      tags: update.message.text.split(' ')..removeAt(0)..removeAt(0),
+    );
   }
 
-  void randomPost(Update update, Instruction instruction, {List<String> tags}) {
+  Future<void> randomPost(Update update, Instruction instruction, {List<String> tags}) async {
     var elaboratedTags = tags;
     if (elaboratedTags != null) {
       elaboratedTags = List<String>.from(elaboratedTags.map<String>((t) => t.toLowerCase()));
       if (elaboratedTags.isEmpty) {
-        _kyaru.reply(update, 'You must specify at least a tag').catchError((e, s) => _kyaru.onError(update, e, s));
-        return;
+        return _kyaru
+            .reply(update, 'You must specify at least a tag')
+            .catchError((e, s) => _kyaru.onError(update, e, s));
       }
     }
 
     elaboratedTags ??= <String>[];
 
-    if (!AdminUtils.isNsfwAllowed(_kyaru, update.message.chat)) {
+    if (!await AdminUtils.isNsfwAllowed(_kyaru, update.message.chat)) {
       elaboratedTags.add('rating:s');
     }
 
-    yandereClient.getPosts(tags: elaboratedTags).then((randomPostList) {
+    return yandereClient.getPosts(tags: elaboratedTags).then((randomPostList) {
       if (randomPostList.isEmpty) {
-        _kyaru
+        return _kyaru
             .reply(update, 'No post found with the specified tags')
             .catchError((e, s) => _kyaru.onError(update, e, s));
-        return;
       }
       final randomPost = choose(randomPostList);
       final photo = HttpFile.fromToken(randomPost.sampleUrl ?? randomPost.jpegUrl ?? randomPost.fileUrl);
@@ -81,6 +86,7 @@ class YandereModule implements IModule {
         count++;
         return count < 11;
       }).toList();
+
       final tagText = tags.join(', ');
       var caption = '`$tagText`\n\n[Post](https://yande.re/post/show/${randomPost.id})';
 
@@ -91,23 +97,23 @@ class YandereModule implements IModule {
       if (photo.token.endsWith('webm')) {
         caption = 'Telegram does not support .webm format\n'
             'Here\'s the media link: ${photo.token}\n\n$caption';
-        _kyaru
+        return _kyaru
             .reply(
-          update,
-          caption,
-          quote: update.message.chat.type != 'private',
-          parseMode: ParseMode.Markdown(),
-        )
+              update,
+              caption,
+              quote: update.message.chat.type != 'private',
+              parseMode: ParseMode.Markdown(),
+            )
             .catchError((e, s) => _kyaru.onError(update, e, s));
       } else {
-        _kyaru
+        return _kyaru
             .replyPhoto(
-          update,
-          photo,
-          caption: caption,
-          quote: update.message.chat.type != 'private',
-          parseMode: ParseMode.Markdown(),
-        )
+              update,
+              photo,
+              caption: caption,
+              quote: update.message.chat.type != 'private',
+              parseMode: ParseMode.Markdown(),
+            )
             .catchError((e, s) => _kyaru.onError(update, e, s));
       }
     }).catchError((e, s) => _kyaru.onError(update, e, s));

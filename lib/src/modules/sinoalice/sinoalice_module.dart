@@ -17,13 +17,16 @@ class SinoAliceModule implements IModule {
   }
 
   @override
+  Future<void> init() async {}
+
+  @override
   List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
   Future sindel(Update update, Instruction instruction) async {
-    var deleted = _kyaru.kyaruDB.deleteUserSinoAliceData(update.message.from.id);
+    var deleted = await _kyaru.kyaruDB.deleteUserSinoAliceData(update.message.from.id);
     if (!deleted) {
       return _kyaru.reply(update, 'I don\'t even know who you are', quote: true);
     }
@@ -31,7 +34,7 @@ class SinoAliceModule implements IModule {
   }
 
   Future sinlist(Update update, Instruction instruction) async {
-    var usersData = _kyaru.kyaruDB.getUsersSinoAliceData();
+    var usersData = await _kyaru.kyaruDB.getUsersSinoAliceData();
     if (usersData.isEmpty) {
       return _kyaru.reply(update, 'No SiNOALICE ID registered in this chat');
     }
@@ -52,7 +55,7 @@ class SinoAliceModule implements IModule {
     return _kyaru.reply(update, buffer.toString(), parseMode: ParseMode.MarkdownV2());
   }
 
-  Future sinid(Update update, Instruction instruction) {
+  Future<void> sinid(Update update, Instruction instruction) async{
     var args = update.message.text.split(' ')..removeAt(0);
     if (args.isNotEmpty) {
       // We have an id registration
@@ -67,7 +70,7 @@ class SinoAliceModule implements IModule {
         return _kyaru.reply(update, 'I think that this is not a valid user ID');
       }
 
-      _kyaru.kyaruDB.updateUserSinoAliceData(UserSinoAliceData(update.message.from.id, id));
+      await _kyaru.kyaruDB.updateUserSinoAliceData(UserSinoAliceData(update.message.from.id, id));
       return _kyaru.reply(update, "I've registered your game ID\nJust type /sinid to show it", quote: true);
     }
 
@@ -82,7 +85,7 @@ class SinoAliceModule implements IModule {
     var normalError = 'Please register your ID with /sinid 0000000 first';
     var quoteError = 'Sorry, this user has no ID';
 
-    var userData = _kyaru.kyaruDB.getUserSinoAliceData(userId);
+    var userData = await _kyaru.kyaruDB.getUserSinoAliceData(userId);
     if (userData == null) {
       return _kyaru.reply(update, quote ? quoteError : normalError, quote: true);
     }

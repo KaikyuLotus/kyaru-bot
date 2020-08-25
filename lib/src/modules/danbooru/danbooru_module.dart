@@ -22,6 +22,9 @@ class DanbooruModule implements IModule {
   }
 
   @override
+  Future<void> init() async {}
+
+  @override
   List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
 
   @override
@@ -85,7 +88,7 @@ class DanbooruModule implements IModule {
       return _kyaru.reply(update, 'I\'m allowed to send 10 max posts at a time, try again.');
     }
 
-    if (!AdminUtils.isNsfwAllowed(_kyaru, update.message.chat)) {
+    if (!await AdminUtils.isNsfwAllowed(_kyaru, update.message.chat)) {
       elaboratedTags.removeWhere((t) => t.contains('rating'));
       // ignore: cascade_invocations
       elaboratedTags.add('rating:s');

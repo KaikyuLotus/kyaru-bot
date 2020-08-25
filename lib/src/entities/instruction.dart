@@ -74,7 +74,7 @@ class Instruction {
     return true;
   }
 
-  factory Instruction.fromJson(Map<String, dynamic> json) {
+  static Instruction fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
     }

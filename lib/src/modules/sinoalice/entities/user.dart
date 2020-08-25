@@ -4,7 +4,7 @@ class UserSinoAliceData {
 
   UserSinoAliceData(this.userId, this.gameId);
 
-  factory UserSinoAliceData.fromJson(Map<String, dynamic> json) {
+  static UserSinoAliceData fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
     }

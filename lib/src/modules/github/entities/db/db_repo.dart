@@ -5,7 +5,7 @@ class DBRepo {
 
   DBRepo(this.chatID, this.user, this.repo);
 
-  factory DBRepo.fromJson(Map<String, dynamic> json) {
+  static DBRepo fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
     }

@@ -9,6 +9,9 @@ class Kyaru extends KyaruBrain {
 
   Future<void> _updatesHandler(Update update) async {
     try {
+
+      await kyaruDB.addUsageLog();
+
       if (update.callbackQuery != null) {
         // await handleCallbackQuery(update);
         return;
