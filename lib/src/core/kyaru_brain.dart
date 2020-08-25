@@ -4,6 +4,13 @@ import '../../kyaru.dart';
 import '../entities/i_module.dart';
 
 class KyaruBrain extends Bot {
+  final Map<String, ModuleFunction> modulesFunctions = <String, ModuleFunction>{};
+  final List<String> coreFunctions = <String>[];
+  final List<IModule> modules = <IModule>[];
+  final KyaruDB _kyaruDB;
+
+  KyaruDB get kyaruDB => _kyaruDB;
+
   KyaruBrain(this._kyaruDB, String token) : super(token) {
     // Find a better way to register modules
     modules.addAll(<IModule>[
@@ -19,16 +26,8 @@ class KyaruBrain extends Bot {
       GithubModule(this),
     ]);
 
-    setupModules();
-    updateTelegramCommands();
+    setupModules().then((_) => updateTelegramCommands());
   }
-
-  final Map<String, ModuleFunction> modulesFunctions = <String, ModuleFunction>{};
-  final List<String> coreFunctions = <String>[];
-  final List<IModule> modules = <IModule>[];
-  final KyaruDB _kyaruDB;
-
-  KyaruDB get kyaruDB => _kyaruDB;
 
   void updateTelegramCommands() {
     setMyCommands(
@@ -40,9 +39,10 @@ class KyaruBrain extends Bot {
     ).catchError((e, s) => print('Could not update Telegram commands: $e\n$s'));
   }
 
-  void setupModules() {
+  Future<void> setupModules() async {
     for (final module in modules) {
       print(module.runtimeType);
+      await module.init();
       final moduleFunctions = module.getModuleFunctions();
       for (final moduleFunction in moduleFunctions) {
         print('- ${moduleFunction.name}');
@@ -114,15 +114,16 @@ class KyaruBrain extends Bot {
     return false;
   }
 
-  List<Instruction> getInstructions(InstructionType instructionType, int chatId, {InstructionEventType eventType}) {
+  Future<List<Instruction>> getInstructions(InstructionType instructionType, int chatId,
+      {InstructionEventType eventType}) async {
     return <Instruction>[
-      ..._kyaruDB.getInstructions(instructionType, 0, eventType: eventType),
-      ..._kyaruDB.getInstructions(instructionType, chatId, eventType: eventType)
+      ...await _kyaruDB.getInstructions(instructionType, 0, eventType: eventType),
+      ...await _kyaruDB.getInstructions(instructionType, chatId, eventType: eventType)
     ];
   }
 
   Future<bool> execRegexInstructions(Update update, int chatId) async {
-    final regexInstructions = getInstructions(InstructionType.regex, chatId);
+    final regexInstructions = await getInstructions(InstructionType.regex, chatId);
     final text = update.message.text;
     final settings = await kyaruDB.getSettings();
 
@@ -138,7 +139,7 @@ class KyaruBrain extends Bot {
   }
 
   Future<bool> execCommandInstructions(Update update, BotCommandParser botCommand, int chatId) async {
-    final commandInstructions = getInstructions(InstructionType.command, chatId);
+    final commandInstructions = await getInstructions(InstructionType.command, chatId);
     final settings = await kyaruDB.getSettings();
     final validInstructions = commandInstructions.where((i) {
       return botCommand.matchesCommand(i.command.command) && i.checkRequirements(update, settings);
@@ -153,7 +154,7 @@ class KyaruBrain extends Bot {
   }
 
   Future<void> execEventInstructions(Update update, InstructionEventType eventType, int chatId) async {
-    final instructions = getInstructions(InstructionType.event, chatId, eventType: eventType);
+    final instructions = await getInstructions(InstructionType.event, chatId, eventType: eventType);
     if (instructions.isEmpty) {
       return false;
     }

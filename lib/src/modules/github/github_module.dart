@@ -11,10 +11,11 @@ import 'entities/exceptions/github_not_found_exception.dart';
 import 'entities/github_client.dart';
 import 'entities/github_events_response.dart';
 
-void eventsIsolateLoop(SendPort sendPort) {
+Future<void> eventsIsolateLoop(SendPort sendPort) async {
   // TODO maybe it would be better to use async and await?
   // TODO this is not really clean and may cause issues
   var db = KyaruDB();
+  await db.init();
   final githubClient = GithubClient();
   final etagStore = <String, String>{};
   final readUpdates = <String>[];
@@ -41,41 +42,44 @@ void eventsIsolateLoop(SendPort sendPort) {
     print('Elaborating events for ${repo.repo} done');
   }
 
-  void timerFunction(t) {
+  Future<void> timerFunction(t) async {
     print('Checking github updates...');
-    for (var repo in db.getRepos()) {
-      githubClient
-          .events(repo.user, repo.repo, etag: etagStore[repo.repo])
-          .then((response) {
-            elaborateResponse(repo, response);
-            print('Left rate limit: ${response.rateLimitRemaining}');
-          })
-          .catchError(
-            (e) => print('Repository or user not found'), // TODO notify and remove
-            test: (e) => e.runtimeType == GithubNotFoundException,
-          )
-          .catchError(
-            (e) => print('Nothing changed in the repo, left limit: ${e.rateLimitRemaining}'),
-            test: (e) => e.runtimeType == GithubNotChangedException,
-          )
-          .catchError(
-            (e, s) => print('Critical error $e\n$s'),
-            test: (e) => e.runtimeType != GithubForbiddenException,
-          );
-    }
+    var repos = await db.getRepos();
+    return Future.wait(
+      repos.map(
+        (repo) => githubClient
+            .events(repo.user, repo.repo, etag: etagStore[repo.repo])
+            .then((response) {
+              elaborateResponse(repo, response);
+              print('Left rate limit: ${response.rateLimitRemaining}');
+            })
+            .catchError(
+              (e) => print('Repository or user not found'), // TODO notify and remove
+              test: (e) => e.runtimeType == GithubNotFoundException,
+            )
+            .catchError(
+              (e) => print('Nothing changed in the repo, left limit: ${e.rateLimitRemaining}'),
+              test: (e) => e.runtimeType == GithubNotChangedException,
+            )
+            .catchError(
+              (e, s) => print('Critical error $e\n$s'),
+              test: (e) => e.runtimeType != GithubForbiddenException,
+            ),
+      ),
+    );
   }
 
   Function() loopBootstrapperFoo;
-  loopBootstrapperFoo = () {
-    var repoFutures = db
-        .getRepos()
+  loopBootstrapperFoo = () async {
+    var repos = await db.getRepos();
+    var repoFutures = repos
         .map((repo) => githubClient.events(repo.user, repo.repo, etag: etagStore[repo.repo]).then((r) {
               etagStore[repo.repo] = r.etag;
               readUpdates.addAll(List<String>.from(r.events.map((e) => e.id)));
             }))
         .toList();
 
-    Future.wait(repoFutures)
+    return Future.wait(repoFutures)
         .then((nothing) => {timerFunction(null), Timer.periodic(Duration(minutes: 2), timerFunction)})
         .catchError(
       (e) {
@@ -105,6 +109,9 @@ class GithubModule implements IModule {
 
     startEventsIsolate();
   }
+
+  @override
+  Future<void> init() async {}
 
   @override
   List<ModuleFunction> getModuleFunctions() => _moduleFunctions;

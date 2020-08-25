@@ -14,7 +14,7 @@ COPY . /workspace
 WORKDIR /workspace
 
 RUN pub get
-RUN dart2native lib/main.dart -o /kyaru-dev
+RUN dart2native bin/main.dart -o /kyaru-dev
 
 WORKDIR /
 

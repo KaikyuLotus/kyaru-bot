@@ -18,6 +18,9 @@ class InsultsModule implements IModule {
   }
 
   @override
+  Future<void> init() async {}
+
+  @override
   List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
 
   @override
