@@ -11,8 +11,8 @@ class AdminUtils {
     return users.map((m) => m?.user?.id).contains(user.id);
   }
 
-  static bool isNsfwAllowed(Kyaru kyaru, Chat chat) {
+  static Future<bool> isNsfwAllowed(Kyaru kyaru, Chat chat) async {
     var chatData = kyaru.kyaruDB.getChatData(chat.id);
-    return chatData == null || chatData.nsfw;
+    return chatData == null || (await chatData).nsfw;
   }
 }
