@@ -15,6 +15,7 @@ class KyaruDB {
   static const _chatDataCollection = 'chat_data';
   static const _sinoAliceDataCollection = 'sinoalice_data';
   static const _usageCollection = 'usage_stats';
+  static const _pingsCollection = 'pings';
 
   Db _db;
 
@@ -29,17 +30,19 @@ class KyaruDB {
     await _db.dropCollection(_usageCollection);
   }
 
+  Future<void> addPing(int ping) async {
+    await _db.collection(_pingsCollection).insertOne({'ts': DateTime.now(), 'time': ping});
+  }
+
   Future<void> addUsageLog() async {
     var now = DateTime.now();
     await _db.collection(_usageCollection).update(
       {'day-hour-minute': '${now.year}-${now.month}-${now.day}T${now.hour}:${now.minute}:00'},
-      {'\$inc': {'value': 1}},
+      {
+        '\$inc': {'value': 1}
+      },
       upsert: true,
     );
-
-
-
-    // await _db.collection(_usageCollection).insertOne({'timestamp': DateTime.now(), 'value': 1});
   }
 
   Future<Settings> getSettings() async {

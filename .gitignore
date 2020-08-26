@@ -14,4 +14,4 @@ doc/api/
 .env
 kyaru-bot.iml
 mongo-volume
-grafana-storage
+grafana/storage
