@@ -1,4 +1,5 @@
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:http/http.dart';
 
 import '../../kyaru.dart';
 import '../entities/i_module.dart';
@@ -26,7 +27,19 @@ class KyaruBrain extends Bot {
       GithubModule(this),
     ]);
 
-    setupModules().then((_) => updateTelegramCommands());
+    setupModules().then((_) => updateTelegramCommands()).then((_) {
+
+      final client = Client();
+
+      Future.doWhile(() async {
+        await Future.delayed(const Duration(seconds: 30));
+        var startTime = DateTime.now().millisecondsSinceEpoch;
+        await client.get(Uri.https('telegram.org', '/')).timeout(Duration(seconds: 120));
+        var elapsedTime = DateTime.now().millisecondsSinceEpoch - startTime;
+        await kyaruDB.addPing(elapsedTime);
+        return isRunning;
+      }).catchError((e, s) => print('Failed to write the current ping'));
+    });
   }
 
   void updateTelegramCommands() {

@@ -8,7 +8,8 @@ services:
       GF_SECURITY_ADMIN_USER: "${GRAFANA_USER}"
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PSWD}"
     volumes:
-      - ./grafana-storage:/var/lib/grafana
+      - ./grafana/storage:/var/lib/grafana
+      - ./grafana/data:/etc/grafana
     ports:
       - 3000:3000
 
