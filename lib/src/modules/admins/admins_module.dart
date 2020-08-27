@@ -35,7 +35,7 @@ class AdminsModule implements IModule {
       return await _kyaru.reply(update, 'Sorry, you must be an admin to use that command');
     }
 
-    var instructions = await _kyaru.kyaruDB.getInstructions(InstructionType.command, update.message.chat.id);
+    var instructions = await _kyaru.kyaruDB.getInstructions(type: InstructionType.command, chatId: update.message.chat.id);
     var reply = 'No custom messages are set in this chat yet';
 
     if (instructions.isNotEmpty) {
@@ -89,7 +89,7 @@ class AdminsModule implements IModule {
       return await _kyaru.reply(update, 'The index must be a number');
     }
 
-    var commandInstructions = await _kyaru.kyaruDB.getInstructions(InstructionType.command, update.message.chat.id);
+    var commandInstructions = await _kyaru.kyaruDB.getInstructions(type: InstructionType.command, chatId: update.message.chat.id);
     if (!commandInstructions.map((i) => i.command.command.toLowerCase()).contains(command.toLowerCase())) {
       return await _kyaru.reply(update, 'Command not found.\nPlease use /commands to check the custom command list.');
     }
@@ -128,7 +128,7 @@ class AdminsModule implements IModule {
       return await _kyaru.reply(update, 'The index must be a number');
     }
 
-    var commandInstructions = await _kyaru.kyaruDB.getInstructions(InstructionType.command, update.message.chat.id);
+    var commandInstructions = await _kyaru.kyaruDB.getInstructions(type: InstructionType.command, chatId: update.message.chat.id);
     if (!commandInstructions.map((i) => i.command.command.toLowerCase()).contains(command.toLowerCase())) {
       return await _kyaru.reply(update, 'Command not found.\nPlease use /commands to check the custom command list.');
     }
@@ -164,7 +164,7 @@ class AdminsModule implements IModule {
     var command = args[0];
     args.removeAt(0); // Remove custom command
 
-    var instructionsList = await _kyaru.kyaruDB.getInstructions(InstructionType.command, 0);
+    var instructionsList = await _kyaru.kyaruDB.getInstructions(type: InstructionType.command, chatId: 0);
     var instructionCommandsList = instructionsList.map((f) => f.command.command.toLowerCase()).toList();
 
     if (instructionCommandsList.contains(command.toLowerCase()) ||
@@ -286,7 +286,7 @@ class AdminsModule implements IModule {
 
   Future execCustomWelcome(Update update, Instruction instruction) async {
     var welcomeReplies = await _kyaru.kyaruDB
-        .getInstructions(InstructionType.event, update.message.chat.id, eventType: InstructionEventType.userJoined);
+        .getInstructions(type: InstructionType.event, chatId: update.message.chat.id, eventType: InstructionEventType.userJoined);
 
     if (welcomeReplies.isEmpty) {
       return await _kyaru.reply(update, 'No custom welcome set here yet');
@@ -322,7 +322,7 @@ class AdminsModule implements IModule {
 
   Future removeCustomWelcome(Update update, Instruction instruction) async {
     var welcomeReplies = await _kyaru.kyaruDB
-        .getInstructions(InstructionType.event, update.message.chat.id, eventType: InstructionEventType.userJoined);
+        .getInstructions(type: InstructionType.event, chatId: update.message.chat.id, eventType: InstructionEventType.userJoined);
 
     if (welcomeReplies.isEmpty) {
       return await _kyaru.reply(update, 'No custom welcome set here yet');
@@ -355,7 +355,7 @@ class AdminsModule implements IModule {
 
   Future customWelcomeList(Update update, Instruction instruction) async {
     var welcomeReplies = await _kyaru.kyaruDB
-        .getInstructions(InstructionType.event, update.message.chat.id, eventType: InstructionEventType.userJoined);
+        .getInstructions(type: InstructionType.event, chatId: update.message.chat.id, eventType: InstructionEventType.userJoined);
 
     if (welcomeReplies.isEmpty) {
       return await _kyaru.reply(update, 'No custom welcome set here yet');

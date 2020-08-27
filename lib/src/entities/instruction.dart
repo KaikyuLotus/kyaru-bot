@@ -74,6 +74,13 @@ class Instruction {
     return true;
   }
 
+  static List<Instruction> listFromJsonArray(List<dynamic> jsonArray) {
+    if (jsonArray == null) {
+      return null;
+    }
+    return List.generate(jsonArray.length, (i) => Instruction.fromJson(jsonArray[i]));
+  }
+
   static Instruction fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
@@ -97,7 +104,7 @@ class Instruction {
       'chat_id': _chatId,
       'type': EnumHelper.encode(_instructionType),
       'event_type': EnumHelper.encode(_instructionEventType),
-      'command': _command.toJson(),
+      'command': _command?.toJson(),
       'function': _function,
       'regex': _regex,
       'require_quote': _requireQuote,

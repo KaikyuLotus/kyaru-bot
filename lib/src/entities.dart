@@ -5,5 +5,6 @@ export 'entities/enums/enum_helper.dart';
 export 'entities/enums/enums.dart';
 export 'entities/i_module.dart';
 export 'entities/instruction.dart';
+export 'entities/module_event_listener.dart';
 export 'entities/module_function.dart';
 export 'entities/settings.dart';

@@ -6,5 +6,4 @@ abstract class IModule {
   List<ModuleFunction> getModuleFunctions();
 
   Future<void> init();
-
 }

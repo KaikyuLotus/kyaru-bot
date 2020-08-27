@@ -41,6 +41,18 @@ class Kyaru extends KyaruBrain {
         return;
       } // Was an event
 
+      if (update.message?.document != null) {
+        // TODO create a separate function
+        for (var module in modules) {
+          if (module is ModuleEventListener) {
+            // TODO "is" check is not working without "as"
+            await (module as ModuleEventListener).onFile(update);
+          }
+        }
+      }
+
+      // TODO other events
+
       if (update.message?.text == null || update.message?.from == null) {
         return;
       }
@@ -58,6 +70,11 @@ class Kyaru extends KyaruBrain {
   Future<void> noticeOwner(Update update, Exception e, StackTrace s) async {
     print('$e\n$s');
     await sendMessage(ChatID((await kyaruDB.getSettings()).ownerId), '$e\n$s').catchError((e, s) => print('$e\n$s'));
+  }
+
+  Future<bool> isOwner(User user) async {
+    final settings = await kyaruDB.getSettings();
+    return settings.ownerId == user.id;
   }
 
   void onError(Update update, Exception e, StackTrace s) {
