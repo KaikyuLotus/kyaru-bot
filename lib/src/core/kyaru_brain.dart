@@ -28,7 +28,7 @@ class KyaruBrain extends Bot {
     ]);
 
     setupModules().then((_) => updateTelegramCommands()).then((_) {
-
+      // TODO move this function
       final client = Client();
 
       Future.doWhile(() async {
@@ -130,8 +130,8 @@ class KyaruBrain extends Bot {
   Future<List<Instruction>> getInstructions(InstructionType instructionType, int chatId,
       {InstructionEventType eventType}) async {
     return <Instruction>[
-      ...await _kyaruDB.getInstructions(instructionType, 0, eventType: eventType),
-      ...await _kyaruDB.getInstructions(instructionType, chatId, eventType: eventType)
+      ...await _kyaruDB.getInstructions(type: instructionType, chatId: 0, eventType: eventType),
+      ...await _kyaruDB.getInstructions(type: instructionType, chatId: chatId, eventType: eventType)
     ];
   }
 

@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:kyaru_bot/src/entities/module_event_listener.dart';
 
 import '../../../kyaru.dart';
 
-class OwnerModule implements IModule {
+class OwnerModule extends ModuleEventListener implements IModule {
   final Kyaru _kyaru;
 
   List<ModuleFunction> _moduleFunctions;
@@ -12,6 +15,7 @@ class OwnerModule implements IModule {
       ModuleFunction(getModulesStatus, 'Sends a message with the enabled/disabled modules', 'modulesStatus'),
       ModuleFunction(onNewGroup, 'Sends the new group message', 'onNewGroup'),
       ModuleFunction(notifyNewGroup, 'Notifies a new group to the owner', 'notifyNewGroup'),
+      ModuleFunction(exportData, 'Exports the DB data in .json format', 'exportData'),
       ModuleFunction(help, 'Sends an help message', 'help', core: true),
       ModuleFunction(start, 'Sends the start message', 'start', core: true),
     ];
@@ -26,7 +30,69 @@ class OwnerModule implements IModule {
   @override
   bool isEnabled() => true;
 
-  Future getModulesStatus(Update update, Instruction instruction) async {
+  @override
+  Future<void> onFile(Update update) async {
+    final isOwner = await _kyaru.isOwner(update.message?.from);
+    final isPrivateChat = update.message.chat.type == 'private';
+    if (isOwner && isPrivateChat) {
+      if (update.message.document.fileName.endsWith('.json')) {
+        final file = await _kyaru.getFile(update.message.document.fileId);
+        final jsonText = utf8.decode(await _kyaru.download(file.filePath));
+
+        final Map<String, dynamic> json = jsonDecode(jsonText);
+
+        var loadedInstructions = 0;
+        var loadedChats = 0;
+
+        if (json.containsKey('instructions')) {
+          final data = Instruction.listFromJsonArray(json['instructions']);
+          loadedInstructions = data.length;
+          for (var instruction in data) {
+            await _kyaru.kyaruDB.updateCustomInstruction(instruction);
+          }
+        }
+
+        if (json.containsKey('chat_data')) {
+          final data = ChatData.listFromJsonArray(json['chat_data']);
+          loadedChats = data.length;
+          for (var chatData in data) {
+            await _kyaru.kyaruDB.updateChatData(chatData);
+          }
+        }
+
+        await _kyaru.reply(
+            update,
+            'Loaded new data:\n'
+            '$loadedInstructions instructions\n'
+            '$loadedChats chats');
+      }
+    }
+  }
+
+  Future<void> exportData(Update update, Instruction instruction) async {
+    final instructions = await _kyaru.kyaruDB.getInstructions();
+    final chatData = await _kyaru.kyaruDB.getChatsData();
+    final repositories = await _kyaru.kyaruDB.getRepos();
+    final sinoAliceData = await _kyaru.kyaruDB.getUsersSinoAliceData();
+
+    final instructionsJson = instructions.map((e) => e.toJson()).toList();
+    final chatDataJson = chatData.map((e) => e.toJson()).toList();
+    final repositoriesJson = repositories.map((e) => e.toJson()).toList();
+    final sinoAliceDataJson = sinoAliceData.map((e) => e.toJson()).toList();
+
+    final jsonData = <String, dynamic>{
+      'instructions': instructionsJson,
+      'chat_data': chatDataJson,
+      'repositories': repositoriesJson,
+      'sinoalice_data': sinoAliceDataJson
+    };
+
+    final jsonString = jsonEncode(jsonData);
+
+    await _kyaru.sendDocument(ChatID(update.message.chat.id), HttpFile.fromBytes('export.json', utf8.encode(jsonString)));
+  }
+
+  Future<void> getModulesStatus(Update update, Instruction instruction) async {
     var modules = _kyaru.modules;
     var mtext = modules.map((m) => '*${m.runtimeType}*: ${m.isEnabled() ? 'enabled' : 'disabled'}').join('\n- ');
 
@@ -34,13 +100,13 @@ class OwnerModule implements IModule {
     await _kyaru.reply(update, message, parseMode: ParseMode.Markdown());
   }
 
-  Future onNewGroup(Update update, Instruction instruction) async {
+  Future<void> onNewGroup(Update update, Instruction instruction) async {
     var newGroupMessage =
         'Hello everyone!\nI\'m Kyaru, an utility bot made mainly for groups.\nUse /help to get a list of what I can do for you!';
     await _kyaru.reply(update, newGroupMessage);
   }
 
-  Future notifyNewGroup(Update update, Instruction instruction) async {
+  Future<void> notifyNewGroup(Update update, Instruction instruction) async {
     var chat = update.message.chat;
     var chatId = ChatID(update.message.chat.id);
     try {
@@ -88,7 +154,7 @@ class OwnerModule implements IModule {
     }
   }
 
-  Future start(Update update, Instruction instruction) async {
+  Future<void> start(Update update, Instruction instruction) async {
     var startMessage = 'Hi ${update.message.from.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         'If you want to know how I work or who made me use the /help command\n\n'
@@ -96,7 +162,7 @@ class OwnerModule implements IModule {
     await _kyaru.reply(update, startMessage, parseMode: ParseMode.Markdown(), hidePreview: true);
   }
 
-  Future help(Update update, Instruction instruction) async {
+  Future<void> help(Update update, Instruction instruction) async {
     var helpMessage = 'Hi ${update.message.from.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         "I'm still in a early beta phase, so I may have lots of errors and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"

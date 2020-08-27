@@ -61,20 +61,32 @@ class KyaruDB {
     });
   }
 
-  void addCustomInstruction(Instruction instruction) {
-    _db.collection(_instructionsCollection).insertOne(instruction.toJson());
+  Future<void> updateCustomInstruction(Instruction instruction) async {
+    await _db.collection(_instructionsCollection).update({'uuid': instruction.uuid}, instruction.toJson(), upsert: true);
   }
 
-  void updateChatData(ChatData chatData) {
-    _db.collection(_chatDataCollection).update({'id': chatData.id}, chatData.toJson(), upsert: true);
+  Future<void> addCustomInstruction(Instruction instruction) async {
+    await _db.collection(_instructionsCollection).insertOne(instruction.toJson());
+  }
+
+  Future<void> updateChatData(ChatData chatData) async {
+    await _db.collection(_chatDataCollection).update({'id': chatData.id}, chatData.toJson(), upsert: true);
+  }
+
+  Future<void> addChatData(List<ChatData> chatData) async {
+    await _db.collection(_chatDataCollection).insertAll(chatData.map((e) => e.toJson()).toList());
   }
 
   Future<ChatData> getChatData(int chatId) async {
     return ChatData.fromJson(await _db.collection(_chatDataCollection).findOne({'id': chatId}));
   }
 
+  Future<List<ChatData>> getChatsData() async {
+    return ChatData.listFromJsonArray(await (_db.collection(_chatDataCollection).find().toList()));
+  }
+
   Future<List<UserSinoAliceData>> getUsersSinoAliceData() async {
-    return (await _db.collection(_sinoAliceDataCollection).find().toList()).map(UserSinoAliceData.fromJson).toList();
+    return UserSinoAliceData.listFromJsonArray(await _db.collection(_sinoAliceDataCollection).find().toList());
   }
 
   Future<UserSinoAliceData> getUserSinoAliceData(int userId) async {
@@ -91,18 +103,24 @@ class KyaruDB {
 
   // TODO this creates a strict dependency between Kyaru and the github module, find a solution
   Future<List<DBRepo>> getRepos() async {
-    return (await _db.collection(_repositoryCollection).find().toList()).map(DBRepo.fromJson).toList();
+    return DBRepo.listFromJsonArray(await _db.collection(_repositoryCollection).find().toList());
   }
 
   Future<void> addRepo(DBRepo repo) async {
     await _db.collection(_repositoryCollection).insertOne(repo.toJson());
   }
 
-  Future<List<Instruction>> getInstructions(InstructionType type, int chatId, {InstructionEventType eventType}) async {
-    var filter = {'type': EnumHelper.encode(type), 'chat_id': chatId};
+  Future<List<Instruction>> getInstructions({InstructionType type, int chatId, InstructionEventType eventType}) async {
+    var filter = <String, dynamic>{};
+    if (type != null) {
+      filter['type'] = EnumHelper.encode(type);
+    }
+    if (chatId != null) {
+      filter['chat_id'] = chatId;
+    }
     if (eventType != null) {
       filter['event_type'] = EnumHelper.encode(eventType);
     }
-    return (await _db.collection(_instructionsCollection).find(filter).toList()).map(Instruction.fromJson).toList();
+    return Instruction.listFromJsonArray(await _db.collection(_instructionsCollection).find(filter).toList());
   }
 }
