@@ -1,12 +1,12 @@
 class Player {
-  String platformId;
-  String accountId;
-  String summonerName;
-  String summonerId;
-  String currentPlatformId;
-  String currentAccountId;
-  String matchHistoryUri;
-  int profileIcon;
+  String? platformId;
+  String? accountId;
+  String? summonerName;
+  String? summonerId;
+  String? currentPlatformId;
+  String? currentAccountId;
+  String? matchHistoryUri;
+  int? profileIcon;
 
   Player(
     this.platformId,
@@ -19,10 +19,7 @@ class Player {
     this.profileIcon,
   );
 
-  factory Player.fromJson(dynamic json) {
-    if (json == null) {
-      return null;
-    }
+  static Player fromJson(dynamic json) {
     return Player(
       json['platformId'],
       json['accountId'],
@@ -36,9 +33,9 @@ class Player {
   }
 
   static List<Player> listFromJsonArray(dynamic jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => Player.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => Player.fromJson(jsonArray[i]),
+    );
   }
 }

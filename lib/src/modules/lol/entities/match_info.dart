@@ -3,19 +3,19 @@ import 'participant_identity.dart';
 import 'team.dart';
 
 class MatchInfo {
-  int gameId;
-  String platformId;
+  int? gameId;
+  String? platformId;
   DateTime gameCreation;
-  int gameDuration;
-  int queueId;
-  int mapId;
-  int seasonId;
-  String gameVersion;
-  String gameMode;
-  String gameType;
-  List<Team> teams;
-  List<Participant> participants;
-  List<ParticipantIdentity> participantIdentities;
+  int? gameDuration;
+  int? queueId;
+  int? mapId;
+  int? seasonId;
+  String? gameVersion;
+  String? gameMode;
+  String? gameType;
+  List<Team>? teams;
+  List<Participant>? participants;
+  List<ParticipantIdentity>? participantIdentities;
 
   MatchInfo(
     this.gameId,
@@ -33,10 +33,7 @@ class MatchInfo {
     this.participantIdentities,
   );
 
-  factory MatchInfo.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static MatchInfo fromJson(Map<String, dynamic> json) {
     return MatchInfo(
       json['gameId'],
       json['platformId'],

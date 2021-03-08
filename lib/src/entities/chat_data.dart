@@ -1,13 +1,10 @@
 class ChatData {
-  int id;
-  bool nsfw;
+  int? id;
+  bool? nsfw;
 
   ChatData(this.id, {this.nsfw});
 
-  factory ChatData.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static ChatData fromJson(Map<String, dynamic> json) {
     return ChatData(
       json['id'],
       nsfw: json['nsfw'] ?? false,
@@ -15,10 +12,8 @@ class ChatData {
   }
 
   static List<ChatData> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => ChatData.fromJson(jsonArray[i]));
+    return List.generate(
+        jsonArray.length, (i) => ChatData.fromJson(jsonArray[i]));
   }
 
   Map<String, dynamic> toJson() {

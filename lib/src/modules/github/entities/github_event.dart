@@ -1,18 +1,18 @@
+import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:jiffy/jiffy.dart';
 
-import '../../../../kyaru.dart';
 import 'actor.dart';
 import 'github_event_type.dart';
 import 'payload.dart';
 import 'repo.dart';
 
 class GithubEvent {
-  String id;
+  String? id;
   GithubEventType type;
   Actor actor;
   Repo repo;
   Payload payload;
-  bool public;
+  bool? public;
   DateTime createdAt;
 
   GithubEvent(
@@ -25,13 +25,10 @@ class GithubEvent {
     this.public,
   });
 
-  factory GithubEvent.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static GithubEvent fromJson(Map<String, dynamic> json) {
     return GithubEvent(
       json['id'],
-      EnumHelper.get(GithubEventType.values, json['type']),
+      EnumHelper.decode(GithubEventType.values, json['type']),
       Actor.fromJson(json['actor']),
       Repo.fromJson(json['repo']),
       Payload.fromJson(json['payload']),
@@ -41,10 +38,10 @@ class GithubEvent {
   }
 
   static List<GithubEvent> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => GithubEvent.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => GithubEvent.fromJson(jsonArray[i]),
+    );
   }
 
   @override
@@ -59,13 +56,13 @@ class GithubEvent {
         }
         return '${actor.displayLogin} created $what';
       case GithubEventType.pushEvent:
-        var newSha7 = payload.head.substring(0, 7);
-        var branch = payload.ref.split('/').last;
-        var message = payload.commits.last.message;
-        return '${actor.displayLogin} made a commit ($newSha7) to ${repo.name} on branch $branch:\n$message';
+        var newSha7 = payload.head!.substring(0, 7);
+        var branch = payload.ref!.split('/').last;
+        var message = payload.commits!.last.message;
+        return '${actor.displayLogin} made a commit ($newSha7) '
+            'to ${repo.name} on branch $branch:\n$message';
       case GithubEventType.watchEvent:
         return '${actor.displayLogin} ${payload.action} watching the repository';
     }
-    return 'unknown';
   }
 }

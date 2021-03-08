@@ -14,11 +14,12 @@ class GithubClient {
 
   final _client = Client();
 
-  Future<Response> _get<T>(Uri uri, {Map<String, String> headers}) {
+  Future<Response> _get<T>(Uri uri, {Map<String, String>? headers}) {
     return _client.get(uri, headers: headers).timeout(Duration(seconds: 120));
   }
 
-  Future<GithubEventsResponse> events(String user, String repo, {String etag}) async {
+  Future<GithubEventsResponse> events(String? user, String? repo,
+      {String? etag}) async {
     return _get(
       Uri.https(apiBaseUrl, '/networks/$user/$repo/events'),
       headers: {'If-None-Match': '$etag'},
@@ -28,21 +29,22 @@ class GithubClient {
       if (httpResponse.statusCode == 403) {
         throw GithubForbiddenException(
           json.decode(httpResponse.body)['message'],
-          int.tryParse(httpResponse.headers['x-ratelimit-limit']),
-          int.tryParse(httpResponse.headers['x-ratelimit-remaining']),
-          int.tryParse(httpResponse.headers['x-ratelimit-reset']),
+          int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
+          int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
+          int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
         );
       }
       if (httpResponse.statusCode == 404) {
-        throw GithubNotFoundException(json.decode(httpResponse.body)['message']);
+        throw GithubNotFoundException(
+            json.decode(httpResponse.body)['message']);
       }
       if (httpResponse.statusCode == 304) {
         throw GithubNotChangedException(
           repo,
-          int.tryParse(httpResponse.headers['x-poll-interval']),
-          int.tryParse(httpResponse.headers['x-ratelimit-limit']),
-          int.tryParse(httpResponse.headers['x-ratelimit-remaining']),
-          int.tryParse(httpResponse.headers['x-ratelimit-reset']),
+          int.tryParse(httpResponse.headers['x-poll-interval']!),
+          int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
+          int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
+          int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
         );
       }
       if (httpResponse.statusCode != 200) {
@@ -55,10 +57,10 @@ class GithubClient {
       return GithubEventsResponse(
         GithubEvent.listFromJsonArray(json.decode(httpResponse.body)),
         httpResponse.headers['etag'],
-        int.tryParse(httpResponse.headers['x-poll-interval']),
-        int.tryParse(httpResponse.headers['x-ratelimit-limit']),
-        int.tryParse(httpResponse.headers['x-ratelimit-remaining']),
-        int.tryParse(httpResponse.headers['x-ratelimit-reset']),
+        int.tryParse(httpResponse.headers['x-poll-interval']!),
+        int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
+        int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
+        int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
       );
     });
   }

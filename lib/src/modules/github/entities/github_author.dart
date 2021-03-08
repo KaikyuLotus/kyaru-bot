@@ -1,13 +1,10 @@
 class GithubAuthor {
-  String sha;
-  String message;
+  String? sha;
+  String? message;
 
   GithubAuthor(this.sha, this.message);
 
-  factory GithubAuthor.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static GithubAuthor fromJson(Map<String, dynamic> json) {
     return GithubAuthor(
       json['sha'],
       json['message'],

@@ -1,15 +1,12 @@
 import 'battlepass_history.dart';
 
 class Battlepass {
-  String level;
+  String? level;
   BattlepassHistory history;
 
   Battlepass(this.level, this.history);
 
-  factory Battlepass.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Battlepass fromJson(Map<String, dynamic> json) {
     return Battlepass(
       json['level'],
       BattlepassHistory.fromJson(json['history']),

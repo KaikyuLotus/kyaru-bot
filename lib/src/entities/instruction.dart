@@ -1,23 +1,24 @@
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../kyaru.dart';
 import 'enums/enums.dart';
 
 class Instruction {
-  String _uuid;
-  int _chatId;
+  String? _uuid;
+  int? _chatId;
   InstructionType _instructionType;
   InstructionEventType _instructionEventType;
   CustomCommand _command;
-  String _function;
-  String _regex;
+  String? _function;
+  String? _regex;
   bool _requireQuote;
   bool _ownerOnly;
 
-  String get uuid => _uuid;
+  String? get uuid => _uuid;
 
-  int get chatId => _chatId;
+  int? get chatId => _chatId;
 
   InstructionType get instructionType => _instructionType;
 
@@ -25,9 +26,9 @@ class Instruction {
 
   CustomCommand get command => _command;
 
-  String get function => _function;
+  String? get function => _function;
 
-  String get regex => _regex;
+  String? get regex => _regex;
 
   bool get requireQuote => _requireQuote;
 
@@ -60,29 +61,26 @@ class Instruction {
     this._ownerOnly,
   );
 
-  bool checkRequirements(Update update, Settings settings) {
+  bool checkRequirements(Update update, Settings? settings) {
     if (requireQuote) {
-      if (update?.message?.replyToMessage == null) {
+      if (update.message?.replyToMessage == null) {
         return false;
       }
     }
     if (ownerOnly) {
-      if (update?.message?.from?.id != settings.ownerId) {
+      if (update.message?.from?.id != settings!.ownerId) {
         return false;
       }
     }
     return true;
   }
 
-  factory Instruction.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Instruction fromJson(Map<String, dynamic> json) {
     return Instruction._(
       json['uuid'],
       json['chat_id'],
-      EnumHelper.get(InstructionType.values, json['type']),
-      EnumHelper.get(InstructionEventType.values, json['event_type']),
+      EnumHelper.decode(InstructionType.values, json['type']),
+      EnumHelper.decode(InstructionEventType.values, json['event_type']),
       CustomCommand.fromJson(json['command']),
       json['function'],
       json['regex'],

@@ -1,19 +1,19 @@
 class Team {
-  int teamId;
-  String win;
-  bool firstBlood;
-  bool firstTower;
-  bool firstInhibitor;
-  bool firstBaron;
-  bool firstDragon;
-  bool firstRiftHerald;
-  int towerKills;
-  int inhibitorKills;
-  int baronKills;
-  int dragonKills;
-  int vilemawKills;
-  int riftHeraldKills;
-  int dominionVictoryScore;
+  int? teamId;
+  String? win;
+  bool? firstBlood;
+  bool? firstTower;
+  bool? firstInhibitor;
+  bool? firstBaron;
+  bool? firstDragon;
+  bool? firstRiftHerald;
+  int? towerKills;
+  int? inhibitorKills;
+  int? baronKills;
+  int? dragonKills;
+  int? vilemawKills;
+  int? riftHeraldKills;
+  int? dominionVictoryScore;
 
   Team(
     this.teamId,
@@ -33,10 +33,7 @@ class Team {
     this.firstBlood,
   });
 
-  factory Team.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Team fromJson(Map<String, dynamic> json) {
     return Team(
       json['teamId'],
       json['win'],
@@ -57,9 +54,9 @@ class Team {
   }
 
   static List<Team> listFromJsonArray(dynamic jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => Team.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => Team.fromJson(jsonArray[i]),
+    );
   }
 }

@@ -1,10 +1,10 @@
 class RealtimeData {
-  String lobbyState;
-  bool isOnline;
-  bool isInGame;
-  bool canJoin;
-  bool partyFull;
-  String selectedLegend;
+  String? lobbyState;
+  bool? isOnline;
+  bool? isInGame;
+  bool? canJoin;
+  bool? partyFull;
+  String? selectedLegend;
 
   RealtimeData(
     this.lobbyState,
@@ -15,10 +15,7 @@ class RealtimeData {
     this.isInGame,
   });
 
-  factory RealtimeData.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static RealtimeData fromJson(Map<String, dynamic> json) {
     return RealtimeData(
       json['lobbyState'],
       json['selectedLegend'],

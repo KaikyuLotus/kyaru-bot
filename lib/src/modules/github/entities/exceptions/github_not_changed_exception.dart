@@ -1,10 +1,10 @@
 class GithubNotChangedException implements Exception {
-  String description;
+  String? description;
 
-  int pollInterval;
-  int rateLimit;
-  int rateLimitRemaining;
-  int rateLimitReset;
+  int? pollInterval;
+  int? rateLimit;
+  int? rateLimitRemaining;
+  int? rateLimitReset;
 
   GithubNotChangedException(
     this.description,

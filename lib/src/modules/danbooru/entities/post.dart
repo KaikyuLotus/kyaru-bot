@@ -1,18 +1,23 @@
 class Post {
-  int id;
-  String rating;
-  String tagString;
-  String fileUrl;
-  String largeFileUrl;
-  String previewFileUrl;
-  String fileExt;
+  int? id;
+  String? rating;
+  String? tagString;
+  String? fileUrl;
+  String? largeFileUrl;
+  String? previewFileUrl;
+  String? fileExt;
 
-  Post(this.id, this.rating, this.tagString, this.fileUrl, this.largeFileUrl, this.previewFileUrl, this.fileExt);
+  Post(
+    this.id,
+    this.rating,
+    this.tagString,
+    this.fileUrl,
+    this.largeFileUrl,
+    this.previewFileUrl,
+    this.fileExt,
+  );
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Post fromJson(Map<String, dynamic> json) {
     return Post(
       json['id'],
       json['rating'],
@@ -25,9 +30,9 @@ class Post {
   }
 
   static List<Post> listFromJsonArray(dynamic jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => Post.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => Post.fromJson(jsonArray[i]),
+    );
   }
 }

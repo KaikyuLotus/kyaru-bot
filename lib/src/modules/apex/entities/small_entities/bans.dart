@@ -1,7 +1,7 @@
 class Bans {
-  bool isActive;
-  int remainingSeconds;
-  String lastBanReason;
+  bool? isActive;
+  int? remainingSeconds;
+  String? lastBanReason;
 
   Bans(
     this.remainingSeconds,
@@ -9,10 +9,7 @@ class Bans {
     this.isActive,
   });
 
-  factory Bans.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Bans fromJson(Map<String, dynamic> json) {
     return Bans(
       json['remainingSeconds'],
       json['last_banReason'],

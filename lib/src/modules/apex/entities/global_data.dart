@@ -15,10 +15,7 @@ class GlobalData {
     this.battlepass,
   );
 
-  factory GlobalData.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static GlobalData fromJson(Map<String, dynamic> json) {
     return GlobalData(
       json['name'],
       json['uid'],
@@ -32,12 +29,12 @@ class GlobalData {
     );
   }
 
-  String name;
-  int uid;
-  String platform;
-  int level;
-  int toNextLevelPercent;
-  int internalUpdateCount;
+  String? name;
+  int? uid;
+  String? platform;
+  int? level;
+  int? toNextLevelPercent;
+  int? internalUpdateCount;
 
   Bans bans;
   Rank rank;

@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 
 class RegexModule implements IModule {
   final Kyaru _kyaru;
-  List<ModuleFunction> _moduleFunctions;
+  List<ModuleFunction>? _moduleFunctions;
 
   RegexModule(this._kyaru) {
     _moduleFunctions = [
@@ -15,19 +15,19 @@ class RegexModule implements IModule {
   }
 
   @override
-  List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
-  Future regexReplace(Update update, Instruction instruction) async {
-    var text = update.message.text;
-    var quotedText = update.message.replyToMessage.text;
+  Future regexReplace(Update update, _) async {
+    var text = update.message!.text!;
+    var quotedText = update.message!.replyToMessage!.text!;
 
     var regex = RegExp('s/(.+)/(.+)');
-    var match = regex.firstMatch(text);
-    var first = match.group(1);
-    var second = match.group(2);
+    var match = regex.firstMatch(text)!;
+    var first = match.group(1)!;
+    var second = match.group(2)!;
 
     var fixed = quotedText.replaceAll(first, second);
 
@@ -37,7 +37,7 @@ class RegexModule implements IModule {
 
     var reply = '"$fixed"\n\nFixed!';
     await _kyaru.sendMessage(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       reply,
       replyToMessageId: update.message?.replyToMessage?.messageId,
     );

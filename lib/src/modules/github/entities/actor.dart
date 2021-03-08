@@ -1,10 +1,10 @@
 class Actor {
-  int id;
-  String login;
-  String displayLogin;
-  String gravatarId;
-  String url;
-  String avatarUrl;
+  int? id;
+  String? login;
+  String? displayLogin;
+  String? gravatarId;
+  String? url;
+  String? avatarUrl;
 
   Actor(
     this.id,
@@ -15,10 +15,7 @@ class Actor {
     this.avatarUrl,
   );
 
-  factory Actor.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Actor fromJson(Map<String, dynamic> json) {
     return Actor(
       json['id'],
       json['login'],

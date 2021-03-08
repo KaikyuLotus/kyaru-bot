@@ -1,15 +1,15 @@
 import 'github_commit.dart';
 
 class Payload {
-  String ref;
-  String refType;
-  String masterBranch;
-  String description;
-  String pusherType;
-  String action;
-  String head;
+  String? ref;
+  String? refType;
+  String? masterBranch;
+  String? description;
+  String? pusherType;
+  String? action;
+  String? head;
 
-  List<GithubCommit> commits;
+  List<GithubCommit>? commits;
 
   Payload(
     this.ref,
@@ -22,10 +22,7 @@ class Payload {
     this.commits,
   );
 
-  factory Payload.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Payload fromJson(Map<String, dynamic> json) {
     return Payload(
       json['ref'],
       json['ref_type'],

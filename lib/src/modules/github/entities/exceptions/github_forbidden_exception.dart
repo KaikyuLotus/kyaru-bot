@@ -1,9 +1,9 @@
 class GithubForbiddenException implements Exception {
-  String description;
+  String? description;
 
-  int rateLimit;
-  int rateLimitRemaining;
-  int rateLimitReset;
+  int? rateLimit;
+  int? rateLimitRemaining;
+  int? rateLimitReset;
 
   GithubForbiddenException(
     this.description,

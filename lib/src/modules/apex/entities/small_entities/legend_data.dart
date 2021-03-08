@@ -1,14 +1,11 @@
 class LegendData {
-  String name;
-  int value;
-  String key;
+  String? name;
+  int? value;
+  String? key;
 
   LegendData(this.name, this.value, this.key);
 
-  factory LegendData.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static LegendData fromJson(Map<String, dynamic> json) {
     return LegendData(
       json['name'],
       json['value'],
@@ -17,9 +14,9 @@ class LegendData {
   }
 
   static List<LegendData> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) {
-      return <LegendData>[];
-    }
-    return List<LegendData>.generate(jsonArray.length, (i) => LegendData.fromJson(jsonArray[i]));
+    return List<LegendData>.generate(
+      jsonArray.length,
+      (i) => LegendData.fromJson(jsonArray[i]),
+    );
   }
 }

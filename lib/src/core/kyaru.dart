@@ -1,4 +1,4 @@
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../kyaru.dart';
 
@@ -20,12 +20,12 @@ class Kyaru extends KyaruBrain {
       }
 
       // TODO decide what to do with forwarded messages
-      if (update?.message?.forwardDate != null) {
+      if (update.message?.forwardDate != null) {
         return;
       }
 
       // TODO maybe work in channels too?
-      if (update?.message?.chat?.type == 'channel') {
+      if (update.message?.chat.type == 'channel') {
         return;
       } // Ignore channels
 
@@ -48,33 +48,54 @@ class Kyaru extends KyaruBrain {
     }
   }
 
-  int getReplyMessageId(Update update, {bool quote = false, bool quoteQuoted = false}) {
-    return quoteQuoted ? update.message.replyToMessage.messageId : quote ? update.message.messageId : null;
+  int? getReplyMessageId(Update update,
+      {bool quote = false, bool quoteQuoted = false}) {
+    return quoteQuoted
+        ? update.message!.replyToMessage!.messageId
+        : quote
+            ? update.message!.messageId
+            : null;
   }
 
   void noticeOwner(Update update, Exception e, StackTrace s) {
     print('$e\n$s');
-    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s').catchError((e, s) => print('$e\n$s'));
+    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s').catchError(
+      (e, s) {
+        print('$e\n$s');
+      },
+    );
   }
 
   void onError(Update update, Exception e, StackTrace s) {
-    reply(update, 'Sorry, an error has occourred...\nMy owner has been already informed.\nThanks for your patience.')
-        .catchError((e, s) => print('$e\n$s'));
+    reply(
+      update,
+      'Sorry, an error has occourred...\n'
+      'My owner has been already informed.\n'
+      'Thanks for your patience.',
+    ).catchError(
+      (e, s) {
+        print('$e\n$s');
+      },
+    );
     noticeOwner(update, e, s);
   }
 
   Future<Message> reply(
     Update update,
     String message, {
-    ParseMode parseMode,
+    ParseMode? parseMode,
     bool quote = false,
     bool quoteQuoted = false,
     bool hidePreview = false,
-    ReplyMarkup replyMarkup,
+    ReplyMarkup? replyMarkup,
   }) async {
-    return await sendMessage(ChatID(update.message.chat.id), message,
+    return await sendMessage(ChatID(update.message!.chat.id), message,
         parseMode: parseMode,
-        replyToMessageId: getReplyMessageId(update, quote: quote, quoteQuoted: quoteQuoted),
+        replyToMessageId: getReplyMessageId(
+          update,
+          quote: quote,
+          quoteQuoted: quoteQuoted,
+        ),
         disableWebPagePreview: hidePreview,
         replyMarkup: replyMarkup);
   }
@@ -82,12 +103,12 @@ class Kyaru extends KyaruBrain {
   Future<void> replySticker(
     Update update,
     String fileId, {
-    ParseMode parseMode,
+    ParseMode? parseMode,
     bool quote = false,
     bool quoteQuoted = false,
   }) async {
     await sendSticker(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       HttpFile.fromToken(fileId),
       replyToMessageId: getReplyMessageId(
         update,
@@ -100,15 +121,19 @@ class Kyaru extends KyaruBrain {
   Future<void> replyPhoto(
     Update update,
     HttpFile httpFile, {
-    String caption,
-    ParseMode parseMode,
+    String? caption,
+    ParseMode? parseMode,
     bool quote = false,
     bool quoteQuoted = false,
   }) async {
     await sendPhoto(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       httpFile,
-      replyToMessageId: getReplyMessageId(update, quote: quote, quoteQuoted: quoteQuoted),
+      replyToMessageId: getReplyMessageId(
+        update,
+        quote: quote,
+        quoteQuoted: quoteQuoted,
+      ),
       caption: caption,
       parseMode: parseMode,
     );
@@ -117,16 +142,20 @@ class Kyaru extends KyaruBrain {
   Future<void> replyVideo(
     Update update,
     HttpFile httpFile, {
-    ParseMode parseMode,
-    String caption,
+    ParseMode? parseMode,
+    String? caption,
     bool quote = false,
     bool quoteQuoted = false,
   }) async {
     await sendVideo(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,
-      replyToMessageId: getReplyMessageId(update, quote: quote, quoteQuoted: quoteQuoted),
+      replyToMessageId: getReplyMessageId(
+        update,
+        quote: quote,
+        quoteQuoted: quoteQuoted,
+      ),
       parseMode: parseMode,
     );
   }
@@ -134,16 +163,20 @@ class Kyaru extends KyaruBrain {
   Future<void> replyAnimation(
     Update update,
     HttpFile httpFile, {
-    String caption,
+    String? caption,
     bool quote = false,
     bool quoteQuoted = false,
-    ParseMode parseMode,
+    ParseMode? parseMode,
   }) async {
     await sendAnimation(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,
-      replyToMessageId: getReplyMessageId(update, quote: quote, quoteQuoted: quoteQuoted),
+      replyToMessageId: getReplyMessageId(
+        update,
+        quote: quote,
+        quoteQuoted: quoteQuoted,
+      ),
       parseMode: parseMode,
     );
   }
@@ -151,16 +184,20 @@ class Kyaru extends KyaruBrain {
   Future<void> replyDocument(
     Update update,
     HttpFile httpFile, {
-    String caption,
+    String? caption,
     bool quote = false,
     bool quoteQuoted = false,
-    ParseMode parseMode,
+    ParseMode? parseMode,
   }) async {
     await sendDocument(
-      ChatID(update.message.chat.id),
+      ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,
-      replyToMessageId: getReplyMessageId(update, quote: quote, quoteQuoted: quoteQuoted),
+      replyToMessageId: getReplyMessageId(
+        update,
+        quote: quote,
+        quoteQuoted: quoteQuoted,
+      ),
       parseMode: parseMode,
     );
   }

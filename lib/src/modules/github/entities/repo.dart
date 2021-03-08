@@ -1,14 +1,11 @@
 class Repo {
-  int id;
-  String name;
-  String url;
+  int? id;
+  String? name;
+  String? url;
 
   Repo(this.id, this.name, this.url);
 
-  factory Repo.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Repo fromJson(Map<String, dynamic> json) {
     return Repo(
       json['id'],
       json['name'],

@@ -1,16 +1,19 @@
 class ParticipantStats {
-  int participantId;
-  bool win;
-  int kills;
-  int deaths;
-  int assists;
+  int? participantId;
+  bool? win;
+  int? kills;
+  int? deaths;
+  int? assists;
 
-  ParticipantStats(this.participantId, this.kills, this.deaths, this.assists, {this.win});
+  ParticipantStats(
+    this.participantId,
+    this.kills,
+    this.deaths,
+    this.assists, {
+    this.win,
+  });
 
-  factory ParticipantStats.fromJson(dynamic json) {
-    if (json == null) {
-      return null;
-    }
+  static ParticipantStats fromJson(dynamic json) {
     return ParticipantStats(
       json['participantId'],
       json['kills'],

@@ -1,5 +1,5 @@
 class GithubHTTPException implements Exception {
-  String description;
+  String? description;
 
   int statusCode;
 

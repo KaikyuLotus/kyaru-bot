@@ -1,23 +1,28 @@
+import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+
 import '../../kyaru.dart';
 
 class CustomCommand {
-
-  String command;
-  String fileId;
-  String text;
-  bool quote;
-  bool quoteQuoted;
+  String? command;
+  String? fileId;
+  String? text;
+  bool? quote;
+  bool? quoteQuoted;
   CommandType commandType;
 
-  CustomCommand(this.command, this.commandType, {this.quote, this.quoteQuoted, this.fileId, this.text});
+  CustomCommand(
+    this.command,
+    this.commandType, {
+    this.quote,
+    this.quoteQuoted,
+    this.fileId,
+    this.text,
+  });
 
-  factory CustomCommand.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static CustomCommand fromJson(Map<String, dynamic> json) {
     return CustomCommand(
       json['command'],
-      EnumHelper.get(CommandType.values, json['command_type']),
+      EnumHelper.decode(CommandType.values, json['command_type']),
       quote: json['quote'] ?? false,
       quoteQuoted: json['quote_quoted'] ?? false,
       fileId: json['file_id'],

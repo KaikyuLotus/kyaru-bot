@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 import 'entities/insults_client.dart';
@@ -9,7 +9,7 @@ class InsultsModule implements IModule {
   final Kyaru _kyaru;
   final InsultsClient insultsClient = InsultsClient();
 
-  List<ModuleFunction> _moduleFunctions;
+  List<ModuleFunction>? _moduleFunctions;
 
   InsultsModule(this._kyaru) {
     _moduleFunctions = [
@@ -18,13 +18,17 @@ class InsultsModule implements IModule {
   }
 
   @override
-  List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
-  Future insult(Update update, Instruction instruction) async {
+  Future insult(Update update, _) async {
     var insult = await insultsClient.getInsult();
-    await _kyaru.reply(update, '$insult', quoteQuoted: update.message.replyToMessage != null);
+    await _kyaru.reply(
+      update,
+      '$insult',
+      quoteQuoted: update.message!.replyToMessage != null,
+    );
   }
 }

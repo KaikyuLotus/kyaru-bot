@@ -1,11 +1,11 @@
 import 'github_author.dart';
 
 class GithubCommit {
-  String sha;
+  String? sha;
   GithubAuthor author;
-  String message;
-  bool distinct;
-  String url;
+  String? message;
+  bool? distinct;
+  String? url;
 
   GithubCommit(
     this.sha,
@@ -15,10 +15,7 @@ class GithubCommit {
     this.distinct,
   });
 
-  factory GithubCommit.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static GithubCommit fromJson(Map<String, dynamic> json) {
     return GithubCommit(
       json['sha'],
       GithubAuthor.fromJson(json['author']),
@@ -29,9 +26,9 @@ class GithubCommit {
   }
 
   static List<GithubCommit> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => GithubCommit.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => GithubCommit.fromJson(jsonArray[i]),
+    );
   }
 }

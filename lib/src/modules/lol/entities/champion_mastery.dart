@@ -1,13 +1,13 @@
 class ChampionMastery {
-  int championId;
-  int championLevel;
-  int championPoints;
-  int lastPlayTime;
-  int championPointsSinceLastLevel;
-  int championPointsUntilNextLevel;
-  bool chestGranted;
-  int tokensEarned;
-  String summonerId;
+  int? championId;
+  int? championLevel;
+  int? championPoints;
+  int? lastPlayTime;
+  int? championPointsSinceLastLevel;
+  int? championPointsUntilNextLevel;
+  bool? chestGranted;
+  int? tokensEarned;
+  String? summonerId;
 
   ChampionMastery(
     this.championId,
@@ -21,26 +21,24 @@ class ChampionMastery {
     this.chestGranted,
   });
 
-  factory ChampionMastery.fromJson(dynamic json) {
-    if (json == null) {
-      return null;
-    }
+  static ChampionMastery fromJson(dynamic json) {
     return ChampionMastery(
-        json['championId'],
-        json['championLevel'],
-        json['championPoints'],
-        json['lastPlayTime'],
-        json['championPointsSinceLastLevel'],
-        json['championPointsUntilNextLevel'],
-        json['tokensEarned'],
-        json['summonerId'],
-        chestGranted: json['chestGranted']);
+      json['championId'],
+      json['championLevel'],
+      json['championPoints'],
+      json['lastPlayTime'],
+      json['championPointsSinceLastLevel'],
+      json['championPointsUntilNextLevel'],
+      json['tokensEarned'],
+      json['summonerId'],
+      chestGranted: json['chestGranted'],
+    );
   }
 
   static List<ChampionMastery> listFromJsonArray(dynamic jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => ChampionMastery.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => ChampionMastery.fromJson(jsonArray[i]),
+    );
   }
 }

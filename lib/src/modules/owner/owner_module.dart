@@ -1,50 +1,76 @@
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
+import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 
 class OwnerModule implements IModule {
   final Kyaru _kyaru;
 
-  List<ModuleFunction> _moduleFunctions;
+  List<ModuleFunction>? _moduleFunctions;
 
   OwnerModule(this._kyaru) {
     _moduleFunctions = [
-      ModuleFunction(getModulesStatus, 'Sends a message with the enabled/disabled modules', 'modulesStatus'),
-      ModuleFunction(onNewGroup, 'Sends the new group message', 'onNewGroup'),
-      ModuleFunction(notifyNewGroup, 'Notifies a new group to the owner', 'notifyNewGroup'),
-      ModuleFunction(help, 'Sends an help message', 'help', core: true),
-      ModuleFunction(start, 'Sends the start message', 'start', core: true),
+      ModuleFunction(
+        getModulesStatus,
+        'Sends a message with the enabled/disabled modules',
+        'modulesStatus',
+      ),
+      ModuleFunction(
+        onNewGroup,
+        'Sends the new group message',
+        'onNewGroup',
+      ),
+      ModuleFunction(
+        notifyNewGroup,
+        'Notifies a new group to the owner',
+        'notifyNewGroup',
+      ),
+      ModuleFunction(
+        help,
+        'Sends an help message',
+        'help',
+        core: true,
+      ),
+      ModuleFunction(
+        start,
+        'Sends the start message',
+        'start',
+        core: true,
+      ),
     ];
   }
 
   @override
-  List<ModuleFunction> getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
-  Future getModulesStatus(Update update, Instruction instruction) async {
+  Future getModulesStatus(Update update, _) async {
     var modules = _kyaru.modules;
-    var mtext = modules.map((m) => '*${m.runtimeType}*: ${m.isEnabled() ? 'enabled' : 'disabled'}').join('\n- ');
+    var mtext = modules
+        .map((m) =>
+            '*${m.runtimeType}*: ${m.isEnabled() ? 'enabled' : 'disabled'}')
+        .join('\n- ');
 
     var message = '*Modules*\n\n- $mtext\n\nHealth check reports no issues.';
-    await _kyaru.reply(update, message, parseMode: ParseMode.Markdown());
+    await _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
   }
 
-  Future onNewGroup(Update update, Instruction instruction) async {
+  Future onNewGroup(Update update, _) async {
     var newGroupMessage =
-        'Hello everyone!\nI\'m Kyaru, an utility bot made mainly for groups.\nUse /help to get a list of what I can do for you!';
+        'Hello everyone!\nI\'m Kyaru, an utility bot made mainly for groups.\n'
+        'Use /help to get a list of what I can do for you!';
     await _kyaru.reply(update, newGroupMessage);
   }
 
-  Future notifyNewGroup(Update update, Instruction instruction) async {
-    var chat = update.message.chat;
-    var chatId = ChatID(update.message.chat.id);
+  Future notifyNewGroup(Update update, _) async {
+    var chat = update.message!.chat;
+    var chatId = ChatID(update.message!.chat.id);
     try {
       var ownerMsg = 'New group!\n*${chat.title}*'
           '\nID: ${chat.id}';
 
-      if (update.message.chat.username != null) {
+      if (update.message!.chat.username != null) {
         ownerMsg += '\nUsername: `@${chat.username}`';
       }
 
@@ -56,45 +82,54 @@ class OwnerModule implements IModule {
         ownerMsg += '\nDescription:\n`${newChat.description}`';
       }
 
-      var bigFileId = newChat?.photo?.bigFileId;
+      var bigFileId = newChat.photo?.bigFileId;
       if (bigFileId != null) {
-        var file = await _kyaru.getFile(newChat.photo.bigFileId);
-        var bytes = await _kyaru.download(file.filePath);
+        var file = await _kyaru.getFile(newChat.photo!.bigFileId);
+        var bytes = await _kyaru.download(file.filePath!);
         await _kyaru.sendPhoto(
           ChatID(_kyaru.kyaruDB.getSettings().ownerId),
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
-          parseMode: ParseMode.Markdown(),
+          parseMode: ParseMode.MARKDOWN,
         );
       } else {
-        var message = 'New group: `${update.message.chat.title}`\nID: `${chat.id}`';
-        if (update.message.chat.description != null) {
-          message += '\nDescription: `${update.message.chat.description}`';
+        var message =
+            'New group: `${update.message!.chat.title}`\nID: `${chat.id}`';
+        if (update.message!.chat.description != null) {
+          message += '\nDescription: `${update.message!.chat.description}`';
         }
-        await _kyaru.sendMessage(ChatID(_kyaru.kyaruDB.getSettings().ownerId), message,
-            parseMode: ParseMode.Markdown());
+        await _kyaru.sendMessage(
+          ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+          message,
+          parseMode: ParseMode.MARKDOWN,
+        );
       }
     } on Exception catch (e, s) {
       print('$e\n$s');
 
       await _kyaru.sendMessage(
         ChatID(_kyaru.kyaruDB.getSettings().ownerId),
-        'New group: `${update.message.chat.title}`\nID: `${chat.id}`',
-        parseMode: ParseMode.Markdown(),
+        'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
+        parseMode: ParseMode.MARKDOWN,
       );
     }
   }
 
-  Future start(Update update, Instruction instruction) async {
-    var startMessage = 'Hi ${update.message.from.firstName},\n\n'
+  Future start(Update update, _) async {
+    var startMessage = 'Hi ${update.message!.from!.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         'If you want to know how I work or who made me use the /help command\n\n'
         '\nMade with ❤️ by [Kaikyu](https://t.me/kaikyu)';
-    await _kyaru.reply(update, startMessage, parseMode: ParseMode.Markdown(), hidePreview: true);
+    await _kyaru.reply(
+      update,
+      startMessage,
+      parseMode: ParseMode.MARKDOWN,
+      hidePreview: true,
+    );
   }
 
-  Future help(Update update, Instruction instruction) async {
-    var helpMessage = 'Hi ${update.message.from.firstName},\n\n'
+  Future help(Update update, _) async {
+    var helpMessage = 'Hi ${update.message!.from!.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         "I'm still in a early beta phase, so I may have lots of errors and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
         'Follow my development on my [Trello](https://trello.com/b/BJgZ2PBs/kyaru-roadmap) board\n\n'
@@ -119,6 +154,11 @@ class OwnerModule implements IModule {
         "/welcome del n\n*Deletes a welcome message based on 'n' which is the number shown in /welcome list*\n"
         '\nMade with ❤️ by [Kaikyu](https://t.me/kaikyu)';
 
-    await _kyaru.reply(update, helpMessage, parseMode: ParseMode.Markdown(), hidePreview: true);
+    await _kyaru.reply(
+      update,
+      helpMessage,
+      parseMode: ParseMode.MARKDOWN,
+      hidePreview: true,
+    );
   }
 }

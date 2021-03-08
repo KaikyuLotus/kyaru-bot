@@ -1,5 +1,5 @@
 class GithubNotFoundException implements Exception {
-  String description;
+  String? description;
 
   GithubNotFoundException(this.description);
 

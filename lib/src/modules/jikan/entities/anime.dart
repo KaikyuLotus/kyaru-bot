@@ -1,17 +1,17 @@
 class Anime {
-  int malId;
-  String url;
-  String imageUrl;
-  String title;
-  bool airing;
-  String synopsis;
-  String type;
-  int episodes;
-  double score;
-  DateTime startDate;
-  DateTime endDate;
-  int members;
-  String rated;
+  int? malId;
+  String? url;
+  String? imageUrl;
+  String? title;
+  bool? airing;
+  String? synopsis;
+  String? type;
+  int? episodes;
+  double? score;
+  DateTime? startDate;
+  DateTime? endDate;
+  int? members;
+  String? rated;
 
   Anime(
     this.malId,
@@ -29,10 +29,7 @@ class Anime {
     this.airing,
   });
 
-  factory Anime.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
+  static Anime fromJson(Map<String, dynamic> json) {
     return Anime(
       json['mal_id'],
       json['url'],
@@ -53,9 +50,9 @@ class Anime {
   }
 
   static List<Anime> listFromJsonArray(List<dynamic> jsonArray) {
-    if (jsonArray == null) {
-      return null;
-    }
-    return List.generate(jsonArray.length, (i) => Anime.fromJson(jsonArray[i]));
+    return List.generate(
+      jsonArray.length,
+      (i) => Anime.fromJson(jsonArray[i]),
+    );
   }
 }
