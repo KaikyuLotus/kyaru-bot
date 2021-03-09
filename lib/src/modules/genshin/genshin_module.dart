@@ -182,7 +182,7 @@ class GenshinModule implements IModule {
     var last  = abyss['last'];
 
     var hasCurrent = current['unleashedElementalBurst']['value'] != null;
-    var hasLast = current['unleashedElementalBurst']['value'] != null;
+    var hasLast = last['unleashedElementalBurst']['value'] != null;
 
     var currentPart;
     var lastPart;
