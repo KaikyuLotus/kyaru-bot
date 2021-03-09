@@ -153,6 +153,9 @@ class GenshinModule implements IModule {
       var mostDmgTaken = data['mostDamageTaken'];
       var elemBurstCast = data['unleashedElementalBurst'];
       var elemSkillsCast = data['elementalSkillsCast'];
+      var stars = data['stars'] ?? '?';
+      var dd = data['deepestDescent'] ?? '?';
+      var battles = data['battles'] ?? '?';
 
       if (mostDefeats == null ||
           sss == null ||
@@ -163,6 +166,9 @@ class GenshinModule implements IModule {
       }
 
       return '*$phase Lunar Phase*\n'
+          'Total Stars: *$stars*\n'
+          'Deepest Descent: *$dd*\n'
+          'Battles: *$battles*\n'
           'Most Defeats: *${mostDefeats['value']}* (`${mostDefeats['character']}`)\n'
           'Strongest Strike: *${sss['value']}* (`${sss['character']}`)\n'
           'Most Damage Taken: *${mostDmgTaken['value']}* (`${mostDmgTaken['character']}`)\n'
