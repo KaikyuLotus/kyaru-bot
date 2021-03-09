@@ -223,6 +223,7 @@ class GenshinModule implements IModule {
 
     var sentMessage = data['sent'];
     var response = data['response'];
+    var progress = response['progress'];
 
     var reply = '*User info*\n'
         '*${response['daysActive']}* days active\n'
@@ -238,7 +239,12 @@ class GenshinModule implements IModule {
         '*${response['luxuriousChestsOpened']}* Luxurious\n'
         '*${response['preciousChestsOpened']}* Precious\n'
         '*${response['exquisiteChestsOpened']}* Exquisite\n'
-        '*${response['commonChestsOpened']}* Common';
+        '*${response['commonChestsOpened']}* Common\n'
+        '\n'
+        '*Exploration Progress*\n'
+        '*Liyue* ${progress["liyue"]}%\n'
+        '*Dragonspine* ${progress["dragonspine"]}%\n'
+        '*Mondstadt* ${progress["mondstadt"]}%';
 
     return await _kyaru.editMessageText(
       reply,
