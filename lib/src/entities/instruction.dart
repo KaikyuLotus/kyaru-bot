@@ -7,14 +7,14 @@ import 'enums/enums.dart';
 
 class Instruction {
   String? _uuid;
-  int? _chatId;
-  InstructionType _instructionType;
-  InstructionEventType _instructionEventType;
-  CustomCommand _command;
-  String? _function;
-  String? _regex;
-  bool _requireQuote;
-  bool _ownerOnly;
+  final int? _chatId;
+  final InstructionType _instructionType;
+  final InstructionEventType? _instructionEventType;
+  final CustomCommand? _command;
+  final String? _function;
+  final String? _regex;
+  final bool _requireQuote;
+  final bool _ownerOnly;
 
   String? get uuid => _uuid;
 
@@ -22,9 +22,9 @@ class Instruction {
 
   InstructionType get instructionType => _instructionType;
 
-  InstructionEventType get instructionEventType => _instructionEventType;
+  InstructionEventType? get instructionEventType => _instructionEventType;
 
-  CustomCommand get command => _command;
+  CustomCommand? get command => _command;
 
   String? get function => _function;
 
@@ -80,8 +80,10 @@ class Instruction {
       json['uuid'],
       json['chat_id'],
       EnumHelper.decode(InstructionType.values, json['type']),
-      EnumHelper.decode(InstructionEventType.values, json['event_type']),
-      CustomCommand.fromJson(json['command']),
+      json['event_type'] != null
+          ? EnumHelper.decode(InstructionEventType.values, json['event_type'])
+          : null,
+      callIfNotNull(CustomCommand.fromJson, json['command']),
       json['function'],
       json['regex'],
       json['require_quote'] ?? false,
@@ -93,9 +95,9 @@ class Instruction {
     return {
       'uuid': _uuid,
       'chat_id': _chatId,
-      'type': EnumHelper.encode(_instructionType),
-      'event_type': EnumHelper.encode(_instructionEventType),
-      'command': _command.toJson(),
+      'type': UpperEnums.encodeUpper(_instructionType),
+      'event_type': UpperEnums.encodeUpper(_instructionEventType),
+      'command': _command,
       'function': _function,
       'regex': _regex,
       'require_quote': _requireQuote,

@@ -33,7 +33,7 @@ class CustomCommand {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'command': command,
-      'command_type': EnumHelper.encode(commandType),
+      'command_type': UpperEnums.encodeUpper(commandType),
       'quote': quote ?? false,
       'quote_quoted': quoteQuoted ?? false,
       'file_id': fileId,

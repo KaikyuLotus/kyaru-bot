@@ -9,8 +9,7 @@ class JikanClient {
 
   final _client = Client();
 
-  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper,
-      [bool noInit = false]) async {
+  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
     print(uri.toString());
     var response = await _client.get(uri).timeout(Duration(seconds: 120));
     var stringBody = response.body;

@@ -1,5 +1,4 @@
 import 'package:dart_mongo_lite/dart_mongo_lite.dart';
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:kyaru_bot/src/modules/github/entities/db/db_repo.dart';
 import 'package:kyaru_bot/src/modules/sinoalice/entities/user.dart';
 
@@ -27,8 +26,8 @@ class KyaruDB {
     _database[_instructionsCollection].delete({
       'uuid': instruction.uuid,
       'chat_id': instruction.chatId,
-      'type': EnumHelper.encode(instruction.instructionType),
-      'event_type': EnumHelper.encode(instruction.instructionEventType),
+      'type': UpperEnums.encodeUpper(instruction.instructionType),
+      'event_type': UpperEnums.encodeUpper(instruction.instructionEventType),
       'function': instruction.function,
       'regex': instruction.regex,
       'require_quote': instruction.requireQuote,
@@ -106,9 +105,9 @@ class KyaruDB {
     int chatId, {
     InstructionEventType? eventType,
   }) {
-    var filter = {'type': EnumHelper.encode(type), 'chat_id': chatId};
+    var filter = {'type': UpperEnums.encodeUpper(type), 'chat_id': chatId};
     if (eventType != null) {
-      filter['event_type'] = EnumHelper.encode(eventType);
+      filter['event_type'] = UpperEnums.encodeUpper(eventType);
     }
     return _database[_instructionsCollection].findAs(
       (json) => Instruction.fromJson(json),

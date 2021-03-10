@@ -43,7 +43,7 @@ class Kyaru extends KyaruBrain {
       }
 
       await readMessage(update);
-    } on Exception catch (e, s) {
+    } catch (e, s) {
       print('My life is a failure: $e:\n$s');
     }
   }

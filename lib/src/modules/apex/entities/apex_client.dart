@@ -23,9 +23,7 @@ class ApexClient {
 
   Future<T> _get<T>(
     Uri uri,
-    T Function(dynamic) mapper, [
-    bool noInit = false,
-  ]) async {
+    T Function(dynamic) mapper) async {
     final response = await _client.get(uri).timeout(
           const Duration(seconds: 120),
         );

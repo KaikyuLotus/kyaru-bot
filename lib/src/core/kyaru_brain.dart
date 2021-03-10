@@ -122,7 +122,7 @@ class KyaruBrain extends Bot {
     final isCommandToBot = botCommand != null && botCommand.isToBot(username!);
 
     if (isCommandToBot) {
-      return onCommandToBot(update, botCommand, chatId);
+      return onCommandToBot(update, botCommand!, chatId);
     }
 
     await onTextMessage(update, chatId);
@@ -145,8 +145,11 @@ class KyaruBrain extends Bot {
     return false;
   }
 
-  List<Instruction> getInstructions(InstructionType instructionType, int chatId,
-      {InstructionEventType? eventType}) {
+  List<Instruction> getInstructions(
+    InstructionType instructionType,
+    int chatId, {
+    InstructionEventType? eventType,
+  }) {
     return <Instruction>[
       ..._kyaruDB.getInstructions(instructionType, 0, eventType: eventType),
       ..._kyaruDB.getInstructions(instructionType, chatId, eventType: eventType)
@@ -171,11 +174,17 @@ class KyaruBrain extends Bot {
   }
 
   Future<bool> execCommandInstructions(
-      Update update, BotCommandParser? botCommand, int chatId) async {
-    final commandInstructions =
-        getInstructions(InstructionType.command, chatId);
+    Update update,
+    BotCommandParser botCommand,
+    int chatId,
+  ) async {
+    final commandInstructions = getInstructions(
+      InstructionType.command,
+      chatId,
+    );
     final validInstructions = commandInstructions.where((i) {
-      return botCommand!.matchesCommand(i.command.command!) &&
+      return i.command != null &&
+          botCommand.matchesCommand(i.command!.command!) &&
           i.checkRequirements(update, kyaruDB.getSettings());
     }).toList();
 
@@ -208,7 +217,10 @@ class KyaruBrain extends Bot {
   }
 
   Future<void> onCommandToBot(
-      Update update, BotCommandParser? botCommand, int chatId) async {
+    Update update,
+    BotCommandParser botCommand,
+    int chatId,
+  ) async {
     if (await execCommandInstructions(update, botCommand, chatId)) {
       return;
     }
