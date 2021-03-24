@@ -1,55 +1,71 @@
+import 'dart:async';
+
+import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../kyaru.dart';
 
-class Kyaru extends KyaruBrain {
-  Kyaru() : super(KyaruDB()) {
-    onUpdate(_updatesHandler);
+class Kyaru {
+  late final KyaruBrain brain;
+
+  Kyaru({
+    required FutureOr Function(Kyaru) onReady,
+  }) {
+    var db = KyaruDB();
+    var bot = Bot(
+      token: db.settings.token,
+      onStartFailed: onStartFailed,
+      onReady: (b) async => await onReady.call(this),
+    );
+    brain = KyaruBrain(database: db, bot: bot);
+    brain.bot.onUpdate(_updatesHandler);
+    brain.bot.errorHandler = onError;
   }
 
-  Future<void> _updatesHandler(Update update) async {
-    try {
-      if (update.callbackQuery != null) {
-        // await handleCallbackQuery(update);
-        return;
-      }
+  Future onStartFailed(Bot bot, Object e, StackTrace st) async {
+    print('Start failed: $e,\n$st');
+  }
 
-      if (update.inlineQuery != null) {
-        // await handleInlineQuery(update);
-        return;
-      }
+  void start({
+    bool clean = true,
+    List<UpdateType>? allowedUpdates,
+  }) {
+    brain.bot.allowedUpdates = allowedUpdates;
+    brain.bot.start(clean: clean);
+  }
+
+  void useModules(List<IModule> modules) => brain.useModules(modules);
+
+  Future _updatesHandler(Bot bot, Update update) async {
+    try {
+      if (update.callbackQuery != null) return;
+
+      if (update.inlineQuery != null) return;
 
       // TODO decide what to do with forwarded messages
-      if (update.message?.forwardDate != null) {
-        return;
-      }
+      if (update.message?.forwardDate != null) return;
 
       // TODO maybe work in channels too?
-      if (update.message?.chat.type == 'channel') {
-        return;
-      } // Ignore channels
+      if (update.message?.chat.type == 'channel') return;
 
-      // TODO owner stuff
-      // if (isOwner) {
-      //   await checkDialogUpdate(update);
-      // }
+      // TODO owner stuff here
 
-      if (await readEvents(update)) {
-        return;
-      } // Was an event
+      if (await brain.readEvents(update)) return;
 
-      if (update.message?.text == null || update.message?.from == null) {
-        return;
-      }
+      if (update.message?.text == null || update.message?.from == null) return;
 
-      await readMessage(update);
+      await brain.readMessage(update);
     } catch (e, s) {
       print('My life is a failure: $e:\n$s');
+      await onError(brain.bot, update, e, s);
     }
   }
 
-  int? getReplyMessageId(Update update,
-      {bool quote = false, bool quoteQuoted = false}) {
+  int? getReplyMessageId(
+    Update update, {
+    bool quote = false,
+    bool quoteQuoted = false,
+  }) {
     return quoteQuoted
         ? update.message!.replyToMessage!.messageId
         : quote
@@ -57,27 +73,25 @@ class Kyaru extends KyaruBrain {
             : null;
   }
 
-  void noticeOwner(Update update, Exception e, StackTrace s) {
-    print('$e\n$s');
-    sendMessage(ChatID(kyaruDB.getSettings().ownerId), '$e\n$s').catchError(
-      (e, s) {
-        print('$e\n$s');
-      },
-    );
+  Future noticeOwner(Update? update, Object e, StackTrace s) async {
+    await brain.bot.sendMessage(ChatID(brain.db.settings.ownerId), '$e\n$s');
   }
 
-  void onError(Update update, Exception e, StackTrace s) {
-    reply(
+  Future onError(Bot bot, Update? updateNull, Object e, StackTrace s) async {
+    print('Kyaru machine broke\n$e\ns');
+    var update = updateNull;
+    await noticeOwner(update, e, s);
+    if (update == null) {
+      print('Error outside of an update, something went wrong');
+      return;
+    }
+    print('Update ID was: ${update.updateId}');
+    await reply(
       update,
-      'Sorry, an error has occourred...\n'
+      'Sorry, an error has occurred...\n'
       'My owner has been already informed.\n'
       'Thanks for your patience.',
-    ).catchError(
-      (e, s) {
-        print('$e\n$s');
-      },
     );
-    noticeOwner(update, e, s);
   }
 
   Future<Message> reply(
@@ -88,26 +102,29 @@ class Kyaru extends KyaruBrain {
     bool quoteQuoted = false,
     bool hidePreview = false,
     ReplyMarkup? replyMarkup,
-  }) async {
-    return await sendMessage(ChatID(update.message!.chat.id), message,
-        parseMode: parseMode,
-        replyToMessageId: getReplyMessageId(
-          update,
-          quote: quote,
-          quoteQuoted: quoteQuoted,
-        ),
-        disableWebPagePreview: hidePreview,
-        replyMarkup: replyMarkup);
+  }) {
+    return brain.bot.sendMessage(
+      ChatID(update.message!.chat.id),
+      message,
+      parseMode: parseMode,
+      replyToMessageId: getReplyMessageId(
+        update,
+        quote: quote,
+        quoteQuoted: quoteQuoted,
+      ),
+      disableWebPagePreview: hidePreview,
+      replyMarkup: replyMarkup,
+    );
   }
 
-  Future<void> replySticker(
+  Future replySticker(
     Update update,
     String fileId, {
     ParseMode? parseMode,
     bool quote = false,
     bool quoteQuoted = false,
   }) async {
-    await sendSticker(
+    return brain.bot.sendSticker(
       ChatID(update.message!.chat.id),
       HttpFile.fromToken(fileId),
       replyToMessageId: getReplyMessageId(
@@ -118,15 +135,15 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future<void> replyPhoto(
+  Future replyPhoto(
     Update update,
     HttpFile httpFile, {
     String? caption,
     ParseMode? parseMode,
     bool quote = false,
     bool quoteQuoted = false,
-  }) async {
-    await sendPhoto(
+  }) {
+    return brain.bot.sendPhoto(
       ChatID(update.message!.chat.id),
       httpFile,
       replyToMessageId: getReplyMessageId(
@@ -139,15 +156,15 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future<void> replyVideo(
+  Future replyVideo(
     Update update,
     HttpFile httpFile, {
     ParseMode? parseMode,
     String? caption,
     bool quote = false,
     bool quoteQuoted = false,
-  }) async {
-    await sendVideo(
+  }) {
+    return brain.bot.sendVideo(
       ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,
@@ -160,15 +177,15 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future<void> replyAnimation(
+  Future replyAnimation(
     Update update,
     HttpFile httpFile, {
     String? caption,
     bool quote = false,
     bool quoteQuoted = false,
     ParseMode? parseMode,
-  }) async {
-    await sendAnimation(
+  }) {
+    return brain.bot.sendAnimation(
       ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,
@@ -181,15 +198,15 @@ class Kyaru extends KyaruBrain {
     );
   }
 
-  Future<void> replyDocument(
+  Future replyDocument(
     Update update,
     HttpFile httpFile, {
     String? caption,
     bool quote = false,
     bool quoteQuoted = false,
     ParseMode? parseMode,
-  }) async {
-    await sendDocument(
+  }) {
+    return brain.bot.sendDocument(
       ChatID(update.message!.chat.id),
       httpFile,
       caption: caption,

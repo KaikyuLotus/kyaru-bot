@@ -15,7 +15,7 @@ class DatabaseModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;

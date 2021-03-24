@@ -29,7 +29,7 @@ class YandereModule implements IModule {
   List<ModuleFunction>? _moduleFunctions;
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -77,13 +77,7 @@ class YandereModule implements IModule {
         elaboratedTags.map((t) => t.toLowerCase()),
       );
       if (elaboratedTags.isEmpty) {
-        _kyaru
-            .reply(update, 'You must specify at least a tag [e:1]')
-            .catchError(
-          (e, s) {
-            _kyaru.onError(update, e, s);
-          },
-        );
+        _kyaru.reply(update, 'You must specify at least a tag [e:1]');
         return;
       }
     }
@@ -96,13 +90,7 @@ class YandereModule implements IModule {
 
     yandereClient.getPosts(tags: elaboratedTags).then((randomPostList) {
       if (randomPostList!.isEmpty) {
-        _kyaru
-            .reply(update, 'No post found with the specified tags')
-            .catchError(
-          (e, s) {
-            _kyaru.onError(update, e, s);
-          },
-        );
+        _kyaru.reply(update, 'No post found with the specified tags');
         return;
       }
       final randomPost = choose(randomPostList);
@@ -124,31 +112,21 @@ class YandereModule implements IModule {
       if (photo.token!.endsWith('webm')) {
         caption = 'Telegram does not support .webm format\n'
             'Here\'s the media link: ${photo.token}\n\n$caption';
-        _kyaru
-            .reply(
+        _kyaru.reply(
           update,
           caption,
           quote: update.message!.chat.type != 'private',
           parseMode: ParseMode.MARKDOWN,
-        )
-            .catchError(
-          (e, s) {
-            _kyaru.onError(update, e, s);
-          },
         );
       } else {
-        _kyaru
-            .replyPhoto(
-              update,
-              photo,
-              caption: caption,
-              quote: update.message!.chat.type != 'private',
-              parseMode: ParseMode.MARKDOWN,
-            )
-            .catchError((e, s) => _kyaru.onError(update, e, s));
+        _kyaru.replyPhoto(
+          update,
+          photo,
+          caption: caption,
+          quote: update.message!.chat.type != 'private',
+          parseMode: ParseMode.MARKDOWN,
+        );
       }
-    }).catchError((e, s) {
-      _kyaru.onError(update, e, s);
     });
   }
 }

@@ -15,7 +15,7 @@ class RegexModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -36,7 +36,7 @@ class RegexModule implements IModule {
     }
 
     var reply = '"$fixed"\n\nFixed!';
-    await _kyaru.sendMessage(
+    await _kyaru.brain.bot.sendMessage(
       ChatID(update.message!.chat.id),
       reply,
       replyToMessageId: update.message?.replyToMessage?.messageId,

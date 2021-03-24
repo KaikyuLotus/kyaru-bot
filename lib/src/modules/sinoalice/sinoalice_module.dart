@@ -33,13 +33,13 @@ class SinoAliceModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
   Future sindel(Update update, _) async {
-    var deleted = _kyaru.kyaruDB.deleteUserSinoAliceData(
+    var deleted = _kyaru.brain.db.deleteUserSinoAliceData(
       update.message!.from!.id,
     );
     if (!deleted) {
@@ -53,14 +53,14 @@ class SinoAliceModule implements IModule {
   }
 
   Future sinlist(Update update, _) async {
-    var usersData = _kyaru.kyaruDB.getUsersSinoAliceData();
+    var usersData = _kyaru.brain.db.getUsersSinoAliceData();
     if (usersData.isEmpty) {
       return _kyaru.reply(update, 'No SiNOALICE ID registered in this chat');
     }
     var okUserData = <String?, ChatMember>{};
     for (var userData in usersData) {
       try {
-        okUserData[userData.gameId] = await _kyaru.getChatMember(
+        okUserData[userData.gameId] = await _kyaru.brain.bot.getChatMember(
           ChatID(update.message!.chat.id),
           userData.userId!,
         );
@@ -98,7 +98,7 @@ class SinoAliceModule implements IModule {
         return _kyaru.reply(update, 'I think that this is not a valid user ID');
       }
 
-      _kyaru.kyaruDB.updateUserSinoAliceData(
+      _kyaru.brain.db.updateUserSinoAliceData(
         UserSinoAliceData(update.message!.from!.id, id),
       );
       return _kyaru.reply(
@@ -119,7 +119,7 @@ class SinoAliceModule implements IModule {
     var normalError = 'Please register your ID with /sinid 0000000 first';
     var quoteError = 'Sorry, this user has no ID';
 
-    var userData = _kyaru.kyaruDB.getUserSinoAliceData(userId);
+    var userData = _kyaru.brain.db.getUserSinoAliceData(userId);
     if (userData == null) {
       return _kyaru.reply(
         update,

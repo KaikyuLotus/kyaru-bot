@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
@@ -32,7 +33,7 @@ class DanbooruModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -116,7 +117,7 @@ class DanbooruModule implements IModule {
       limit: 100,
     );
     if (randomPostList.isEmpty) {
-      return _kyaru.editMessageText(
+      return _kyaru.brain.bot.editMessageText(
         'No post found with the specified tags',
         chatId: ChatID(update.message!.chat.id),
         messageId: sentMessage.messageId,
@@ -152,7 +153,7 @@ class DanbooruModule implements IModule {
         .toList();
 
     if (httpFiles.isEmpty) {
-      return _kyaru.editMessageText(
+      return _kyaru.brain.bot.editMessageText(
         'Telegram does not support .webm format\nTry again or with other tags.',
         chatId: ChatID(update.message!.chat.id),
         messageId: sentMessage.messageId,
@@ -164,7 +165,7 @@ class DanbooruModule implements IModule {
 
     var slowed = slowDownChats.contains(update.message!.chat.id);
     if (slowed) {
-      await _kyaru.editMessageText(
+      await _kyaru.brain.bot.editMessageText(
         "Please slow down...\nI'll send the media group in some seconds...",
         chatId: ChatID(update.message!.chat.id),
         messageId: sentMessage.messageId,
@@ -180,14 +181,14 @@ class DanbooruModule implements IModule {
     );
 
     if (mediaCount > 3) {
-      await _kyaru.sendChatAction(
+      await _kyaru.brain.bot.sendChatAction(
         ChatID(update.message!.chat.id),
         ChatAction.UPLOAD_PHOTO,
       );
     }
     slowDownChats.add(update.message!.chat.id);
     try {
-      await _kyaru.sendMediaGroup(
+      await _kyaru.brain.bot.sendMediaGroup(
         ChatID(update.message!.chat.id),
         httpFiles,
         replyToMessageId: update.message!.chat.type != 'private'
@@ -195,9 +196,15 @@ class DanbooruModule implements IModule {
             : null,
       );
       print('Messages sent');
-    } catch (e, s) {
+    } on APIException catch (e, s) {
       print('Could not send image: $e\n$s');
-      await _kyaru.editMessageText(
+      print('${e.description}');
+      if (e.description.contains('Too Many Requests: retry after ')) {
+        print('Throttle...');
+        var seconds = int.parse(e.description.split('after ')[1].split('(')[0]);
+        await Future.delayed(Duration(seconds: seconds));
+      }
+      await _kyaru.brain.bot.editMessageText(
         'Error!',
         chatId: ChatID(update.message!.chat.id),
         messageId: sentMessage.messageId,

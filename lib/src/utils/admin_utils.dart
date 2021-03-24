@@ -7,12 +7,12 @@ class AdminUtils {
     if (chat.type == 'private') {
       return true;
     }
-    var users = await kyaru.getChatAdministrators(ChatID(chat.id));
+    var users = await kyaru.brain.bot.getChatAdministrators(ChatID(chat.id));
     return users.map((m) => m.user.id).contains(user!.id);
   }
 
   static bool isNsfwAllowed(Kyaru kyaru, Chat chat) {
-    var chatData = kyaru.kyaruDB.getChatData(chat.id);
+    var chatData = kyaru.brain.db.getChatData(chat.id);
     return chatData == null || chatData.nsfw!;
   }
 }

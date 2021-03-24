@@ -128,7 +128,7 @@ class GithubModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -139,7 +139,7 @@ class GithubModule implements IModule {
     receivePort.listen((data) {
       int chatId = data[0];
       String message = data[1];
-      _kyaru.sendMessage(ChatID(chatId), message).catchError((e, s) {
+      _kyaru.brain.bot.sendMessage(ChatID(chatId), message).catchError((e, s) {
         print('$e\n$s');
       });
     });
@@ -163,7 +163,7 @@ class GithubModule implements IModule {
 
     try {
       await _githubClient.events(username, repo);
-      _kyaru.kyaruDB.addRepo(DBRepo(update.message!.chat.id, username, repo));
+      _kyaru.brain.db.addRepo(DBRepo(update.message!.chat.id, username, repo));
       await _kyaru.reply(update,
           'From now on i\'ll send updates on new events for this repository in this chat');
     } on GithubNotFoundException {

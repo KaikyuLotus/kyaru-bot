@@ -14,7 +14,7 @@ class ApexModule implements IModule {
   List<ModuleFunction>? _moduleFunctions;
 
   ApexModule(this._kyaru) {
-    _apexClient = ApexClient(_kyaru.kyaruDB.getSettings().apexToken);
+    _apexClient = ApexClient(_kyaru.brain.db.settings.apexToken);
     _moduleFunctions = [
       ModuleFunction(
         apex,
@@ -26,7 +26,7 @@ class ApexModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;

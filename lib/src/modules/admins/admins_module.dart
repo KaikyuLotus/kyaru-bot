@@ -54,7 +54,7 @@ class AdminsModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -72,7 +72,7 @@ class AdminsModule implements IModule {
       );
     }
 
-    var instructions = _kyaru.kyaruDB.getInstructions(
+    var instructions = _kyaru.brain.db.getInstructions(
       InstructionType.command,
       update.message!.chat.id,
     );
@@ -138,7 +138,7 @@ class AdminsModule implements IModule {
       return await _kyaru.reply(update, 'The index must be a number');
     }
 
-    var commandInstructions = _kyaru.kyaruDB.getInstructions(
+    var commandInstructions = _kyaru.brain.db.getInstructions(
       InstructionType.command,
       update.message!.chat.id,
     );
@@ -164,7 +164,7 @@ class AdminsModule implements IModule {
     }
 
     var instruction = customInstructions[index - 1];
-    _kyaru.kyaruDB.deleteCustomInstruction(instruction);
+    _kyaru.brain.db.deleteCustomInstruction(instruction);
     return await _kyaru.reply(update, 'Deleted!');
   }
 
@@ -190,7 +190,7 @@ class AdminsModule implements IModule {
       return await _kyaru.reply(update, 'The index must be a number');
     }
 
-    var commandInstructions = _kyaru.kyaruDB.getInstructions(
+    var commandInstructions = _kyaru.brain.db.getInstructions(
       InstructionType.command,
       update.message!.chat.id,
     );
@@ -242,12 +242,12 @@ class AdminsModule implements IModule {
     var command = args[0];
     args.removeAt(0); // Remove custom command
 
-    var instructionList = List.of(_kyaru.kyaruDB
+    var instructionList = List.of(_kyaru.brain.db
         .getInstructions(InstructionType.command, 0)
         .map((f) => f.command?.command?.toLowerCase()));
 
     if (instructionList.contains(command.toLowerCase()) ||
-        _kyaru.coreFunctions.contains(command.toLowerCase())) {
+        _kyaru.brain.coreFunctions.contains(command.toLowerCase())) {
       return await _kyaru.reply(
         update,
         'You can\'t override one of my commands.\n'
@@ -297,7 +297,7 @@ class AdminsModule implements IModule {
       false,
     );
 
-    _kyaru.kyaruDB.addCustomInstruction(customInstruction);
+    _kyaru.brain.db.addCustomInstruction(customInstruction);
     await _kyaru.reply(
       update,
       'I will reply ${quote ? 'and quote ' : ''}'
@@ -326,11 +326,6 @@ class AdminsModule implements IModule {
         update,
         customCommand.text!,
         quoteQuoted: customCommand.quoteQuoted!,
-      )
-          .catchError(
-        (e, s) {
-          _kyaru.onError(update, e, s);
-        },
       );
       return;
     }
@@ -341,8 +336,7 @@ class AdminsModule implements IModule {
             update,
             customCommand.fileId!,
             quoteQuoted: customCommand.quoteQuoted!,
-          )
-          .catchError((e, s) => _kyaru.onError(update, e, s));
+          );
     }
 
     if (customCommand.commandType == CommandType.photo) {
@@ -351,8 +345,7 @@ class AdminsModule implements IModule {
             update,
             HttpFile.fromToken(customCommand.fileId!),
             quoteQuoted: customCommand.quoteQuoted!,
-          )
-          .catchError((e, s) => _kyaru.onError(update, e, s));
+          );
     }
 
     if (customCommand.commandType == CommandType.video) {
@@ -361,8 +354,7 @@ class AdminsModule implements IModule {
             update,
             HttpFile.fromToken(customCommand.fileId!),
             quoteQuoted: customCommand.quoteQuoted!,
-          )
-          .catchError((e, s) => _kyaru.onError(update, e, s));
+          );
     }
 
     if (customCommand.commandType == CommandType.animation) {
@@ -371,8 +363,7 @@ class AdminsModule implements IModule {
             update,
             HttpFile.fromToken(customCommand.fileId!),
             quoteQuoted: customCommand.quoteQuoted!,
-          )
-          .catchError((e, s) => _kyaru.onError(update, e, s));
+          );
     }
 
     if (customCommand.commandType == CommandType.document) {
@@ -381,13 +372,10 @@ class AdminsModule implements IModule {
             update,
             HttpFile.fromToken(customCommand.fileId!),
             quoteQuoted: customCommand.quoteQuoted!,
-          )
-          .catchError((e, s) => _kyaru.onError(update, e, s));
+          );
     }
 
-    await _kyaru.reply(update, 'Something went wrong...').catchError((e, s) {
-      _kyaru.onError(update, e, s);
-    });
+    await _kyaru.reply(update, 'Something went wrong...');
   }
 
   Future welcome(Update update, _) async {
@@ -431,7 +419,7 @@ class AdminsModule implements IModule {
   }
 
   Future execCustomWelcome(Update update, _) async {
-    var welcomeReplies = _kyaru.kyaruDB.getInstructions(
+    var welcomeReplies = _kyaru.brain.db.getInstructions(
       InstructionType.event,
       update.message!.chat.id,
       eventType: InstructionEventType.userJoined,
@@ -480,7 +468,7 @@ class AdminsModule implements IModule {
   }
 
   Future removeCustomWelcome(Update update, _) async {
-    var welcomeReplies = _kyaru.kyaruDB.getInstructions(
+    var welcomeReplies = _kyaru.brain.db.getInstructions(
       InstructionType.event,
       update.message!.chat.id,
       eventType: InstructionEventType.userJoined,
@@ -517,7 +505,7 @@ class AdminsModule implements IModule {
     }
 
     var instruction = welcomeReplies[index - 1];
-    _kyaru.kyaruDB.deleteCustomInstruction(instruction);
+    _kyaru.brain.db.deleteCustomInstruction(instruction);
     await _kyaru.reply(
       update,
       'Custom welcome of type '
@@ -526,7 +514,7 @@ class AdminsModule implements IModule {
   }
 
   Future customWelcomeList(Update update, _) async {
-    var welcomeReplies = _kyaru.kyaruDB.getInstructions(
+    var welcomeReplies = _kyaru.brain.db.getInstructions(
       InstructionType.event,
       update.message!.chat.id,
       eventType: InstructionEventType.userJoined,
@@ -579,7 +567,7 @@ class AdminsModule implements IModule {
       false,
     );
 
-    _kyaru.kyaruDB.addCustomInstruction(customInstruction);
+    _kyaru.brain.db.addCustomInstruction(customInstruction);
     await _kyaru.reply(
       update,
       'I will send that when a new user joins this chat',
@@ -593,14 +581,12 @@ class AdminsModule implements IModule {
     if (!isAdmin) {
       replyText = 'Only an admin can use this command.';
     } else {
-      var chatData = _kyaru.kyaruDB.getChatData(update.message!.chat.id);
+      var chatData = _kyaru.brain.db.getChatData(update.message!.chat.id);
       chatData ??= ChatData(update.message!.chat.id, nsfw: false);
       chatData.nsfw = !chatData.nsfw!;
-      _kyaru.kyaruDB.updateChatData(chatData);
+      _kyaru.brain.db.updateChatData(chatData);
       replyText = 'NSFW ${chatData.nsfw! ? 'enabled' : 'disabled'}';
     }
-    await _kyaru.reply(update, replyText).catchError((e, s) {
-      _kyaru.onError(update, e, s);
-    });
+    await _kyaru.reply(update, replyText);
   }
 }

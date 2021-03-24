@@ -40,13 +40,13 @@ class OwnerModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? getModuleFunctions() => _moduleFunctions;
+  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
   Future getModulesStatus(Update update, _) async {
-    var modules = _kyaru.modules;
+    var modules = _kyaru.brain.modules;
     var mtext = modules
         .map((m) =>
             '*${m.runtimeType}*: ${m.isEnabled() ? 'enabled' : 'disabled'}')
@@ -74,9 +74,9 @@ class OwnerModule implements IModule {
         ownerMsg += '\nUsername: `@${chat.username}`';
       }
 
-      var usersCount = await _kyaru.getChatMembersCount(chatId);
+      var usersCount = await _kyaru.brain.bot.getChatMembersCount(chatId);
       ownerMsg += '\nMembers: *$usersCount*';
-      var newChat = await _kyaru.getChat(chatId);
+      var newChat = await _kyaru.brain.bot.getChat(chatId);
 
       if (newChat.description != null) {
         ownerMsg += '\nDescription:\n`${newChat.description}`';
@@ -84,10 +84,10 @@ class OwnerModule implements IModule {
 
       var bigFileId = newChat.photo?.bigFileId;
       if (bigFileId != null) {
-        var file = await _kyaru.getFile(newChat.photo!.bigFileId);
-        var bytes = await _kyaru.download(file.filePath!);
-        await _kyaru.sendPhoto(
-          ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+        var file = await _kyaru.brain.bot.getFile(newChat.photo!.bigFileId);
+        var bytes = await _kyaru.brain.bot.download(file.filePath!);
+        await _kyaru.brain.bot.sendPhoto(
+          ChatID(_kyaru.brain.db.settings.ownerId),
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
           parseMode: ParseMode.MARKDOWN,
@@ -98,8 +98,8 @@ class OwnerModule implements IModule {
         if (update.message!.chat.description != null) {
           message += '\nDescription: `${update.message!.chat.description}`';
         }
-        await _kyaru.sendMessage(
-          ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+        await _kyaru.brain.bot.sendMessage(
+          ChatID(_kyaru.brain.db.settings.ownerId),
           message,
           parseMode: ParseMode.MARKDOWN,
         );
@@ -107,8 +107,8 @@ class OwnerModule implements IModule {
     } on Exception catch (e, s) {
       print('$e\n$s');
 
-      await _kyaru.sendMessage(
-        ChatID(_kyaru.kyaruDB.getSettings().ownerId),
+      await _kyaru.brain.bot.sendMessage(
+        ChatID(_kyaru.brain.db.settings.ownerId),
         'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
         parseMode: ParseMode.MARKDOWN,
       );

@@ -16,7 +16,7 @@ class KyaruDB {
 
   final Database _database = Database('database/database.json');
 
-  Settings getSettings() {
+  Settings get settings {
     return _database[_settingsCollection].findOneAs(
       (json) => Settings.fromJson(json),
     )!;
