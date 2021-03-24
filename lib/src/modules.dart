@@ -8,3 +8,4 @@ export 'modules/lol/lol_module.dart';
 export 'modules/owner/owner_module.dart';
 export 'modules/regex/regex_module.dart';
 export 'modules/yandere/yandere_module.dart';
+export 'modules/genshin/genshin_module.dart';

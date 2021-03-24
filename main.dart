@@ -23,7 +23,7 @@ void main(List<String> arguments) async {
       YandereModule(kyaru),
       JikanModule(kyaru),
       ApexModule(kyaru),
-      // (Kyaru kyaru) => GenshinModule(kyaru),
+      GenshinModule(kyaru),
     ];
 
     kyaru.useModules(modules);
