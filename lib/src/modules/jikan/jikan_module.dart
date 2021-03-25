@@ -19,6 +19,12 @@ class JikanModule implements IModule {
         'anime',
         core: true,
       ),
+      ModuleFunction(
+        character,
+        'Search for a character',
+        'character',
+        core: true,
+      )
     ];
   }
 
@@ -47,7 +53,7 @@ class JikanModule implements IModule {
       );
     }
 
-    var matchingAnimes = await jikanClient.search(searchString);
+    var matchingAnimes = await jikanClient.searchAnime(searchString);
 
     if (matchingAnimes == null || matchingAnimes.isEmpty) {
       return await _kyaru.reply(
@@ -69,6 +75,66 @@ class JikanModule implements IModule {
 
     var keyboard = InlineKeyboardMarkup([
       [InlineKeyboardButton.URL('Open on MAL', anime.url)]
+    ]);
+
+    await _kyaru.reply(
+      update,
+      reply,
+      parseMode: ParseMode.MARKDOWNV2,
+      replyMarkup: keyboard,
+    );
+  }
+
+  Future character(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    if (args.isEmpty) {
+      return await _kyaru.reply(
+        update,
+        'This commands needs a search string, which rappresents a character name,'
+        ' as first argument.',
+      );
+    }
+
+    var searchString = args.join(' ');
+
+    if (searchString.length < 3) {
+      return await _kyaru.reply(
+        update,
+        'Search term length must be greater than 2 characters',
+      );
+    }
+
+    var matchingCharacters = await jikanClient.searchCharacter(searchString);
+
+    if (matchingCharacters == null || matchingCharacters.isEmpty) {
+      return await _kyaru.reply(
+        update,
+        'No character found with the given search terms',
+      );
+    }
+
+    var character = matchingCharacters.first;
+
+    var hiddenLink = MarkdownUtils.generateHiddenUrl(character.imageUrl);
+    var name = MarkdownUtils.escape(character.name);
+    var alternativeName =
+        MarkdownUtils.escape('(${character.alternativeNames?.first})');
+    var anime = character.anime
+        ?.map((entry) =>
+            MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
+        .join('\n');
+
+    var manga = character.manga
+        ?.map((entry) =>
+            MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
+        .join('\n');
+
+    var reply = '$hiddenLink*$name $alternativeName*\n\n'
+        '${anime!.isNotEmpty ? '*Anime List:* \n$anime\n\n' : ''}'
+        '${manga!.isNotEmpty ? '*Manga List:* \n$manga\n\n' : ''}';
+
+    var keyboard = InlineKeyboardMarkup([
+      [InlineKeyboardButton.URL('Open on MAL', character.url)]
     ]);
 
     await _kyaru.reply(

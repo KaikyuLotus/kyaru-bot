@@ -1,6 +1,6 @@
 class MarkdownUtils {
   static String generateUrl(String? text, String? link) {
-    return '[$text](${escape(link)})'; // TODO eventually escape text?
+    return '[${escape(text)}](${escape(link)})';
   }
 
   static String generateHiddenUrl(String? link) {
