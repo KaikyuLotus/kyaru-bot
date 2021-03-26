@@ -39,7 +39,7 @@ class JikanModule implements IModule {
     if (args.isEmpty) {
       return await _kyaru.reply(
         update,
-        'This commands needs a search string, which rappresents an anime name,'
+        'This command needs a search string, which rappresents an anime name,'
         ' as first argument.',
       );
     }
@@ -67,10 +67,18 @@ class JikanModule implements IModule {
     var hiddenLink = MarkdownUtils.generateHiddenUrl(anime.imageUrl);
     var score = MarkdownUtils.escape('${anime.score}');
     var title = MarkdownUtils.escape(anime.title);
+    var episodes = anime.episodes == 0 ? '?' : anime.episodes;
+    var startDate = anime.startDate;
+    var endDate = anime.endDate;
+    var start = '${startDate?.day}/${startDate?.month}/${startDate?.year}';
+    var end = '${endDate?.day}/${endDate?.month}/${endDate?.year}';
+    var date = MarkdownUtils.escape('$start - ${endDate != null ? end : '?'}');
     var desc = MarkdownUtils.escape(anime.synopsis);
+
     var reply = '$hiddenLink*$title*\n'
         'Score: *$score* out of *10*\n'
-        '*${anime.episodes}* Episodes\n\n'
+        '*$episodes* Episodes\n'
+        '$date\n\n'
         '$desc';
 
     var keyboard = InlineKeyboardMarkup([
@@ -90,7 +98,7 @@ class JikanModule implements IModule {
     if (args.isEmpty) {
       return await _kyaru.reply(
         update,
-        'This commands needs a search string, which rappresents a character name,'
+        'This command needs a search string, which rappresents a character name,'
         ' as first argument.',
       );
     }

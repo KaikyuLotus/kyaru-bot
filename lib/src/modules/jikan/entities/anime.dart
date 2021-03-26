@@ -39,10 +39,8 @@ class Anime {
       json['type'],
       json['episodes'],
       json['score'],
-      null,
-      // json['start_date'], // TODO date
-      null,
-      // json['end_date'],
+      DateTime.tryParse(json['start_date'] ?? ''),
+      DateTime.tryParse(json['end_date'] ?? ''),
       json['members'],
       json['rated'],
       airing: json['airing'],
