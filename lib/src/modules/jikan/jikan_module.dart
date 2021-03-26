@@ -72,7 +72,9 @@ class JikanModule implements IModule {
     var endDate = anime.endDate;
     var start = '${startDate?.day}/${startDate?.month}/${startDate?.year}';
     var end = '${endDate?.day}/${endDate?.month}/${endDate?.year}';
-    var date = MarkdownUtils.escape('$start - ${endDate != null ? end : '?'}');
+    var date = startDate != null
+        ? MarkdownUtils.escape('$start - ${endDate != null ? end : '?'}')
+        : '';
     var desc = MarkdownUtils.escape(anime.synopsis);
 
     var reply = '$hiddenLink*$title*\n'

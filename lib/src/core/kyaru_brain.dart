@@ -9,9 +9,7 @@ class KyaruBrain {
   KyaruBrain({
     required database,
     required this.bot,
-  }) : db = database {
-    updateTelegramCommands();
-  }
+  }) : db = database;
 
   final KyaruDB db;
   final Bot bot;
@@ -67,6 +65,7 @@ class KyaruBrain {
         );
       }
     }
+    updateTelegramCommands();
     print('------------------------------------------------');
     print('Loaded ${modulesFunctions.length} module functions');
   }
