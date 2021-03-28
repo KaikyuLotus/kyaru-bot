@@ -31,7 +31,7 @@ class Payload {
       json['pusher_type'],
       json['action'],
       json['head'],
-      GithubCommit.listFromJsonArray(json['commits']),
+      GithubCommit.listFromJsonArray(json['commits'] ?? []),
     );
   }
 }

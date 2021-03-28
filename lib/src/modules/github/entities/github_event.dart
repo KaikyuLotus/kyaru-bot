@@ -11,7 +11,7 @@ class GithubEvent {
   GithubEventType type;
   Actor actor;
   Repo repo;
-  Payload payload;
+  Payload? payload;
   bool? public;
   DateTime createdAt;
 
@@ -49,20 +49,24 @@ class GithubEvent {
     switch (type) {
       case GithubEventType.createEvent:
         var what = 'something';
-        if (payload.refType == 'repository') {
+        if (payload?.refType == 'repository') {
           what = 'this repository';
-        } else if (payload.refType == 'branch') {
-          what = 'branch ${payload.ref}';
+        } else if (payload?.refType == 'branch') {
+          what = 'branch ${payload?.ref}';
         }
         return '${actor.displayLogin} created $what';
       case GithubEventType.pushEvent:
-        var newSha7 = payload.head!.substring(0, 7);
-        var branch = payload.ref!.split('/').last;
-        var message = payload.commits!.last.message;
+        var newSha7 = payload?.head!.substring(0, 7);
+        var branch = payload?.ref!.split('/').last;
+        var message = payload?.commits!.last.message;
         return '${actor.displayLogin} made a commit ($newSha7) '
             'to ${repo.name} on branch $branch:\n$message';
       case GithubEventType.watchEvent:
-        return '${actor.displayLogin} ${payload.action} watching the repository';
+        return '${actor.displayLogin} ${payload?.action} watching the repository';
+      case GithubEventType.forkEvent:
+        return '${actor.displayLogin} forked ${repo.name}';
+      default:
+        return 'Unknown action on ${repo.name}';
     }
   }
 }

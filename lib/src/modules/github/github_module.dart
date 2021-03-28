@@ -13,7 +13,6 @@ import 'entities/github_events_response.dart';
 
 void eventsIsolateLoop(SendPort sendPort) {
   // TODO maybe it would be better to use async and await?
-  // TODO this is not really clean and may cause issues
   var db = KyaruDB();
   final githubClient = GithubClient();
   final etagStore = <String?, String?>{};
@@ -35,7 +34,7 @@ void eventsIsolateLoop(SendPort sendPort) {
         var eventsString = events.map((e) => e.toString()).join('\n- ');
         message = 'New events for repository ${repo.repo}:\n- $eventsString';
       }
-      sendPort.send([repo.chatID, message]);
+      sendPort.send(['sendMessage', repo.chatID, message]);
     }
     etagStore[repo.repo] = githubEventsResp.etag;
     readUpdates.addAll(List<String>.from(events.map((e) => e.id)));
@@ -44,6 +43,7 @@ void eventsIsolateLoop(SendPort sendPort) {
 
   void timerFunction(t) {
     print('Checking github updates...');
+    db.syncDb();
     for (var repo in db.getRepos()) {
       githubClient
           .events(repo.user, repo.repo, etag: etagStore[repo.repo])
@@ -53,8 +53,8 @@ void eventsIsolateLoop(SendPort sendPort) {
       }).catchError(
         (e) {
           print('Repository or user not found');
+          sendPort.send(['notFound', repo.toJson()]);
         },
-        // TODO notify and remove
         test: (e) => e.runtimeType == GithubNotFoundException,
       ).catchError(
         (e) {
@@ -122,6 +122,12 @@ class GithubModule implements IModule {
         'git',
         core: true,
       ),
+      ModuleFunction(
+        removeRepo,
+        'Remove a GitHub repository',
+        'gitremove',
+        core: true,
+      )
     ];
 
     startEventsIsolate();
@@ -137,21 +143,32 @@ class GithubModule implements IModule {
     var receivePort = ReceivePort();
     Isolate.spawn(eventsIsolateLoop, receivePort.sendPort);
     receivePort.listen((data) {
-      int chatId = data[0];
-      String message = data[1];
-      _kyaru.brain.bot.sendMessage(ChatID(chatId), message).catchError((e, s) {
-        print('$e\n$s');
-      });
+      if (data[0] == 'sendMessage') {
+        int chatId = data[1];
+        String message = data[2];
+        _kyaru.brain.bot
+            .sendMessage(ChatID(chatId), message)
+            .catchError((e, s) {
+          print('$e\n$s');
+        });
+      } else if (data[0] == 'notFound') {
+        var repo = DBRepo.fromJson(data[1]);
+        _kyaru.brain.db.removeRepo(repo);
+        _kyaru.brain.bot
+            .sendMessage(
+                ChatID(repo.chatID!),
+                'Hi, it seems that i can\'t access ${repo.user}/${repo.repo}, '
+                'so I removed it')
+            .catchError((e, s) {
+          print('$e\n$s');
+        });
+        ;
+      }
     });
   }
 
   Future registerRepo(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
-
-    if (args.isEmpty) {
-      return await _kyaru.reply(update,
-          'This command needs two parameters, a Github username and a repository name');
-    }
 
     if (args.length < 2) {
       return await _kyaru.reply(update,
@@ -174,5 +191,28 @@ class GithubModule implements IModule {
       print('Could not get repo events: $e\n$s');
       await _kyaru.reply(update, 'Something went terribly wrong...');
     }
+  }
+
+  Future removeRepo(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+
+    if (args.length < 2) {
+      return await _kyaru.reply(
+        update,
+        'This command needs two parameters, '
+        'a Github username and a repository name',
+      );
+    }
+
+    var username = args[0];
+    var repo = args[1];
+
+    var dbRepo = DBRepo(update.message!.chat.id, username, repo);
+
+    if (!_kyaru.brain.db.removeRepo(dbRepo)) {
+      return _kyaru.reply(update, 'There is no repository with that name');
+    }
+
+    await _kyaru.reply(update, 'Repository $username/$repo removed');
   }
 }
