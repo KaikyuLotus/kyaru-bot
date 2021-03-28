@@ -22,6 +22,8 @@ class KyaruDB {
     )!;
   }
 
+  void syncDb() => _database.sync();
+
   void deleteCustomInstruction(Instruction instruction) {
     _database[_instructionsCollection].delete({
       'uuid': instruction.uuid,
@@ -87,6 +89,10 @@ class KyaruDB {
 
   void addRepo(DBRepo repo) {
     return _database[_repositoryCollection].insert(repo.toJson());
+  }
+
+  bool removeRepo(DBRepo repo) {
+    return _database[_repositoryCollection].delete(repo.toJson());
   }
 
   void addGenshinUser(int userId, int id) {

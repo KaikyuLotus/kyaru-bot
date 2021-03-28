@@ -24,14 +24,21 @@ class GithubClient {
       Uri.https(apiBaseUrl, '/networks/$user/$repo/events'),
       headers: {'If-None-Match': '$etag'},
     ).then((httpResponse) {
-      // TODO remove redundant int.tryParse ...
+      int? getIntHeader(String name) {
+        return int.tryParse(httpResponse.headers[name] ?? '');
+      }
+
+      var pollInterval = getIntHeader('x-poll-interval');
+      var ratelimitLimit = getIntHeader('x-ratelimit-limit');
+      var ratelimitRemaining = getIntHeader('x-ratelimit-remaining');
+      var ratelimitReset = getIntHeader('x-ratelimit-reset');
 
       if (httpResponse.statusCode == 403) {
         throw GithubForbiddenException(
           json.decode(httpResponse.body)['message'],
-          int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
-          int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
-          int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
+          ratelimitLimit,
+          ratelimitRemaining,
+          ratelimitReset,
         );
       }
       if (httpResponse.statusCode == 404) {
@@ -41,10 +48,10 @@ class GithubClient {
       if (httpResponse.statusCode == 304) {
         throw GithubNotChangedException(
           repo,
-          int.tryParse(httpResponse.headers['x-poll-interval']!),
-          int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
-          int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
-          int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
+          pollInterval,
+          ratelimitLimit,
+          ratelimitRemaining,
+          ratelimitReset,
         );
       }
       if (httpResponse.statusCode != 200) {
@@ -57,10 +64,10 @@ class GithubClient {
       return GithubEventsResponse(
         GithubEvent.listFromJsonArray(json.decode(httpResponse.body)),
         httpResponse.headers['etag'],
-        int.tryParse(httpResponse.headers['x-poll-interval']!),
-        int.tryParse(httpResponse.headers['x-ratelimit-limit']!),
-        int.tryParse(httpResponse.headers['x-ratelimit-remaining']!),
-        int.tryParse(httpResponse.headers['x-ratelimit-reset']!),
+        pollInterval,
+        ratelimitLimit,
+        ratelimitRemaining,
+        ratelimitReset,
       );
     });
   }

@@ -1,1 +1,7 @@
-enum GithubEventType { watchEvent, pushEvent, createEvent }
+enum GithubEventType {
+  watchEvent,
+  pushEvent,
+  createEvent,
+  forkEvent,
+  publicEvent,
+}
