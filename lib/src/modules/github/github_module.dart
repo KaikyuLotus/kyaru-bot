@@ -11,6 +11,22 @@ import 'entities/exceptions/github_not_found_exception.dart';
 import 'entities/github_client.dart';
 import 'entities/github_events_response.dart';
 
+extension on KyaruDB {
+  static const _repositoryCollection = 'repositories';
+
+  List<DBRepo> getRepos() {
+    return database[_repositoryCollection].findAs((r) => DBRepo.fromJson(r));
+  }
+
+  void addRepo(DBRepo repo) {
+    return database[_repositoryCollection].insert(repo.toJson());
+  }
+
+  bool removeRepo(DBRepo repo) {
+    return database[_repositoryCollection].delete(repo.toJson());
+  }
+}
+
 Future eventsIsolateLoop(SendPort sendPort) async {
   var db = KyaruDB();
   final githubClient = GithubClient();

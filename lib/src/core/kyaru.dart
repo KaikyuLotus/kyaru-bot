@@ -39,16 +39,9 @@ class Kyaru {
   Future _updatesHandler(Bot bot, Update update) async {
     try {
       if (update.callbackQuery != null) return;
-
       if (update.inlineQuery != null) return;
-
-      // TODO decide what to do with forwarded messages
       if (update.message?.forwardDate != null) return;
-
-      // TODO maybe work in channels too?
       if (update.message?.chat.type == 'channel') return;
-
-      // TODO owner stuff here
 
       if (await brain.readEvents(update)) return;
 

@@ -5,6 +5,24 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 import 'entities/genshin_client.dart';
 
+extension on KyaruDB {
+  static const _genshinDataCollection = 'genshin_data';
+
+  void addGenshinUser(int userId, int id) {
+    database[_genshinDataCollection].update(
+      {'user_id': userId},
+      {'id': id, 'user_id': userId},
+      true,
+    );
+  }
+
+  Map<String, dynamic>? getGenshinUser(int userId) {
+    return database[_genshinDataCollection].findOne(
+      filter: {'user_id': userId},
+    );
+  }
+}
+
 class GenshinModule implements IModule {
   final Kyaru _kyaru;
   final GenshinClient genshinClient = GenshinClient();
@@ -41,8 +59,7 @@ class GenshinModule implements IModule {
   bool isEnabled() => true;
 
   Future saveId(Update update, _) async {
-    var args = update.message!.text!.split(' ')
-      ..removeAt(0);
+    var args = update.message!.text!.split(' ')..removeAt(0);
 
     var errorMsg =
         'This command requires an hoyolab.com user ID as parameter.\n\n'
@@ -179,7 +196,7 @@ class GenshinModule implements IModule {
     var sentMessage = data['sent'];
     var abyss = data['response']['abyss'];
     var current = abyss['current'];
-    var last  = abyss['last'];
+    var last = abyss['last'];
 
     var hasCurrent = current['unleashedElementalBurst']['value'] != null;
     var hasLast = last['unleashedElementalBurst']['value'] != null;
@@ -211,7 +228,6 @@ class GenshinModule implements IModule {
       messageId: sentMessage.messageId,
       parseMode: ParseMode.MARKDOWN,
     );
-
   }
 
   Future genshin(Update update, _) async {

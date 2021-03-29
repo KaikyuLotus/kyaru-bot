@@ -4,6 +4,37 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 import 'entities/user.dart';
 
+extension on KyaruDB {
+  static const _sinoAliceDataCollection = 'sinoalice_data';
+
+  List<UserSinoAliceData> getUsersSinoAliceData() {
+    return database[_sinoAliceDataCollection].findAs(
+      (json) => UserSinoAliceData.fromJson(json),
+    );
+  }
+
+  UserSinoAliceData? getUserSinoAliceData(int userId) {
+    return database[_sinoAliceDataCollection].findOneAs(
+      (json) => UserSinoAliceData.fromJson(json),
+      filter: {'user_id': userId},
+    );
+  }
+
+  void updateUserSinoAliceData(UserSinoAliceData data) {
+    database[_sinoAliceDataCollection].update(
+      {'user_id': data.userId},
+      data.toJson(),
+      true,
+    );
+  }
+
+  bool deleteUserSinoAliceData(int userId) {
+    return database[_sinoAliceDataCollection].delete(
+      {'user_id': userId},
+    );
+  }
+}
+
 class SinoAliceModule implements IModule {
   final Kyaru _kyaru;
 
