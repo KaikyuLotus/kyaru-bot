@@ -23,7 +23,7 @@ class ApexClient {
 
   Future<T> _get<T>(
     Uri uri,
-    T Function(dynamic) mapper) async {
+    T Function(Map<String, dynamic>) mapper) async {
     final response = await _client.get(uri).timeout(
           const Duration(seconds: 120),
         );
@@ -42,7 +42,7 @@ class ApexClient {
         'auth': _key,
         'player': player,
       }),
-      (dynamic d) => ApexData.fromJson(d),
+      ApexData.fromJson,
     );
   }
 }

@@ -131,9 +131,11 @@ class OwnerModule implements IModule {
   Future help(Update update, _) async {
     var helpMessage = 'Hi ${update.message!.from!.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
-        "I'm still in a early beta phase, so I may have lots of errors and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
+        "I'm still in a early beta phase, so I may have lots of errors"
+        " and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
         'Follow my development on my [Trello](https://trello.com/b/BJgZ2PBs/kyaru-roadmap) board\n\n'
-        'Take a look at @KyaruLinks and join @KyaruNews to keep you updated on new commands and bug fixes!\n\n'
+        'Take a look at @KyaruLinks and join @KyaruNews to keep you'
+        ' updated on new commands and bug fixes!\n\n'
         "Currently I'm closed source, but all my libraries are open source:\n"
         '[Dart Telegram Bot (Telegram API Wrapper)](https://github.com/KaikyuDev/dart-telegram-bot)\n'
         '[Dart Mongo Lite (file-based MongoDB)](https://github.com/KaikyuDev/dart_mongo_lite)\n\n'

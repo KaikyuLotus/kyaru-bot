@@ -48,7 +48,7 @@ class Kyaru {
       if (update.message?.text == null || update.message?.from == null) return;
 
       await brain.readMessage(update);
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('My life is a failure: $e:\n$s');
       await onError(brain.bot, update, e, s);
     }

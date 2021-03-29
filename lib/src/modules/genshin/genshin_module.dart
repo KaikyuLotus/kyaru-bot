@@ -93,8 +93,10 @@ class GenshinModule implements IModule {
     if (info['ok'] != true) {
       var errorMessage = '${info['response']}\n'
           '\n'
-          'Please remember that this command has a caching system, you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you information on hoyolab.com is public!';
+          'Please remember that this command has a caching system, '
+          'you\'ll be able to retry in $cache.\n'
+          'While you wait, please make sure that you'
+          ' information on hoyolab.com is public!';
       return await _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
@@ -140,8 +142,10 @@ class GenshinModule implements IModule {
 
     if (!info['ok']) {
       var reply = '$response\n\n'
-          'Please remember that this command has a caching system, you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you information on hoyolab.com is public!';
+          'Please remember that this command has a caching system,'
+          ' you\'ll be able to retry in $cache.\n'
+          'While you wait, please make sure that you'
+          ' information on hoyolab.com is public!';
       await _kyaru.brain.bot.editMessageText(
         reply,
         chatId: ChatID(sentMessage.chat.id),
@@ -164,7 +168,7 @@ class GenshinModule implements IModule {
       return;
     }
 
-    var assembler = (data, phase) {
+    assembler(data, phase) {
       var mostDefeats = data['mostDefeats'];
       var sss = data['strongestSingleStrike'];
       var mostDmgTaken = data['mostDamageTaken'];
@@ -186,12 +190,17 @@ class GenshinModule implements IModule {
           'Total Stars: *$stars*\n'
           'Deepest Descent: *$dd*\n'
           'Battles: *$battles*\n'
-          'Most Defeats: *${mostDefeats['value']}* (`${mostDefeats['character']}`)\n'
-          'Strongest Strike: *${sss['value']}* (`${sss['character']}`)\n'
-          'Most Damage Taken: *${mostDmgTaken['value']}* (`${mostDmgTaken['character']}`)\n'
-          'Elemental Bursts: *${elemBurstCast['value']}* (`${elemBurstCast['character']}`)\n'
-          'Elemental Skills: *${elemSkillsCast['value']}* (`${elemSkillsCast['character']}`)\n';
-    };
+          'Most Defeats: *${mostDefeats['value']}*'
+          ' (`${mostDefeats['character']}`)\n'
+          'Strongest Strike: *${sss['value']}*'
+          ' (`${sss['character']}`)\n'
+          'Most Damage Taken: *${mostDmgTaken['value']}*'
+          ' (`${mostDmgTaken['character']}`)\n'
+          'Elemental Bursts: *${elemBurstCast['value']}* '
+          '(`${elemBurstCast['character']}`)\n'
+          'Elemental Skills: *${elemSkillsCast['value']}*'
+          ' (`${elemSkillsCast['character']}`)\n';
+    }
 
     var sentMessage = data['sent'];
     var abyss = data['response']['abyss'];
@@ -215,7 +224,7 @@ class GenshinModule implements IModule {
     if (currentPart != null || lastPart != null) {
       reply = '';
       if (currentPart != null) {
-        reply += currentPart + '\n';
+        reply += '$currentPart\n';
       }
       if (lastPart != null) {
         reply += lastPart;

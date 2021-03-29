@@ -9,13 +9,13 @@ extension on KyaruDB {
 
   List<UserSinoAliceData> getUsersSinoAliceData() {
     return database[_sinoAliceDataCollection].findAs(
-      (json) => UserSinoAliceData.fromJson(json),
+      UserSinoAliceData.fromJson,
     );
   }
 
   UserSinoAliceData? getUserSinoAliceData(int userId) {
     return database[_sinoAliceDataCollection].findOneAs(
-      (json) => UserSinoAliceData.fromJson(json),
+      UserSinoAliceData.fromJson,
       filter: {'user_id': userId},
     );
   }

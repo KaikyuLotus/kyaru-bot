@@ -80,14 +80,16 @@ class LoLModule implements IModule {
         _client.findChampionById(masteries.first.championId.toString());
 
     var firstPart = '*Summoner $user*\nLevel: *${summoner.summonerLevel}*\n'
-        'Main champ: *${mainChamp.name}* mastery *${masteries.first.championLevel}*';
+        'Main champ: *${mainChamp.name}*'
+        ' mastery *${masteries.first.championLevel}*';
 
     var matchPhrase =
         playIndexInt == 0 ? 'Last match' : 'Match number ${playIndexInt + 1}';
 
-    var message =
-        '$firstPart\n\n*$matchPhrase*\nPlayed at *$hm* on the *$ymd* with *${usedChampion.name}*\n'
-        '*${matchInfo.gameMode}* - $kda - *${participant.stats.win! ? 'Win' : 'Lost'}*\n'
+    var message = '$firstPart\n\n*$matchPhrase*\nPlayed'
+        ' at *$hm* on the *$ymd* with *${usedChampion.name}*\n'
+        '*${matchInfo.gameMode}* - $kda -'
+        ' *${participant.stats.win! ? 'Win' : 'Lost'}*\n'
         'Match lasted $durationMinutes minutes and $durationSeconds seconds';
 
     await _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);

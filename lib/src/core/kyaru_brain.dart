@@ -14,9 +14,9 @@ class KyaruBrain {
   final KyaruDB db;
   final Bot bot;
 
-  var modulesFunctions = <String, ModuleFunction>{};
-  var coreFunctions = <String>[];
-  var modules = <IModule>[];
+  final modulesFunctions = <String, ModuleFunction>{};
+  final coreFunctions = <String>[];
+  final modules = <IModule>[];
 
   Future updateTelegramCommands() {
     return bot.setMyCommands(
@@ -40,7 +40,7 @@ class KyaruBrain {
     try {
       await moduleFunction.function(update, null);
       print('Function ${moduleFunction.name} executed');
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('Error executing function ${moduleFunction.name}: $e\n$s');
       await bot.sendMessage(
         ChatID(db.settings.ownerId),
@@ -50,7 +50,8 @@ class KyaruBrain {
   }
 
   void useModules(List<IModule> modules) {
-    this.modules = modules;
+    this.modules.clear();
+    this.modules.addAll(modules);
     for (var module in modules) {
       print(module.runtimeType);
       var moduleFunctions = module.moduleFunctions ?? [];

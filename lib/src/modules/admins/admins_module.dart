@@ -93,16 +93,21 @@ class AdminsModule implements IModule {
       }
 
       reply =
-          'In this chat ${instructions.length} custom commands are set:\n${commandMap.map((c, v) {
-                var index = 0;
-                return MapEntry(
-                    c,
-                    '/$c\n  ${v.map((t) {
-                      index++;
-                      var type = UpperEnums.encodeUpper(t.commandType);
-                      return '($index) $type';
-                    }).join('\n  ')}');
-              }).values.join('\n')}';
+          'In this chat ${instructions.length} custom commands are set:\n'
+              '${commandMap.map(
+                (c, v) {
+                  var index = 0;
+                  return MapEntry(
+                      c,
+                      '/$c\n  ${v.map(
+                        (t) {
+                          index++;
+                          var type = UpperEnums.encodeUpper(t.commandType);
+                          return '($index) $type';
+                        },
+                      ).join('\n  ')}');
+                },
+              ).values.join('\n')}';
     }
 
     await _kyaru.reply(update, reply);
@@ -159,8 +164,11 @@ class AdminsModule implements IModule {
     );
 
     if (commandInstructions.length < index - 1) {
-      return await _kyaru.reply(update,
-          'Invalid index specified.\nThe maximum index seems to be ${commandInstructions.length + 1}');
+      return await _kyaru.reply(
+        update,
+        'Invalid index specified.\n'
+        'The maximum index seems to be ${commandInstructions.length + 1}',
+      );
     }
 
     var instruction = customInstructions[index - 1];
@@ -316,13 +324,13 @@ class AdminsModule implements IModule {
 
     var customCommand = instruction.command;
     if (customCommand == null) {
-      print('Error, cannot run executeCustomCommand with customCommand == null');
+      print(
+          'Error, cannot run executeCustomCommand with customCommand == null');
       return;
     }
 
     if (customCommand.commandType == CommandType.text) {
-      await _kyaru
-          .reply(
+      await _kyaru.reply(
         update,
         customCommand.text!,
         quoteQuoted: customCommand.quoteQuoted!,
@@ -331,48 +339,43 @@ class AdminsModule implements IModule {
     }
 
     if (customCommand.commandType == CommandType.sticker) {
-      return _kyaru
-          .replySticker(
-            update,
-            customCommand.fileId!,
-            quoteQuoted: customCommand.quoteQuoted!,
-          );
+      return _kyaru.replySticker(
+        update,
+        customCommand.fileId!,
+        quoteQuoted: customCommand.quoteQuoted!,
+      );
     }
 
     if (customCommand.commandType == CommandType.photo) {
-      return _kyaru
-          .replyPhoto(
-            update,
-            HttpFile.fromToken(customCommand.fileId!),
-            quoteQuoted: customCommand.quoteQuoted!,
-          );
+      return _kyaru.replyPhoto(
+        update,
+        HttpFile.fromToken(customCommand.fileId!),
+        quoteQuoted: customCommand.quoteQuoted!,
+      );
     }
 
     if (customCommand.commandType == CommandType.video) {
-      return _kyaru
-          .replyVideo(
-            update,
-            HttpFile.fromToken(customCommand.fileId!),
-            quoteQuoted: customCommand.quoteQuoted!,
-          );
+      return _kyaru.replyVideo(
+        update,
+        HttpFile.fromToken(customCommand.fileId!),
+        quoteQuoted: customCommand.quoteQuoted!,
+      );
     }
 
     if (customCommand.commandType == CommandType.animation) {
-      return _kyaru
-          .replyAnimation(
-            update,
-            HttpFile.fromToken(customCommand.fileId!),
-            quoteQuoted: customCommand.quoteQuoted!,
-          );
+      return _kyaru.replyAnimation(
+        update,
+        HttpFile.fromToken(customCommand.fileId!),
+        quoteQuoted: customCommand.quoteQuoted!,
+      );
     }
 
     if (customCommand.commandType == CommandType.document) {
-      return _kyaru
-          .replyDocument(
-            update,
-            HttpFile.fromToken(customCommand.fileId!),
-            quoteQuoted: customCommand.quoteQuoted!,
-          );
+      return _kyaru.replyDocument(
+        update,
+        HttpFile.fromToken(customCommand.fileId!),
+        quoteQuoted: customCommand.quoteQuoted!,
+      );
     }
 
     await _kyaru.reply(update, 'Something went wrong...');

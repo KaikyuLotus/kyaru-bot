@@ -15,7 +15,7 @@ extension on KyaruDB {
   static const _repositoryCollection = 'repositories';
 
   List<DBRepo> getRepos() {
-    return database[_repositoryCollection].findAs((r) => DBRepo.fromJson(r));
+    return database[_repositoryCollection].findAs(DBRepo.fromJson);
   }
 
   void addRepo(DBRepo repo) {
@@ -75,7 +75,7 @@ Future eventsIsolateLoop(SendPort sendPort) async {
       print('Nothing changed, left limit: ${e.rateLimitRemaining}');
     } on GithubForbiddenException catch (e, s) {
       print('Critical error $e\n$s');
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('Unknown exception in analyzeRepo: $e\n$s');
     }
   }
@@ -160,7 +160,7 @@ class GithubModule implements IModule {
         var repo = DBRepo.fromJson(data[1]);
         await onRepoNotFoundEvent(repo);
       }
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       print('Error handling onSocketMessage: $e\n$s');
     }
   }

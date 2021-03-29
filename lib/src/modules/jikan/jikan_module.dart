@@ -100,8 +100,8 @@ class JikanModule implements IModule {
     if (args.isEmpty) {
       return await _kyaru.reply(
         update,
-        'This command needs a search string, which rappresents a character name,'
-        ' as first argument.',
+        'This command needs a search string, which '
+        'rappresents a character name, as first argument.',
       );
     }
 

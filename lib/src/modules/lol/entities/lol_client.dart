@@ -36,23 +36,31 @@ class LOLClient {
     print('Done');
   }
 
-  Future<T> _get<T>(Uri uri, T Function(dynamic) mapper,
-      [bool noInit = false]) async {
+  Future<T> _get<T>(
+    Uri uri,
+    T Function(dynamic) mapper, [
+    bool noInit = false,
+  ]) async {
     if (!_inited && !noInit) {
       await _init();
     }
-    var response = await _client.get(uri,
-        headers: {'X-Riot-Token': key!}).timeout(Duration(seconds: 120));
+    var response = await _client.get(
+      uri,
+      headers: {'X-Riot-Token': key!},
+    ).timeout(
+      Duration(seconds: 120),
+    );
     return mapper(json.decode(response.body));
   }
 
-  Future<String> _getLatestVersion() async {
-    return (await _getVersions()).first;
-  }
+  Future<String> _getLatestVersion() async => (await _getVersions()).first;
 
   Future<List<String>> _getVersions() async {
-    return await _get(Uri.https(dataBaseUrl, '/api/versions.json'),
-        (d) => List.from(d), true);
+    return await _get(
+      Uri.https(dataBaseUrl, '/api/versions.json'),
+      (d) => List.from(d),
+      true,
+    );
   }
 
   Future<List<Champion>?> _getChampions() async {
@@ -63,8 +71,9 @@ class LOLClient {
     );
   }
 
-  Champion findChampionById(String champId) =>
-      champions!.firstWhere((c) => c.key == champId);
+  Champion findChampionById(String champId) {
+    return champions!.firstWhere((c) => c.key == champId);
+  }
 
   Future<List<ChampionMastery>> getChampionsMasteryBySummonerId(
     String? summonerId,
@@ -101,6 +110,8 @@ class LOLClient {
         apiBaseUrl,
         '/lol/match/v4/matches/$matchId',
       ),
+      // d is not Map<String, dynamic>, it's dynamic
+      // ignore: unnecessary_lambdas
       (d) => MatchInfo.fromJson(d),
     );
   }

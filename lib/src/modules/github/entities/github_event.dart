@@ -62,7 +62,8 @@ class GithubEvent {
         return '${actor.displayLogin} made a commit ($newSha7) '
             'to ${repo.name} on branch $branch:\n$message';
       case GithubEventType.watchEvent:
-        return '${actor.displayLogin} ${payload?.action} watching the repository';
+        return '${actor.displayLogin} ${payload?.action}'
+            ' watching the repository';
       case GithubEventType.forkEvent:
         return '${actor.displayLogin} forked ${repo.name}';
       default:

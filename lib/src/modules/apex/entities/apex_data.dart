@@ -1,5 +1,4 @@
-import 'package:kyaru_bot/kyaru.dart';
-
+import '../../../../kyaru.dart';
 import '../entities/realtime_data.dart';
 import 'global_data.dart';
 import 'legends_data.dart';

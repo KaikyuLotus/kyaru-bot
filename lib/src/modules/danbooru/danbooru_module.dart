@@ -70,9 +70,7 @@ class DanbooruModule implements IModule {
   Future randomPostAsync(Update update, _, {List<String>? tags}) async {
     var elaboratedTags = tags ?? [];
     elaboratedTags = List.from(elaboratedTags.map((t) => t.toLowerCase()));
-    if (elaboratedTags.isEmpty) {
-      return _kyaru.reply(update, 'You must specify at least a tag [e:2]');
-    } else if (elaboratedTags.contains('loli') ||
+    if (elaboratedTags.contains('loli') ||
         elaboratedTags.contains('shota') ||
         elaboratedTags.contains('toddlercon')) {
       return _kyaru.reply(
@@ -106,7 +104,6 @@ class DanbooruModule implements IModule {
 
     if (!AdminUtils.isNsfwAllowed(_kyaru, update.message!.chat)) {
       elaboratedTags.removeWhere((t) => t.contains('rating'));
-      // ignore: cascade_invocations
       elaboratedTags.add('rating:s');
     }
 

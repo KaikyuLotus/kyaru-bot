@@ -12,9 +12,7 @@ class KyaruDB {
   final Database database = Database('database/database.json');
 
   Settings get settings {
-    return database[_settingsCollection].findOneAs(
-      (json) => Settings.fromJson(json),
-    )!;
+    return database[_settingsCollection].findOneAs(Settings.fromJson)!;
   }
 
   void syncDb() => database.sync();
@@ -45,7 +43,7 @@ class KyaruDB {
 
   ChatData? getChatData(int chatId) {
     return database[_chatDataCollection].findOneAs(
-      (json) => ChatData.fromJson(json),
+      ChatData.fromJson,
       filter: {'id': chatId},
     );
   }
@@ -60,7 +58,7 @@ class KyaruDB {
       filter['event_type'] = UpperEnums.encodeUpper(eventType);
     }
     return database[_instructionsCollection].findAs(
-      (json) => Instruction.fromJson(json),
+      Instruction.fromJson,
       filter: filter,
     );
   }
