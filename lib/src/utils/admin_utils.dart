@@ -13,6 +13,6 @@ class AdminUtils {
 
   static bool isNsfwAllowed(Kyaru kyaru, Chat chat) {
     var chatData = kyaru.brain.db.getChatData(chat.id);
-    return chatData == null || chatData.nsfw!;
+    return chatData == null || chatData.nsfw;
   }
 }

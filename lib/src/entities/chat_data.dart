@@ -1,8 +1,8 @@
 class ChatData {
-  int? id;
-  bool? nsfw;
+  int id;
+  bool nsfw;
 
-  ChatData(this.id, {this.nsfw});
+  ChatData(this.id, {required this.nsfw});
 
   static ChatData fromJson(Map<String, dynamic> json) {
     return ChatData(

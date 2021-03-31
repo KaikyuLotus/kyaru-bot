@@ -97,7 +97,7 @@ class Instruction {
       'chat_id': _chatId,
       'type': UpperEnums.encodeUpper(_instructionType),
       'event_type': UpperEnums.encodeUpper(_instructionEventType),
-      'command': _command,
+      'command': _command?.toJson(),
       'function': _function,
       'regex': _regex,
       'require_quote': _requireQuote,

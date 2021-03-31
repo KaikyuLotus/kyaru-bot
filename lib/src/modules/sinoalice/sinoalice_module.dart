@@ -133,8 +133,10 @@ class SinoAliceModule implements IModule {
         UserSinoAliceData(update.message!.from!.id, id),
       );
       return _kyaru.reply(
-          update, "I've registered your game ID\nJust type /sinid to show it",
-          quote: true);
+        update,
+        "I've registered your game ID\nJust type /sinid to show it",
+        quote: true,
+      );
     }
 
     var quote = update.message!.replyToMessage != null;
