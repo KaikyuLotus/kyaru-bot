@@ -5,9 +5,9 @@ class Character {
   String? url;
   String? imageUrl;
   String? name;
-  List<dynamic>? alternativeNames;
-  List<Summary>? anime;
-  List<Summary>? manga;
+  List<dynamic> alternativeNames;
+  List<Summary> anime;
+  List<Summary> manga;
 
   Character(
     this.malId,

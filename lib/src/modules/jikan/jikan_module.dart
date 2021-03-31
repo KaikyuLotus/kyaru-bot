@@ -127,21 +127,23 @@ class JikanModule implements IModule {
 
     var hiddenLink = MarkdownUtils.generateHiddenUrl(character.imageUrl);
     var name = MarkdownUtils.escape(character.name);
-    var alternativeName =
-        MarkdownUtils.escape('(${character.alternativeNames?.first})');
+    var alternativeName = character.alternativeNames.isNotEmpty
+        ? MarkdownUtils.escape('(${character.alternativeNames.first})')
+        : '';
+
     var anime = character.anime
-        ?.map((entry) =>
+        .map((entry) =>
             MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
         .join('\n');
 
     var manga = character.manga
-        ?.map((entry) =>
+        .map((entry) =>
             MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
         .join('\n');
 
     var reply = '$hiddenLink*$name $alternativeName*\n\n'
-        '${anime!.isNotEmpty ? '*Anime List:* \n$anime\n\n' : ''}'
-        '${manga!.isNotEmpty ? '*Manga List:* \n$manga\n\n' : ''}';
+        '${anime.isNotEmpty ? '*Anime List:* \n$anime\n\n' : ''}'
+        '${manga.isNotEmpty ? '*Manga List:* \n$manga\n\n' : ''}';
 
     var keyboard = InlineKeyboardMarkup([
       [InlineKeyboardButton.URL('Open on MAL', character.url)]
