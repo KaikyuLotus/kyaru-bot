@@ -3,6 +3,18 @@ import 'small_entities/battlepass.dart';
 import 'small_entities/rank.dart';
 
 class GlobalData {
+
+  String name;
+  int uid;
+  String? platform;
+  int level;
+  int toNextLevelPercent;
+  int? internalUpdateCount;
+
+  Bans bans;
+  Rank rank;
+  Battlepass battlepass;
+
   GlobalData(
     this.name,
     this.uid,
@@ -28,15 +40,4 @@ class GlobalData {
       Battlepass.fromJson(json['battlepass']),
     );
   }
-
-  String? name;
-  int? uid;
-  String? platform;
-  int? level;
-  int? toNextLevelPercent;
-  int? internalUpdateCount;
-
-  Bans bans;
-  Rank rank;
-  Battlepass battlepass;
 }
