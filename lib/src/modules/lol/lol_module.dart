@@ -27,7 +27,7 @@ class LoLModule implements IModule {
       ..removeAt(0); // Remove user command
 
     if (args.isEmpty) {
-      return await _kyaru.reply(update, 'Please specify your username');
+      return _kyaru.reply(update, 'Please specify your username');
     }
 
     var user = args[0];
@@ -35,7 +35,7 @@ class LoLModule implements IModule {
     var playIndexInt = int.tryParse(playIndex);
 
     if (playIndexInt == null || playIndexInt < 1 || playIndexInt > 100) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'The third argument must be a number between 1 and 100',
       );
@@ -44,27 +44,66 @@ class LoLModule implements IModule {
     playIndexInt -= 1;
 
     var summoner = await _client.getSummoner(user);
+
+    if (summoner == null) {
+      return _kyaru.reply(
+        update,
+        'Player not found.',
+        parseMode: ParseMode.MARKDOWN,
+      );
+    }
+
     var matches = await _client.getMatches(summoner.accountId);
-    var matchInfo = await _client.getMatch(matches[playIndexInt].gameId);
-    var summonerIdentity = matchInfo.participantIdentities!.firstWhere(
+    if (matches.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'Player has no recent matches.',
+        parseMode: ParseMode.MARKDOWN,
+      );
+    }
+
+    if (playIndexInt > matches.length - 1) {
+      return _kyaru.reply(
+        update,
+        'Given match not found, maximum match index found is ${matches.length}',
+        parseMode: ParseMode.MARKDOWN,
+      );
+    }
+
+    var selectedGameId = matches[playIndexInt].gameId;
+
+    var matchInfo = await _client.getMatch(selectedGameId);
+
+    var summonerIdentity = matchInfo.participantIdentities.firstWhere(
       (i) => i.player.accountId == summoner.accountId,
     );
-    var participant = matchInfo.participants!.firstWhere(
+
+    var participant = matchInfo.participants.firstWhere(
       (p) => p.participantId == summonerIdentity.participantId,
     );
-    var usedChampion = _client.findChampionById(
-      participant.championId.toString(),
-    );
 
-    var durationMinutes = (matchInfo.gameDuration! / 60).floor();
-    var durationSeconds =
-        (matchInfo.gameDuration! - durationMinutes * 60).floor();
+    var masteries = await _client.getChampionsMasteryBySummonerId(summoner.id);
+
+    var mainChamp = _client.findChampionById('${masteries.first.championId}');
+    var usedChampion = _client.findChampionById('${participant.championId}');
+
+    if (usedChampion == null || mainChamp == null) {
+      await _kyaru.reply(
+        update,
+        "It seems i can't a champion used.",
+        parseMode: ParseMode.MARKDOWN,
+      );
+      return _kyaru.noticeOwner(update, 'Master, update LoL characters!');
+    }
+
+    var durationMinutes = matchInfo.gameDuration ~/ 60;
+    var durationSeconds = matchInfo.gameDuration.remainder(60);
 
     var kda = '${participant.stats.kills}/'
         '${participant.stats.deaths}/'
         '${participant.stats.assists}';
 
-    var creationDate = matchInfo.gameCreation.toString().split('.')[0];
+    var creationDate = '${matchInfo.gameCreation}'.split('.')[0];
     var ymd = creationDate.split(' ')[0];
     var y = ymd.split('-')[0];
     var mo = ymd.split('-')[1];
@@ -75,11 +114,8 @@ class LoLModule implements IModule {
     var m = hm.split(':')[1];
     hm = '$h:$m';
 
-    var masteries = await _client.getChampionsMasteryBySummonerId(summoner.id);
-    var mainChamp =
-        _client.findChampionById(masteries.first.championId.toString());
-
-    var firstPart = '*Summoner $user*\nLevel: *${summoner.summonerLevel}*\n'
+    var firstPart = '*Summoner $user*\n'
+        'Level: *${summoner.summonerLevel}*\n'
         'Main champ: *${mainChamp.name}*'
         ' mastery *${masteries.first.championLevel}*';
 
@@ -92,6 +128,6 @@ class LoLModule implements IModule {
         ' *${participant.stats.win! ? 'Win' : 'Lost'}*\n'
         'Match lasted $durationMinutes minutes and $durationSeconds seconds';
 
-    await _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
+    return _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
   }
 }

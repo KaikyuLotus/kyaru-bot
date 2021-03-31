@@ -1,6 +1,6 @@
 class Match {
   String? platformId;
-  int? gameId;
+  int gameId;
   int? champion;
   int? queue;
   int? season;

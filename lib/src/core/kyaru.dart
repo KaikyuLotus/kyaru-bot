@@ -66,18 +66,18 @@ class Kyaru {
             : null;
   }
 
-  Future noticeOwner(Update? update, Object e, StackTrace s) async {
-    await brain.bot.sendMessage(ChatID(brain.db.settings.ownerId), '$e\n$s');
+  Future noticeOwnerError(Update update, Object e, StackTrace s) async {
+    return noticeOwner(update, '$e\n$s');
   }
 
-  Future onError(Bot bot, Update? updateNull, Object e, StackTrace s) async {
+  Future noticeOwner(Update update, String message) async {
+    await brain.bot.sendMessage(ChatID(brain.db.settings.ownerId), message);
+  }
+
+  Future onError(Bot bot, Update updateNull, Object e, StackTrace s) async {
     print('Kyaru machine broke\n$e\ns');
     var update = updateNull;
-    await noticeOwner(update, e, s);
-    if (update == null) {
-      print('Error outside of an update, something went wrong');
-      return;
-    }
+    await noticeOwnerError(update, e, s);
     print('Update ID was: ${update.updateId}');
     await reply(
       update,

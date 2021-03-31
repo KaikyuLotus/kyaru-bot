@@ -14,34 +14,35 @@ class LOLClient {
 
   final _client = Client();
 
-  bool _inited = false;
+  bool _initialized = false;
 
-  bool get inited => _inited;
+  bool get initialized => _initialized;
 
   String? key;
   String? version;
 
-  List<Champion>? champions;
+  late List<Champion> champions;
 
   LOLClient(this.key, [this.version]);
 
   Future _init() async {
-    print('Initing LoL client...');
+    print('Init LoL client...');
     version = version ?? await _getLatestVersion();
     champions = await _getChampions();
 
     print('Loaded champions of version $version');
-    print('Loaded ${champions!.length} champions');
-    _inited = true;
+    print('Loaded ${champions.length} champions');
+    _initialized = true;
     print('Done');
   }
 
   Future<T> _get<T>(
-    Uri uri,
-    T Function(dynamic) mapper, [
+    Uri uri, {
     bool noInit = false,
-  ]) async {
-    if (!_inited && !noInit) {
+    T Function(Map<String, dynamic>)? mapMapper,
+    T Function(List<dynamic>)? listMapper,
+  }) async {
+    if (!_initialized && !noInit) {
       await _init();
     }
     var response = await _client.get(
@@ -50,7 +51,10 @@ class LOLClient {
     ).timeout(
       Duration(seconds: 120),
     );
-    return mapper(json.decode(response.body));
+
+    var decoded = json.decode(response.body);
+    if (mapMapper != null) return mapMapper(decoded);
+    return listMapper!.call(decoded);
   }
 
   Future<String> _getLatestVersion() async => (await _getVersions()).first;
@@ -58,21 +62,23 @@ class LOLClient {
   Future<List<String>> _getVersions() async {
     return await _get(
       Uri.https(dataBaseUrl, '/api/versions.json'),
-      (d) => List.from(d),
-      true,
+      listMapper: (d) => List.from(d),
+      noInit: true,
     );
   }
 
-  Future<List<Champion>?> _getChampions() async {
+  Future<List<Champion>> _getChampions() async {
     return await _get(
       Uri.https(dataBaseUrl, '/cdn/$version/data/en_US/champion.json'),
-      Champion.listFromResponse,
-      true,
+      mapMapper: Champion.listFromResponse,
+      noInit: true,
     );
   }
 
-  Champion findChampionById(String champId) {
-    return champions!.firstWhere((c) => c.key == champId);
+  Champion? findChampionById(String champId) {
+    var matches = champions.where((c) => c.key == champId);
+    if (matches.isEmpty) return null;
+    return matches.first;
   }
 
   Future<List<ChampionMastery>> getChampionsMasteryBySummonerId(
@@ -83,14 +89,17 @@ class LOLClient {
         apiBaseUrl,
         '/lol/champion-mastery/v4/champion-masteries/by-summoner/$summonerId',
       ),
-      ChampionMastery.listFromJsonArray,
+      listMapper: ChampionMastery.listFromJsonArray,
     );
   }
 
-  Future<Summoner> getSummoner(String name) async {
+  Future<Summoner?> getSummoner(String name) async {
     return await _get(
       Uri.https(apiBaseUrl, '/lol/summoner/v4/summoners/by-name/$name'),
-      (d) => Summoner.fromJson(d),
+      mapMapper: (d) {
+        if ((d['status_code'] ?? 200) == 404) return null;
+        return Summoner.fromJson(d);
+      },
     );
   }
 
@@ -100,19 +109,17 @@ class LOLClient {
         apiBaseUrl,
         '/lol/match/v4/matchlists/by-account/$summonerAccount',
       ),
-      (d) => Match.listFromJsonArray(d['matches']),
+      mapMapper: (d) => Match.listFromJsonArray(d['matches'] ?? []),
     );
   }
 
-  Future<MatchInfo> getMatch(int? matchId) async {
+  Future<MatchInfo> getMatch(int matchId) async {
     return await _get(
       Uri.https(
         apiBaseUrl,
         '/lol/match/v4/matches/$matchId',
       ),
-      // d is not Map<String, dynamic>, it's dynamic
-      // ignore: unnecessary_lambdas
-      (d) => MatchInfo.fromJson(d),
+      mapMapper: MatchInfo.fromJson,
     );
   }
 }

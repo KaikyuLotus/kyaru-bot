@@ -6,16 +6,16 @@ class MatchInfo {
   int? gameId;
   String? platformId;
   DateTime gameCreation;
-  int? gameDuration;
+  int gameDuration;
   int? queueId;
   int? mapId;
   int? seasonId;
   String? gameVersion;
   String? gameMode;
   String? gameType;
-  List<Team>? teams;
-  List<Participant>? participants;
-  List<ParticipantIdentity>? participantIdentities;
+  List<Team> teams;
+  List<Participant> participants;
+  List<ParticipantIdentity> participantIdentities;
 
   MatchInfo(
     this.gameId,
@@ -45,9 +45,11 @@ class MatchInfo {
       json['gameVersion'],
       json['gameMode'],
       json['gameType'],
-      Team.listFromJsonArray(json['teams']),
-      Participant.listFromJsonArray(json['participants']),
-      ParticipantIdentity.listFromJsonArray(json['participantIdentities']),
+      Team.listFromJsonArray(json['teams'] ?? []),
+      Participant.listFromJsonArray(json['participants'] ?? []),
+      ParticipantIdentity.listFromJsonArray(
+        json['participantIdentities'] ?? [],
+      ),
     );
   }
 }
