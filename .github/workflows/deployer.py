@@ -17,7 +17,7 @@ owner_username = "@KaikyuLotus"
 
 # Stickers
 success_stickers = [
-    "CAACAgQAAxkBAAMSXizBH6EVAcELC6oDWD_TEeXZPsIAAuIBAAK6gRoGPKkaIcuBR1MYBA",
+    "CAACAgQAAx0CVpS1FAABBhz3YGTlWHDqmqrvtsNpEPkl0N13eu0AAhUIAAIMn7lST8c6uyuVKSUeBA",
 ]
 
 fail_stickers = [
@@ -84,7 +84,7 @@ def check_analyzer_output():
 
 
 def broadcast_message(message, failed=True):
-    sticker = choice(fail_stickers if fail_stickers else success_stickers)
+    sticker = choice(fail_stickers if failed else success_stickers)
     print(message)
     for target_chat_id in target_chat_ids:
         bot.send_message(target_chat_id, message, parse_mode="markdown")
@@ -109,7 +109,7 @@ def deploy_failed():
 def build_succeeded():
     broadcast_message(f"New commit (`{short_commit}`) on `develop` from `@{actor}`:\n"
                       f"\"`{commit_message}`\"\n\n"
-                      f"Build succeeded ~")
+                      f"Build succeeded ~", failed=False)
 
 
 def main():
