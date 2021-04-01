@@ -127,6 +127,12 @@ class GithubModule implements IModule {
         'Remove a GitHub repository',
         'gitremove',
         core: true,
+      ),
+      ModuleFunction(
+        listRepo,
+        'List GitHub repositories in this chat',
+        'gitlist',
+        core: true,
       )
     ];
 
@@ -224,5 +230,18 @@ class GithubModule implements IModule {
     }
 
     await _kyaru.reply(update, 'Repository $username/$repo removed');
+  }
+
+  Future listRepo(Update update, _) async {
+    var repoList = _kyaru.brain.db
+        .getRepos()
+        .where((element) => element.chatID == update.message!.chat.id)
+        .map((element) => '${element.user}/${element.repo}')
+        .toList();
+
+    await _kyaru.reply(
+        update,
+        'Repositories in this chat:\n'
+        '${repoList.join('\n')}');
   }
 }
