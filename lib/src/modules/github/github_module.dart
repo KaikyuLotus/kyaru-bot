@@ -235,9 +235,13 @@ class GithubModule implements IModule {
   Future listRepo(Update update, _) async {
     var repoList = _kyaru.brain.db
         .getRepos()
-        .where((element) => element.chatID == update.message!.chat.id)
-        .map((element) => '${element.user}/${element.repo}')
+        .where((repo) => repo.chatID == update.message!.chat.id)
+        .map((repo) => '- ${repo.user}/${repo.repo}')
         .toList();
+
+    if (repoList.isEmpty) {
+      return _kyaru.reply(update, 'There are no repositories in this chat');
+    }
 
     await _kyaru.reply(
         update,
