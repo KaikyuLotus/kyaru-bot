@@ -5,7 +5,7 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 
 class DatabaseModule implements IModule {
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   DatabaseModule() {
     _moduleFunctions = [
@@ -15,7 +15,7 @@ class DatabaseModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;

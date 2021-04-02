@@ -6,9 +6,9 @@ class InsultsClient {
   final _client = Client();
 
   Future<String> getInsult() async {
-    return (await _client
-            .get(Uri.https(baseUrl, '/api/insult'))
-            .timeout(Duration(seconds: 120)))
-        .body;
+    var response = await _client
+        .get(Uri.https(baseUrl, '/api/insult'))
+        .timeout(Duration(seconds: 120));
+    return response.body;
   }
 }

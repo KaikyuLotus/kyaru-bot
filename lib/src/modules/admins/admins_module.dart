@@ -5,7 +5,7 @@ import '../../../kyaru.dart';
 class AdminsModule implements IModule {
   final Kyaru _kyaru;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   AdminsModule(this._kyaru) {
     _moduleFunctions = [
@@ -54,7 +54,7 @@ class AdminsModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -66,7 +66,7 @@ class AdminsModule implements IModule {
       update.message!.from,
     );
     if (!isAdmin) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'Sorry, you must be an admin to use that command',
       );
@@ -350,7 +350,7 @@ class AdminsModule implements IModule {
       return _kyaru.reply(
         update,
         customCommand.text!,
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 
@@ -358,7 +358,7 @@ class AdminsModule implements IModule {
       return _kyaru.replySticker(
         update,
         customCommand.fileId!,
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 
@@ -366,7 +366,7 @@ class AdminsModule implements IModule {
       return _kyaru.replyPhoto(
         update,
         HttpFile.fromToken(customCommand.fileId!),
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 
@@ -374,7 +374,7 @@ class AdminsModule implements IModule {
       return _kyaru.replyVideo(
         update,
         HttpFile.fromToken(customCommand.fileId!),
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 
@@ -382,7 +382,7 @@ class AdminsModule implements IModule {
       return _kyaru.replyAnimation(
         update,
         HttpFile.fromToken(customCommand.fileId!),
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 
@@ -390,7 +390,7 @@ class AdminsModule implements IModule {
       return _kyaru.replyDocument(
         update,
         HttpFile.fromToken(customCommand.fileId!),
-        quoteQuoted: customCommand.quoteQuoted!,
+        quoteQuoted: customCommand.quoteQuoted,
       );
     }
 

@@ -60,7 +60,7 @@ class LOLClient {
   Future<String> _getLatestVersion() async => (await _getVersions()).first;
 
   Future<List<String>> _getVersions() async {
-    return await _get(
+    return _get(
       Uri.https(dataBaseUrl, '/api/versions.json'),
       listMapper: (d) => List.from(d),
       noInit: true,
@@ -68,7 +68,7 @@ class LOLClient {
   }
 
   Future<List<Champion>> _getChampions() async {
-    return await _get(
+    return _get(
       Uri.https(dataBaseUrl, '/cdn/$version/data/en_US/champion.json'),
       mapMapper: Champion.listFromResponse,
       noInit: true,
@@ -84,7 +84,7 @@ class LOLClient {
   Future<List<ChampionMastery>> getChampionsMasteryBySummonerId(
     String? summonerId,
   ) async {
-    return await _get(
+    return _get(
       Uri.https(
         apiBaseUrl,
         '/lol/champion-mastery/v4/champion-masteries/by-summoner/$summonerId',
@@ -94,7 +94,7 @@ class LOLClient {
   }
 
   Future<Summoner?> getSummoner(String name) async {
-    return await _get(
+    return _get(
       Uri.https(apiBaseUrl, '/lol/summoner/v4/summoners/by-name/$name'),
       mapMapper: (d) {
         if ((d['status_code'] ?? 200) == 404) return null;
@@ -104,7 +104,7 @@ class LOLClient {
   }
 
   Future<List<Match>> getMatches(String? summonerAccount) async {
-    return await _get(
+    return _get(
       Uri.https(
         apiBaseUrl,
         '/lol/match/v4/matchlists/by-account/$summonerAccount',
@@ -114,7 +114,7 @@ class LOLClient {
   }
 
   Future<MatchInfo> getMatch(int matchId) async {
-    return await _get(
+    return _get(
       Uri.https(
         apiBaseUrl,
         '/lol/match/v4/matches/$matchId',

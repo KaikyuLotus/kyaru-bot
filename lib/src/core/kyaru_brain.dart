@@ -54,7 +54,7 @@ class KyaruBrain {
     this.modules.addAll(modules);
     for (var module in modules) {
       print(module.runtimeType);
-      var moduleFunctions = module.moduleFunctions ?? [];
+      var moduleFunctions = module.moduleFunctions;
       for (var moduleFunction in moduleFunctions) {
         print('- ${moduleFunction.name}');
         modulesFunctions[moduleFunction.name] = moduleFunction;

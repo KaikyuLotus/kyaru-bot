@@ -8,6 +8,7 @@ class Payload {
   String? pusherType;
   String? action;
   String? head;
+  int? number;
 
   List<GithubCommit>? commits;
 
@@ -20,6 +21,7 @@ class Payload {
     this.action,
     this.head,
     this.commits,
+      this.number,
   );
 
   static Payload fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Payload {
       json['action'],
       json['head'],
       GithubCommit.listFromJsonArray(json['commits'] ?? []),
+      json['number'],
     );
   }
 }

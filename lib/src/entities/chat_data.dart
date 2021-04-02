@@ -13,7 +13,9 @@ class ChatData {
 
   static List<ChatData> listFromJsonArray(List<dynamic> jsonArray) {
     return List.generate(
-        jsonArray.length, (i) => ChatData.fromJson(jsonArray[i]));
+      jsonArray.length,
+      (i) => ChatData.fromJson(jsonArray[i]),
+    );
   }
 
   Map<String, dynamic> toJson() {

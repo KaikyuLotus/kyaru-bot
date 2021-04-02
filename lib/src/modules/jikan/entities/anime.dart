@@ -1,8 +1,8 @@
 class Anime {
-  int? malId;
-  String? url;
-  String? imageUrl;
-  String? title;
+  int malId;
+  String url;
+  String imageUrl;
+  String title;
   bool? airing;
   String? synopsis;
   String? type;

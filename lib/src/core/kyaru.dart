@@ -79,7 +79,7 @@ class Kyaru {
     var update = updateNull;
     await noticeOwnerError(update, e, s);
     print('Update ID was: ${update.updateId}');
-    await reply(
+    return reply(
       update,
       'Sorry, an error has occurred...\n'
       'My owner has been already informed.\n'

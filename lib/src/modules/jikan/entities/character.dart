@@ -1,10 +1,10 @@
 import 'summary.dart';
 
 class Character {
-  int? malId;
-  String? url;
-  String? imageUrl;
-  String? name;
+  int malId;
+  String url;
+  String imageUrl;
+  String name;
   List<dynamic> alternativeNames;
   List<Summary> anime;
   List<Summary> manga;

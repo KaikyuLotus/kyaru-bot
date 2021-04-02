@@ -9,7 +9,7 @@ class JikanModule implements IModule {
   final Kyaru _kyaru;
   final JikanClient jikanClient = JikanClient();
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   JikanModule(this._kyaru) {
     _moduleFunctions = [
@@ -29,7 +29,7 @@ class JikanModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -37,7 +37,7 @@ class JikanModule implements IModule {
   Future anime(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
     if (args.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'This command needs a search string, which rappresents an anime name,'
         ' as first argument.',
@@ -47,7 +47,7 @@ class JikanModule implements IModule {
     var searchString = args.join(' ');
 
     if (searchString.length < 3) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'Search term length must be greater than 2 characters',
       );
@@ -56,7 +56,7 @@ class JikanModule implements IModule {
     var matchingAnimes = await jikanClient.searchAnime(searchString);
 
     if (matchingAnimes == null || matchingAnimes.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'No anime found with the given search terms',
       );
@@ -87,7 +87,7 @@ class JikanModule implements IModule {
       [InlineKeyboardButton.URL('Open on MAL', anime.url)]
     ]);
 
-    await _kyaru.reply(
+    return _kyaru.reply(
       update,
       reply,
       parseMode: ParseMode.MARKDOWNV2,
@@ -98,7 +98,7 @@ class JikanModule implements IModule {
   Future character(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
     if (args.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'This command needs a search string, which '
         'rappresents a character name, as first argument.',
@@ -108,7 +108,7 @@ class JikanModule implements IModule {
     var searchString = args.join(' ');
 
     if (searchString.length < 3) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'Search term length must be greater than 2 characters',
       );
@@ -117,7 +117,7 @@ class JikanModule implements IModule {
     var matchingCharacters = await jikanClient.searchCharacter(searchString);
 
     if (matchingCharacters == null || matchingCharacters.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'No character found with the given search terms',
       );
@@ -132,13 +132,11 @@ class JikanModule implements IModule {
         : '';
 
     var anime = character.anime
-        .map((entry) =>
-            MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
+        .map((a) => MarkdownUtils.generateUrl('${a.name}', '${a.url}'))
         .join('\n');
 
     var manga = character.manga
-        .map((entry) =>
-            MarkdownUtils.generateUrl('${entry.name}', '${entry.url}'))
+        .map((m) => MarkdownUtils.generateUrl('${m.name}', '${m.url}'))
         .join('\n');
 
     var reply = '$hiddenLink*$name $alternativeName*\n\n'
@@ -149,7 +147,7 @@ class JikanModule implements IModule {
       [InlineKeyboardButton.URL('Open on MAL', character.url)]
     ]);
 
-    await _kyaru.reply(
+    return _kyaru.reply(
       update,
       reply,
       parseMode: ParseMode.MARKDOWNV2,

@@ -5,7 +5,7 @@ import '../../../kyaru.dart';
 class OwnerModule implements IModule {
   final Kyaru _kyaru;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   OwnerModule(this._kyaru) {
     _moduleFunctions = [
@@ -40,7 +40,7 @@ class OwnerModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;

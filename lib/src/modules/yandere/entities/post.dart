@@ -1,7 +1,7 @@
 class Post {
-  int? id;
-  String? rating;
-  String? tags;
+  int id;
+  String rating;
+  String tags;
   String? fileUrl;
   String? sampleUrl;
   String? jpegUrl;

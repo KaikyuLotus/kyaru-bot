@@ -17,7 +17,7 @@ class JikanClient {
   }
 
   Future<List<Anime>?> searchAnime(String searchString, {int limit = 1}) async {
-    return await _get(
+    return _get(
       Uri.https(apiBaseUrl, '/v3/search/anime',
           {'q': searchString, 'limit': '$limit'}),
       (d) => Anime.listFromJsonArray(d['results']),
@@ -26,7 +26,7 @@ class JikanClient {
 
   Future<List<Character>?> searchCharacter(String searchString,
       {int limit = 1}) async {
-    return await _get(
+    return _get(
       Uri.https(apiBaseUrl, '/v3/search/character',
           {'q': searchString, 'limit': '$limit'}),
       (d) => Character.listFromJsonArray(d['results']),

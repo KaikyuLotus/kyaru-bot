@@ -111,7 +111,7 @@ class GithubModule implements IModule {
   final Kyaru _kyaru;
   final _githubClient = GithubClient();
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   GithubModule(this._kyaru) {
     print('Github module started at ${DateTime.now().toIso8601String()}');
@@ -140,7 +140,7 @@ class GithubModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -181,7 +181,7 @@ class GithubModule implements IModule {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
     if (args.length < 2) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'This command needs two parameters, '
         'a Github username and a repository name',
@@ -198,11 +198,13 @@ class GithubModule implements IModule {
       return _kyaru.reply(update, 'Repository or user not found');
     } on GithubNotChangedException {
       return _kyaru.reply(
-          update, 'There are no new events for this repository');
+        update,
+        'There are no new events for this repository',
+      );
     }
 
     _kyaru.brain.db.addRepo(dbRepo);
-    await _kyaru.reply(
+    return _kyaru.reply(
       update,
       'From now on i\'ll send updates on '
       'new events for this repository in this chat',
@@ -213,7 +215,7 @@ class GithubModule implements IModule {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
     if (args.length < 2) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'This command needs two parameters, '
         'a Github username and a repository name',
@@ -229,7 +231,7 @@ class GithubModule implements IModule {
       return _kyaru.reply(update, 'There is no repository with that name');
     }
 
-    await _kyaru.reply(update, 'Repository $username/$repo removed');
+    return _kyaru.reply(update, 'Repository $username/$repo removed');
   }
 
   Future listRepo(Update update, _) async {
@@ -243,9 +245,10 @@ class GithubModule implements IModule {
       return _kyaru.reply(update, 'There are no repositories in this chat');
     }
 
-    await _kyaru.reply(
-        update,
-        'Repositories in this chat:\n'
-        '${repoList.join('\n')}');
+    return _kyaru.reply(
+      update,
+      'Repositories in this chat:\n'
+      '${repoList.join('\n')}',
+    );
   }
 }

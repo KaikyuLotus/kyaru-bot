@@ -13,7 +13,7 @@ class DanbooruModule implements IModule {
 
   final slowDownChats = <int, DateTime>{};
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   DanbooruModule(this._kyaru) {
     _moduleFunctions = [
@@ -33,7 +33,7 @@ class DanbooruModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -43,7 +43,7 @@ class DanbooruModule implements IModule {
 
     // If no args are specified then assume it's a random post request
     if (args.isEmpty) {
-      return await randomPostAsync(update, null);
+      return randomPostAsync(update, null);
     }
 
     var specifiedMode = args[0].toLowerCase();
@@ -52,11 +52,11 @@ class DanbooruModule implements IModule {
 
     for (var mode in modeMap.keys) {
       if (mode == specifiedMode) {
-        return await modeMap[mode]!(update, null);
+        return modeMap[mode]!(update, null);
       }
     }
 
-    return await _kyaru.reply(update, 'Specified mode not recognized');
+    return _kyaru.reply(update, 'Specified mode not recognized');
   }
 
   Future randomFromTags(Update update, _) {
@@ -101,10 +101,6 @@ class DanbooruModule implements IModule {
       }
     }
 
-    slowDownChats[update.message!.chat.id] = DateTime.now().add(
-      Duration(seconds: imagesCount * 6),
-    );
-
     var hasRating = elaboratedTags.any((e) => e.contains('rating:'));
     if (elaboratedTags.length > 3 ||
         (elaboratedTags.length == 3 && !hasRating)) {
@@ -117,6 +113,10 @@ class DanbooruModule implements IModule {
         'I\'m allowed to send 10 max posts at a time, try again.',
       );
     }
+
+    slowDownChats[update.message!.chat.id] = DateTime.now().add(
+      Duration(seconds: imagesCount * 6),
+    );
 
     if (!AdminUtils.isNsfwAllowed(_kyaru, update.message!.chat)) {
       elaboratedTags.removeWhere((t) => t.contains('rating'));
@@ -179,8 +179,6 @@ class DanbooruModule implements IModule {
       );
     }
 
-    var mediaCount = httpFiles.length;
-
     try {
       await _kyaru.brain.bot.sendChatAction(cid, ChatAction.UPLOAD_PHOTO);
       await _kyaru.brain.bot.sendMediaGroup(
@@ -205,7 +203,7 @@ class DanbooruModule implements IModule {
         );
       }
     } finally {
-      Future.delayed(Duration(seconds: mediaCount * 6), () {
+      Future.delayed(Duration(seconds: imagesCount * 6), () {
         print('Removing id from slowed chats');
         slowDownChats.remove(update.message!.chat.id);
       });

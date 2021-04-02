@@ -6,15 +6,15 @@ class CustomCommand {
   String? command;
   String? fileId;
   String? text;
-  bool? quote;
-  bool? quoteQuoted;
+  bool quote;
+  bool quoteQuoted;
   CommandType commandType;
 
   CustomCommand(
     this.command,
     this.commandType, {
-    this.quote,
-    this.quoteQuoted,
+    this.quote = false,
+    this.quoteQuoted = false,
     this.fileId,
     this.text,
   });
@@ -34,8 +34,8 @@ class CustomCommand {
     return <String, dynamic>{
       'command': command,
       'command_type': UpperEnums.encodeUpper(commandType),
-      'quote': quote ?? false,
-      'quote_quoted': quoteQuoted ?? false,
+      'quote': quote,
+      'quote_quoted': quoteQuoted,
       'file_id': fileId,
       'text': text,
     };

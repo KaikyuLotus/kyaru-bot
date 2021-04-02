@@ -19,7 +19,7 @@ class DanbooruClient {
     int limit = 100,
     bool random = true,
   }) async {
-    return await _get(
+    return _get(
       Uri.https(
         baseUrl,
         '/posts.json',

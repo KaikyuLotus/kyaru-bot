@@ -28,7 +28,7 @@ class YandereClient {
       Uri.https(
         baseUrl,
         '/post.json',
-        <String, String>{
+        {
           'tags': (tags ?? <String>[]).join(' '),
           'limit': '$limit',
           'random': '$random',

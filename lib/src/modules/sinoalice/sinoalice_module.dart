@@ -38,7 +38,7 @@ extension on KyaruDB {
 class SinoAliceModule implements IModule {
   final Kyaru _kyaru;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   SinoAliceModule(this._kyaru) {
     _moduleFunctions = [
@@ -64,7 +64,7 @@ class SinoAliceModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -93,7 +93,7 @@ class SinoAliceModule implements IModule {
       try {
         okUserData[userData.gameId] = await _kyaru.brain.bot.getChatMember(
           ChatID(update.message!.chat.id),
-          userData.userId!,
+          userData.userId,
         );
       } on APIException {
         // Pass
@@ -102,7 +102,7 @@ class SinoAliceModule implements IModule {
     final buffer = StringBuffer();
     for (var entry in okUserData.entries) {
       var nameLink = MarkdownUtils.generateUrl(
-        MarkdownUtils.escape(entry.value.user.firstName),
+        MarkdownUtils.escape(entry.value.user.firstName)!,
         'tg://user?id=${entry.value.user.id}',
       );
       buffer.write('\n$nameLink: `${entry.key}`');

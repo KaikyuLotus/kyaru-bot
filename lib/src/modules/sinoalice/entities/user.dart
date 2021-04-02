@@ -1,6 +1,6 @@
 class UserSinoAliceData {
-  int? userId;
-  String? gameId;
+  int userId;
+  String gameId;
 
   UserSinoAliceData(this.userId, this.gameId);
 

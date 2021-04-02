@@ -27,7 +27,7 @@ class GenshinModule implements IModule {
   final Kyaru _kyaru;
   final GenshinClient genshinClient = GenshinClient();
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
     _moduleFunctions = [
@@ -53,7 +53,7 @@ class GenshinModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -66,7 +66,7 @@ class GenshinModule implements IModule {
         'To get your user ID go [here](https://www.hoyolab.com/genshin/accountCenter/postList?id=0) and check next to your name.';
 
     if (args.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         errorMsg,
         parseMode: ParseMode.MARKDOWN,
@@ -76,7 +76,7 @@ class GenshinModule implements IModule {
 
     var id = int.tryParse(args.first);
     if (id == null) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
           update, 'hoyolab.com is a number, your parameter wasn\'t.');
     }
 
@@ -97,7 +97,7 @@ class GenshinModule implements IModule {
           'you\'ll be able to retry in $cache.\n'
           'While you wait, please make sure that you'
           ' information on hoyolab.com is public!';
-      return await _kyaru.brain.bot.editMessageText(
+      return _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
@@ -105,7 +105,7 @@ class GenshinModule implements IModule {
     }
 
     _kyaru.brain.db.addGenshinUser(update.message!.from!.id, id);
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       'Everything looks nice! Use /genshin to get your information!',
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
@@ -231,7 +231,7 @@ class GenshinModule implements IModule {
       }
     }
 
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
@@ -271,7 +271,7 @@ class GenshinModule implements IModule {
         '*Dragonspine* ${progress["dragonspine"]}%\n'
         '*Mondstadt* ${progress["mondstadt"]}%';
 
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,

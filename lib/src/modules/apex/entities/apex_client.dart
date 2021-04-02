@@ -35,7 +35,7 @@ class ApexClient {
     int version = 4,
     String platform = 'PC',
   }) async {
-    return await _get(
+    return _get(
       Uri.https(apiBaseUrl, '/bridge', <String, String?>{
         'version': '$version',
         'platform': platform,

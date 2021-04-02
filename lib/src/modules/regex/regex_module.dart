@@ -6,7 +6,7 @@ import '../../../kyaru.dart';
 
 class RegexModule implements IModule {
   final Kyaru _kyaru;
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   RegexModule(this._kyaru) {
     _moduleFunctions = [
@@ -15,7 +15,7 @@ class RegexModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -34,10 +34,6 @@ class RegexModule implements IModule {
     if (fixed == quotedText) return;
 
     var reply = '"$fixed"\n\nFixed!';
-    return _kyaru.brain.bot.sendMessage(
-      ChatID(update.message!.chat.id),
-      reply,
-      replyToMessageId: update.message?.replyToMessage?.messageId,
-    );
+    return _kyaru.reply(update, reply, quoteQuoted: true);
   }
 }

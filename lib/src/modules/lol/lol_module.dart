@@ -7,17 +7,22 @@ class LoLModule implements IModule {
   final Kyaru _kyaru;
   late LOLClient _client;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   LoLModule(this._kyaru) {
     _client = LOLClient(_kyaru.brain.db.settings.lolToken);
     _moduleFunctions = [
-      ModuleFunction(getMe, 'Gets user stats from LoL', 'lol', core: true),
+      ModuleFunction(
+        getMe,
+        'Gets user stats from LoL',
+        'lol',
+        core: true,
+      ),
     ];
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;

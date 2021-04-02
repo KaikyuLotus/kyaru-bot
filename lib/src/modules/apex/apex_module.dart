@@ -12,7 +12,7 @@ class ApexModule implements IModule {
   final Kyaru _kyaru;
   late ApexClient _apexClient;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   ApexModule(this._kyaru) {
     _apexClient = ApexClient(_kyaru.brain.db.settings.apexToken);
@@ -27,7 +27,7 @@ class ApexModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -43,7 +43,7 @@ class ApexModule implements IModule {
   Future apex(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
     if (args.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         'This commands needs an APEX Legends username as first argument.',
       );

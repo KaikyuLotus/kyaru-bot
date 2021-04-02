@@ -66,6 +66,14 @@ class GithubEvent {
             ' watching the repository';
       case GithubEventType.forkEvent:
         return '${actor.displayLogin} forked ${repo.name}';
+      case GithubEventType.pullRequestEvent:
+        if (payload?.action == 'opened' || payload?.action == 'closed') {
+          return '${actor.displayLogin} ${payload?.action} '
+              'PR#${payload?.number}';
+        } else {
+          return '${actor.displayLogin} made an action: ${payload?.action} '
+              'on PR#${payload?.number}';
+        }
       default:
         return 'Unknown action on ${repo.name}';
     }
