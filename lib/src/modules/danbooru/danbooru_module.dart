@@ -9,9 +9,9 @@ import 'entities/post.dart';
 
 class DanbooruModule implements IModule {
   final Kyaru _kyaru;
-  final DanbooruClient danbooruClient = DanbooruClient();
+  final DanbooruClient dnbClient = DanbooruClient();
 
-  final List<int> slowDownChats = <int>[];
+  final slowDownChats = <int, DateTime>{};
 
   List<ModuleFunction>? _moduleFunctions;
 
@@ -68,6 +68,18 @@ class DanbooruModule implements IModule {
   }
 
   Future randomPostAsync(Update update, _, {List<String>? tags}) async {
+    var cid = ChatID(update.message!.chat.id);
+
+    if (slowDownChats.containsKey(update.message!.chat.id)) {
+      var lockedTime = slowDownChats[update.message!.chat.id]!;
+      var diff = lockedTime.difference(DateTime.now()).inSeconds;
+      return _kyaru.reply(
+        update,
+        'Please wait $diff more seconds, you horny.',
+        parseMode: ParseMode.MARKDOWN,
+      );
+    }
+
     var elaboratedTags = tags ?? [];
     elaboratedTags = List.from(elaboratedTags.map((t) => t.toLowerCase()));
     if (elaboratedTags.contains('loli') ||
@@ -89,6 +101,10 @@ class DanbooruModule implements IModule {
       }
     }
 
+    slowDownChats[update.message!.chat.id] = DateTime.now().add(
+      Duration(seconds: imagesCount * 6),
+    );
+
     var hasRating = elaboratedTags.any((e) => e.contains('rating:'));
     if (elaboratedTags.length > 3 ||
         (elaboratedTags.length == 3 && !hasRating)) {
@@ -107,17 +123,16 @@ class DanbooruModule implements IModule {
       elaboratedTags.add('rating:s');
     }
 
-    var sentMessage = await _kyaru.reply(update, 'Give me a second...');
+    await _kyaru.brain.bot.sendChatAction(cid, ChatAction.UPLOAD_PHOTO);
 
-    var randomPostList = await danbooruClient.getPosts(
+    var randomPostList = await dnbClient.getPosts(
       tags: elaboratedTags,
       limit: 100,
     );
     if (randomPostList.isEmpty) {
-      return _kyaru.brain.bot.editMessageText(
+      return _kyaru.reply(
+        update,
         'No post found with the specified tags',
-        chatId: ChatID(update.message!.chat.id),
-        messageId: sentMessage.messageId,
       );
     }
 
@@ -131,18 +146,25 @@ class DanbooruModule implements IModule {
           '- [File](${post.fileUrl})';
     }
 
-    var compatiblePostList = List.from(
-      randomPostList.where(
-        (p) => !['webm', 'gif'].contains(p.fileExt) && p.largeFileUrl != null,
-      ),
-    )..shuffle();
+    var compatiblePostList = randomPostList
+        .where(
+          (p) => [
+            ['jpg', 'jpeg', 'png'].contains(p.fileExt),
+            p.largeFileUrl != null,
+            p.width < 10000,
+            p.height < 10000,
+            byteToMB(p.fileSize) < 5
+          ].every((b) => b),
+        )
+        .toList()
+          ..shuffle();
 
     var httpFiles = compatiblePostList
         .take(imagesCount)
         .map(
           (p) => InputMediaPhoto(
             type: 'photo',
-            media: p.largeFileUrl,
+            media: p.largeFileUrl!,
             caption: captionMaker(p),
             parseMode: ParseMode.MARKDOWN,
           ),
@@ -150,49 +172,24 @@ class DanbooruModule implements IModule {
         .toList();
 
     if (httpFiles.isEmpty) {
-      return _kyaru.brain.bot.editMessageText(
+      return _kyaru.reply(
+        update,
         'Telegram does not support .webm format\nTry again or with other tags.',
-        chatId: ChatID(update.message!.chat.id),
-        messageId: sentMessage.messageId,
         parseMode: ParseMode.MARKDOWN,
       );
     }
 
     var mediaCount = httpFiles.length;
 
-    var slowed = slowDownChats.contains(update.message!.chat.id);
-    if (slowed) {
-      await _kyaru.brain.bot.editMessageText(
-        "Please slow down...\nI'll send the media group in some seconds...",
-        chatId: ChatID(update.message!.chat.id),
-        messageId: sentMessage.messageId,
-        parseMode: ParseMode.MARKDOWN,
-      );
-    }
-
-    await Future.doWhile(
-      () async => Future.delayed(
-        Duration(milliseconds: 100),
-        () => slowDownChats.contains(update.message!.chat.id),
-      ),
-    );
-
-    if (mediaCount > 3) {
-      await _kyaru.brain.bot.sendChatAction(
-        ChatID(update.message!.chat.id),
-        ChatAction.UPLOAD_PHOTO,
-      );
-    }
-    slowDownChats.add(update.message!.chat.id);
     try {
+      await _kyaru.brain.bot.sendChatAction(cid, ChatAction.UPLOAD_PHOTO);
       await _kyaru.brain.bot.sendMediaGroup(
-        ChatID(update.message!.chat.id),
+        cid,
         httpFiles,
         replyToMessageId: update.message!.chat.type != 'private'
             ? update.message!.messageId
             : null,
       );
-      print('Messages sent');
     } on APIException catch (e, s) {
       print('Could not send image: $e\n$s');
       print('${e.description}');
@@ -200,18 +197,18 @@ class DanbooruModule implements IModule {
         print('Throttle...');
         var seconds = int.parse(e.description.split('after ')[1].split('(')[0]);
         await Future.delayed(Duration(seconds: seconds));
+        await _kyaru.reply(
+          update,
+          "Sorry, you're too horny and Telegram throttled me for"
+          " $seconds seconds.\nI'll serve your requests as soon as possible,"
+          " but please slow down.",
+        );
       }
-      await _kyaru.brain.bot.editMessageText(
-        'Error!',
-        chatId: ChatID(update.message!.chat.id),
-        messageId: sentMessage.messageId,
-      );
     } finally {
-      print('Removing id from slowed chats');
-      Future.delayed(
-        Duration(seconds: mediaCount * 3),
-        () => slowDownChats.remove(update.message!.chat.id),
-      );
+      Future.delayed(Duration(seconds: mediaCount * 6), () {
+        print('Removing id from slowed chats');
+        slowDownChats.remove(update.message!.chat.id);
+      });
     }
   }
 }

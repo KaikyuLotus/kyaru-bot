@@ -10,3 +10,7 @@ int rnd(int min, int max, {Random? rnd}) =>
 T? callIfNotNull<T>(T Function(Map<String, dynamic>) foo, dynamic? parameter) {
   return parameter != null ? foo(parameter) : null;
 }
+
+num byteToMB(num bytes) {
+  return bytes * 0.00000095367431640625;
+}
