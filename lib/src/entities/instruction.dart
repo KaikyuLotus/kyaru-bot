@@ -6,59 +6,39 @@ import '../../kyaru.dart';
 import 'enums/enums.dart';
 
 class Instruction {
-  String? _uuid;
-  final int? _chatId;
-  final InstructionType _instructionType;
-  final InstructionEventType? _instructionEventType;
-  final CustomCommand? _command;
-  final String? _function;
-  final String? _regex;
-  final bool _requireQuote;
-  final bool _ownerOnly;
-
-  String? get uuid => _uuid;
-
-  int? get chatId => _chatId;
-
-  InstructionType get instructionType => _instructionType;
-
-  InstructionEventType? get instructionEventType => _instructionEventType;
-
-  CustomCommand? get command => _command;
-
-  String? get function => _function;
-
-  String? get regex => _regex;
-
-  bool get requireQuote => _requireQuote;
-
-  bool get ownerOnly => _ownerOnly;
+  String? uuid;
+  final int? chatId;
+  final InstructionType instructionType;
+  final InstructionEventType? instructionEventType;
+  final CustomCommand? command;
+  final String? function;
+  final String? regex;
+  final bool requireQuote;
+  final bool ownerOnly;
 
   Instruction(
-    this._chatId,
-    this._instructionType,
-    this._instructionEventType,
-    this._command,
-    this._function,
-    this._regex,
+    this.chatId,
+    this.instructionType,
+    this.instructionEventType,
+    this.command,
+    this.function,
+    this.regex,
     // Private boolean parameters
     // ignore: avoid_positional_boolean_parameters
-    this._requireQuote,
-    this._ownerOnly,
-  ) {
-    _uuid = Uuid().v4();
-  }
+    this.requireQuote,
+    this.ownerOnly,
+  ) : uuid = Uuid().v4();
 
   Instruction._(
-    this._uuid,
-    this._chatId,
-    this._instructionType,
-    this._instructionEventType,
-    this._command,
-    this._function,
-    this._regex,
-    this._requireQuote,
-    this._ownerOnly,
+    this.uuid,
+    this.chatId,
+    this.instructionType,
+    this.instructionEventType,
+    this.command,
+    this.function,
+    this.regex,
+    this.requireQuote,
+    this.ownerOnly,
   );
 
   bool checkRequirements(Update update, Settings? settings) {
@@ -68,7 +48,7 @@ class Instruction {
       }
     }
     if (ownerOnly) {
-      if (update.message?.from?.id != settings!.ownerId) {
+      if (update.message?.from?.id != settings!.ownerId.chatId) {
         return false;
       }
     }
@@ -93,15 +73,15 @@ class Instruction {
 
   Map<String, dynamic> toJson() {
     return {
-      'uuid': _uuid,
-      'chat_id': _chatId,
-      'type': UpperEnums.encodeUpper(_instructionType),
-      'event_type': UpperEnums.encodeUpper(_instructionEventType),
-      'command': _command?.toJson(),
-      'function': _function,
-      'regex': _regex,
-      'require_quote': _requireQuote,
-      'owner_only': _ownerOnly
+      'uuid': uuid,
+      'chat_id': chatId,
+      'type': UpperEnums.encodeUpper(instructionType),
+      'event_type': UpperEnums.encodeUpper(instructionEventType),
+      'command': command?.toJson(),
+      'function': function,
+      'regex': regex,
+      'require_quote': requireQuote,
+      'owner_only': ownerOnly
     };
   }
 }

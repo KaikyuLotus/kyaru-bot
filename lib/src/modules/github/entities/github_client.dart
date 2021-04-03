@@ -43,7 +43,8 @@ class GithubClient {
       }
       if (httpResponse.statusCode == 404) {
         throw GithubNotFoundException(
-            json.decode(httpResponse.body)['message']);
+          json.decode(httpResponse.body)['message'],
+        );
       }
       if (httpResponse.statusCode == 304) {
         throw GithubNotChangedException(

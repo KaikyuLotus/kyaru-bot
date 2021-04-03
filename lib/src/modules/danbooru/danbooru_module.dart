@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 import 'entities/danbooru_client.dart';
 import 'entities/post.dart';
 
 class DanbooruModule implements IModule {
+  final _log = Logger('DanbooruModule');
+
   final Kyaru _kyaru;
   final DanbooruClient dnbClient = DanbooruClient();
 
@@ -117,6 +120,10 @@ class DanbooruModule implements IModule {
     slowDownChats[update.message!.chat.id] = DateTime.now().add(
       Duration(seconds: imagesCount * 6),
     );
+    Future.delayed(Duration(seconds: imagesCount * 6), () {
+      _log.fine('Removing id from slowed chats');
+      slowDownChats.remove(update.message!.chat.id);
+    });
 
     if (!AdminUtils.isNsfwAllowed(_kyaru, update.message!.chat)) {
       elaboratedTags.removeWhere((t) => t.contains('rating'));
@@ -189,10 +196,9 @@ class DanbooruModule implements IModule {
             : null,
       );
     } on APIException catch (e, s) {
-      print('Could not send image: $e\n$s');
-      print('${e.description}');
+      _log.severe('Could not send image: ${e.description}', e, s);
       if (e.description.contains('Too Many Requests: retry after ')) {
-        print('Throttle...');
+        _log.fine('Throttle...');
         var seconds = int.parse(e.description.split('after ')[1].split('(')[0]);
         await Future.delayed(Duration(seconds: seconds));
         await _kyaru.reply(
@@ -202,11 +208,6 @@ class DanbooruModule implements IModule {
           " but please slow down.",
         );
       }
-    } finally {
-      Future.delayed(Duration(seconds: imagesCount * 6), () {
-        print('Removing id from slowed chats');
-        slowDownChats.remove(update.message!.chat.id);
-      });
     }
   }
 }

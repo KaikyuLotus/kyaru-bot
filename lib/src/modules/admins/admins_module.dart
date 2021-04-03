@@ -1,8 +1,11 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 
 class AdminsModule implements IModule {
+  final _log = Logger('AdminsModule');
+
   final Kyaru _kyaru;
 
   late List<ModuleFunction> _moduleFunctions;
@@ -334,13 +337,15 @@ class AdminsModule implements IModule {
     Instruction? instruction,
   ) async {
     if (instruction == null) {
-      print('Error, cannot run executeCustomCommand with instruction == null');
+      _log.severe(
+        'Error, cannot run executeCustomCommand with instruction == null',
+      );
       return;
     }
 
     var customCommand = instruction.command;
     if (customCommand == null) {
-      print(
+      _log.severe(
         'Error, cannot run executeCustomCommand with customCommand == null',
       );
       return;
@@ -598,7 +603,11 @@ class AdminsModule implements IModule {
       replyText = 'Only an admin can use this command.';
     } else {
       var chatData = _kyaru.brain.db.getChatData(update.message!.chat.id);
-      chatData ??= ChatData(update.message!.chat.id, nsfw: false);
+      chatData ??= ChatData(
+        update.message!.chat.id,
+        nsfw: false,
+        isPrivate: update.message!.chat.type == 'private',
+      );
       chatData.nsfw = !chatData.nsfw;
       _kyaru.brain.db.updateChatData(chatData);
       replyText = 'NSFW ${chatData.nsfw ? 'enabled' : 'disabled'}';

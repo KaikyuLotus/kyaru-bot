@@ -1,8 +1,10 @@
+import 'package:dart_telegram_bot/telegram_entities.dart';
+
 class Settings {
   String token;
   String? lolToken;
   String? apexToken;
-  int ownerId;
+  ChatID ownerId;
 
   Settings(this.token, this.lolToken, this.apexToken, this.ownerId);
 
@@ -11,7 +13,7 @@ class Settings {
       json['token'],
       json['lol_token'],
       json['apex_token'],
-      json['owner_id'],
+      ChatID(json['owner_id']),
     );
   }
 
@@ -20,7 +22,7 @@ class Settings {
       'token': token,
       'lol_token': lolToken,
       'apex_token': apexToken,
-      'owner_id': ownerId,
+      'owner_id': ownerId.chatId,
     };
   }
 }

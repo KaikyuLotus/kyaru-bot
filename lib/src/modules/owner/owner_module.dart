@@ -1,8 +1,12 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 
 class OwnerModule implements IModule {
+
+  final _log = Logger('OwnerModule');
+
   final Kyaru _kyaru;
 
   late List<ModuleFunction> _moduleFunctions;
@@ -87,7 +91,7 @@ class OwnerModule implements IModule {
         var file = await _kyaru.brain.bot.getFile(newChat.photo!.bigFileId);
         var bytes = await _kyaru.brain.bot.download(file.filePath!);
         await _kyaru.brain.bot.sendPhoto(
-          ChatID(_kyaru.brain.db.settings.ownerId),
+          _kyaru.brain.db.settings.ownerId,
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
           parseMode: ParseMode.MARKDOWN,
@@ -99,16 +103,16 @@ class OwnerModule implements IModule {
           message += '\nDescription: `${update.message!.chat.description}`';
         }
         await _kyaru.brain.bot.sendMessage(
-          ChatID(_kyaru.brain.db.settings.ownerId),
+          _kyaru.brain.db.settings.ownerId,
           message,
           parseMode: ParseMode.MARKDOWN,
         );
       }
     } on Exception catch (e, s) {
-      print('$e\n$s');
+      _log.severe('Failed to notify new group', e, s);
 
       await _kyaru.brain.bot.sendMessage(
-        ChatID(_kyaru.brain.db.settings.ownerId),
+        _kyaru.brain.db.settings.ownerId,
         'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
         parseMode: ParseMode.MARKDOWN,
       );

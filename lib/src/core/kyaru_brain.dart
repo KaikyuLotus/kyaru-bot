@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../kyaru.dart';
 
 class KyaruBrain {
-  KyaruBrain({
-    required database,
-    required this.bot,
-  }) : db = database;
+  final _log = Logger('KyaruBrain');
 
   final KyaruDB db;
   final Bot bot;
@@ -17,6 +15,11 @@ class KyaruBrain {
   final modulesFunctions = <String, ModuleFunction>{};
   final coreFunctions = <String>[];
   final modules = <IModule>[];
+
+  KyaruBrain({
+    required database,
+    required this.bot,
+  }) : db = database;
 
   Future updateTelegramCommands() {
     return bot.setMyCommands(
@@ -39,11 +42,11 @@ class KyaruBrain {
   ) async {
     try {
       await moduleFunction.function(update, null);
-      print('Function ${moduleFunction.name} executed');
+      _log.finer('Function ${moduleFunction.name} executed');
     } on Exception catch (e, s) {
-      print('Error executing function ${moduleFunction.name}: $e\n$s');
+      _log.severe('Error executing function ${moduleFunction.name}', e, s);
       await bot.sendMessage(
-        ChatID(db.settings.ownerId),
+        db.settings.ownerId,
         'Command ${moduleFunction.name} crashed: $e',
       );
     }
@@ -100,7 +103,7 @@ class KyaruBrain {
     if (text == null) return;
 
     final chatId = update.message?.chat.id;
-    if (chatId == null) return print('Cannot proceed if chat id is null');
+    if (chatId == null) return _log.fine('Cannot proceed if chat id is null');
 
     final botCommand = BotCommandParser.fromMessage(update.message!);
 
@@ -108,7 +111,7 @@ class KyaruBrain {
 
     if (isCommandToBot) return onCommandToBot(update, botCommand!, chatId);
 
-    await onTextMessage(update, chatId);
+    return onTextMessage(update, chatId);
   }
 
   Future<bool> runInstructionFunction(
@@ -118,7 +121,9 @@ class KyaruBrain {
     if (instruction.function == null) return false;
 
     if (!modulesFunctions.containsKey(instruction.function)) {
-      print('Warning function ${instruction.function} not found in any module');
+      _log.warning(
+        'Warning function ${instruction.function} not found in any module',
+      );
       return false;
     }
 
@@ -126,7 +131,7 @@ class KyaruBrain {
     if (function == null) return false;
 
     await modulesFunctions[function]?.function(update, instruction);
-    print('Function ${instruction.function} executed');
+    _log.finest('Function ${instruction.function} executed');
     return true;
   }
 
@@ -148,8 +153,9 @@ class KyaruBrain {
 
     final validInstructions = regexInstructions.where(
       (i) {
-        return RegExp(i.regex!).firstMatch(text!) != null &&
-            i.checkRequirements(update, db.settings);
+        return i.regex! == '' ||
+            (RegExp(i.regex!).firstMatch(text!) != null &&
+                i.checkRequirements(update, db.settings));
       },
     ).toList();
 

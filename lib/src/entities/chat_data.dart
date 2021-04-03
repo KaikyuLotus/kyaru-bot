@@ -1,13 +1,15 @@
 class ChatData {
-  int id;
+  final int id;
   bool nsfw;
+  bool isPrivate;
 
-  ChatData(this.id, {required this.nsfw});
+  ChatData(this.id, {required this.nsfw, required this.isPrivate});
 
   static ChatData fromJson(Map<String, dynamic> json) {
     return ChatData(
       json['id'],
       nsfw: json['nsfw'] ?? false,
+      isPrivate: json['is_private'] ?? false,
     );
   }
 
@@ -22,6 +24,7 @@ class ChatData {
     return {
       'id': id,
       'nsfw': nsfw,
+      'is_private': isPrivate,
     };
   }
 }

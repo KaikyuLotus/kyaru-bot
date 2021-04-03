@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:logging/logging.dart';
 
 import 'champion.dart';
 import 'champion_mastery.dart';
@@ -9,6 +10,9 @@ import 'match_info.dart';
 import 'summoner.dart';
 
 class LOLClient {
+
+  final _log = Logger('LOLClient');
+
   final String dataBaseUrl = 'ddragon.leagueoflegends.com';
   final String apiBaseUrl = 'euw1.api.riotgames.com';
 
@@ -26,14 +30,14 @@ class LOLClient {
   LOLClient(this.key, [this.version]);
 
   Future _init() async {
-    print('Init LoL client...');
+    _log.info('Init LoL client...');
     version = version ?? await _getLatestVersion();
     champions = await _getChampions();
 
-    print('Loaded champions of version $version');
-    print('Loaded ${champions.length} champions');
+    _log.info('Loaded champions of version $version');
+    _log.info('Loaded ${champions.length} champions');
     _initialized = true;
-    print('Done');
+    _log.info('Done');
   }
 
   Future<T> _get<T>(

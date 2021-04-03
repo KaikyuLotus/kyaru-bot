@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 import 'entities/db/db_repo.dart';
@@ -28,16 +29,23 @@ extension on KyaruDB {
 }
 
 Future eventsIsolateLoop(SendPort sendPort) async {
+  // Always do db.syncDb() after updating data
+  // Also this may case data loss with main isolate
   var db = KyaruDB();
+
+  final _log = Logger('GithubIsolate');
+
   final githubClient = GithubClient();
   final etagStore = <String?, String?>{};
   final readUpdates = <String>[];
+
+  int? rateLimitSeconds;
 
   Future elaborateResponse(
     DBRepo repo,
     GithubEventsResponse githubEventsResp,
   ) async {
-    print('Elaborating events for ${repo.repo}...');
+    _log.info('Elaborating events for ${repo.repo}...');
     var events = githubEventsResp.events!.where(
       (e) => !readUpdates.contains(e.id),
     );
@@ -56,7 +64,7 @@ Future eventsIsolateLoop(SendPort sendPort) async {
     }
     etagStore[repo.repo] = githubEventsResp.etag;
     readUpdates.addAll(List<String>.from(events.map((e) => e.id)));
-    print('Elaborating events for ${repo.repo} done');
+    _log.info('Elaborating events for ${repo.repo} done');
   }
 
   Future analyzeRepo(DBRepo repo) async {
@@ -67,54 +75,54 @@ Future eventsIsolateLoop(SendPort sendPort) async {
         etag: etagStore[repo.repo],
       );
       await elaborateResponse(repo, response);
-      print('Left rate limit: ${response.rateLimitRemaining}');
+      _log.info('Left rate limit: ${response.rateLimitRemaining}');
     } on GithubNotFoundException {
-      print('Repository or user not found');
+      _log.info('Repository or user not found');
       sendPort.send(['notFound', repo.toJson()]);
     } on GithubNotChangedException catch (e) {
-      print('Nothing changed, left limit: ${e.rateLimitRemaining}');
+      _log.info('Nothing changed, left limit: ${e.rateLimitRemaining}');
     } on GithubForbiddenException catch (e, s) {
-      print('Critical error $e\n$s');
-    } on Exception catch (e, s) {
-      print('Unknown exception in analyzeRepo: $e\n$s');
-    }
-  }
-
-  void timerFunction(Timer? timer) {
-    print('Checking github updates...');
-    db.syncDb();
-    db.getRepos().forEach(analyzeRepo);
-  }
-
-  Future loopBootstrapperFoo() async {
-    try {
-      timerFunction(null);
-      Timer.periodic(Duration(minutes: 2), timerFunction);
-    } on GithubForbiddenException catch (e) {
       var resetDateTime = DateTime.fromMillisecondsSinceEpoch(
         e.rateLimitReset! * 1000,
       );
       var seconds = resetDateTime.difference(DateTime.now()).inSeconds;
-      print(
+      _log.info(
         'Stopping updates until ${resetDateTime.toIso8601String()}'
         ' ($seconds seconds)',
       );
-      Future.delayed(Duration(seconds: seconds), loopBootstrapperFoo);
+      rateLimitSeconds = seconds;
+    } on Exception catch (e, s) {
+      _log.severe('Unknown exception in analyzeRepo: $e\n$s');
     }
   }
 
-  print('Bootstrapping Github event isolate');
-  await loopBootstrapperFoo();
+  void timerFunction() {
+    _log.fine('Checking github updates...');
+    db.syncDb();
+    db.getRepos().forEach(analyzeRepo);
+  }
+
+  _log.info('Bootstrapping Github event isolate');
+  while (true) {
+    if (rateLimitSeconds != null) {
+      _log.severe('Found API rate limit, waiting $rateLimitSeconds seconds');
+      await Future.delayed(Duration(seconds: rateLimitSeconds!));
+      rateLimitSeconds = null;
+    }
+    timerFunction();
+    await Future.delayed(const Duration(minutes: 2));
+  }
 }
 
 class GithubModule implements IModule {
+  final _log = Logger('GithubModule');
   final Kyaru _kyaru;
   final _githubClient = GithubClient();
 
   late List<ModuleFunction> _moduleFunctions;
 
   GithubModule(this._kyaru) {
-    print('Github module started at ${DateTime.now().toIso8601String()}');
+    _log.info('Github module started at ${DateTime.now().toIso8601String()}');
     _moduleFunctions = [
       ModuleFunction(
         registerRepo,
@@ -167,13 +175,17 @@ class GithubModule implements IModule {
         await onRepoNotFoundEvent(repo);
       }
     } on Exception catch (e, s) {
-      print('Error handling onSocketMessage: $e\n$s');
+      _log.severe('Error onSocketMessage', e, s);
     }
   }
 
   void startEventsIsolate() {
     var receivePort = ReceivePort();
-    Isolate.spawn(eventsIsolateLoop, receivePort.sendPort);
+    Isolate.spawn(
+      eventsIsolateLoop,
+      receivePort.sendPort,
+      errorsAreFatal: false,
+    );
     receivePort.listen(onSocketMessage);
   }
 

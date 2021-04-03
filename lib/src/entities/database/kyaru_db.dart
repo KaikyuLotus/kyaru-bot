@@ -33,12 +33,31 @@ class KyaruDB {
     database[_instructionsCollection].insert(instruction.toJson());
   }
 
+  bool removeChatData(int chatId) {
+    return database[_chatDataCollection].delete({'id': chatId});
+  }
+
   void updateChatData(ChatData chatData) {
     database[_chatDataCollection].update(
       {'id': chatData.id},
       chatData.toJson(),
       true,
     );
+  }
+
+  Map<String, int> getChatCounts() {
+    return {
+      'private': database[_chatDataCollection].count(filter: {
+        'is_private': true,
+      }),
+      'groups': database[_chatDataCollection].count(filter: {
+        'is_private': false,
+      }),
+    };
+  }
+
+  List<ChatData> getChats() {
+    return database[_chatDataCollection].findAs(ChatData.fromJson);
   }
 
   ChatData? getChatData(int chatId) {

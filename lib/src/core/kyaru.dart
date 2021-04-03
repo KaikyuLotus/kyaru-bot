@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../kyaru.dart';
 
 class Kyaru {
+
+  final _log = Logger('Kyaru');
+
   late final KyaruBrain brain;
 
   Kyaru({
@@ -23,7 +27,7 @@ class Kyaru {
   }
 
   Future onStartFailed(Bot bot, Object e, StackTrace st) async {
-    print('Start failed: $e,\n$st');
+    _log.shout('Start failed: $e,\n$st');
   }
 
   void start({
@@ -49,7 +53,7 @@ class Kyaru {
 
       await brain.readMessage(update);
     } on Exception catch (e, s) {
-      print('My life is a failure: $e:\n$s');
+      _log.shout('My life is a failure', e, s);
       await onError(brain.bot, update, e, s);
     }
   }
@@ -71,14 +75,14 @@ class Kyaru {
   }
 
   Future noticeOwner(Update update, String message) async {
-    await brain.bot.sendMessage(ChatID(brain.db.settings.ownerId), message);
+    await brain.bot.sendMessage(brain.db.settings.ownerId, message);
   }
 
   Future onError(Bot bot, Update updateNull, Object e, StackTrace s) async {
-    print('Kyaru machine broke\n$e\ns');
+    _log.severe('Kyaru machine broke\n$e\ns');
     var update = updateNull;
     await noticeOwnerError(update, e, s);
-    print('Update ID was: ${update.updateId}');
+    _log.severe('Update ID was: ${update.updateId}');
     return reply(
       update,
       'Sorry, an error has occurred...\n'
