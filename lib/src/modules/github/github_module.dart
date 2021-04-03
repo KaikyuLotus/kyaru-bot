@@ -81,7 +81,7 @@ Future eventsIsolateLoop(SendPort sendPort) async {
       sendPort.send(['notFound', repo.toJson()]);
     } on GithubNotChangedException catch (e) {
       _log.info('Nothing changed, left limit: ${e.rateLimitRemaining}');
-    } on GithubForbiddenException catch (e, s) {
+    } on GithubForbiddenException catch (e) {
       var resetDateTime = DateTime.fromMillisecondsSinceEpoch(
         e.rateLimitReset! * 1000,
       );
