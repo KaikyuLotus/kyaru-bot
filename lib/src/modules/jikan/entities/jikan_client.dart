@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:http/http.dart';
 
 import 'anime.dart';

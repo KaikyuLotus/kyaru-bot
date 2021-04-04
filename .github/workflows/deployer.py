@@ -61,7 +61,7 @@ def check_analyzer_output():
             "description": issue_description
         }
 
-        if issue_type != "LINT":
+        if issue_type not in ["LINT", "HINT"]:
             critical_issues_count += 1
 
         issues[issue_file][severity][issue_type].append(issue)
