@@ -103,7 +103,7 @@ class AdminsModule implements IModule {
       reply += '/${commandEntry.key}\n';
 
       for (var entry in commandEntry.value.asMap().entries) {
-        var type = UpperEnums.encodeUpper(entry.value.commandType);
+        var type = entry.value.commandType.value;
         reply += '  (${entry.key + 1}) $type\n';
       }
     }
@@ -322,6 +322,7 @@ class AdminsModule implements IModule {
       null,
       quote,
       false,
+      false,
     );
 
     _kyaru.brain.db.addCustomInstruction(customInstruction);
@@ -526,7 +527,7 @@ class AdminsModule implements IModule {
     return _kyaru.reply(
       update,
       'Custom welcome of type '
-      '${UpperEnums.encodeUpper(instruction.command!.commandType)} removed!',
+      '${instruction.command!.commandType.value} removed!',
     );
   }
 
@@ -544,7 +545,7 @@ class AdminsModule implements IModule {
     var index = 0;
     var listText = welcomeReplies.map((r) {
       index++;
-      var type = UpperEnums.encodeUpper(r.command!.commandType);
+      var type = r.command!.commandType.value;
       return '($index) $type';
     }).join('\n ');
     var reply = 'Here\'s the custom welcome list:\n $listText';
@@ -581,6 +582,7 @@ class AdminsModule implements IModule {
       customCommand,
       'executeCustomCommand',
       null,
+      false,
       false,
       false,
     );

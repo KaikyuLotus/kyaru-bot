@@ -84,13 +84,13 @@ class JikanModule implements IModule {
         '$desc';
 
     var keyboard = InlineKeyboardMarkup([
-      [InlineKeyboardButton.URL('Open on MAL', anime.url)]
+      [InlineKeyboardButton.url('Open on MAL', anime.url)]
     ]);
 
     return _kyaru.reply(
       update,
       reply,
-      parseMode: ParseMode.MARKDOWNV2,
+      parseMode: ParseMode.markdownV2,
       replyMarkup: keyboard,
     );
   }
@@ -144,13 +144,13 @@ class JikanModule implements IModule {
         '${manga.isNotEmpty ? '*Manga List:* \n$manga\n\n' : ''}';
 
     var keyboard = InlineKeyboardMarkup([
-      [InlineKeyboardButton.URL('Open on MAL', character.url)]
+      [InlineKeyboardButton.url('Open on MAL', character.url)]
     ]);
 
     return _kyaru.reply(
       update,
       reply,
-      parseMode: ParseMode.MARKDOWNV2,
+      parseMode: ParseMode.markdownV2,
       replyMarkup: keyboard,
     );
   }

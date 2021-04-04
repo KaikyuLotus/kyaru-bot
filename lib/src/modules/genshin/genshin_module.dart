@@ -69,7 +69,7 @@ class GenshinModule implements IModule {
       return _kyaru.reply(
         update,
         errorMsg,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
         hidePreview: true,
       );
     }
@@ -123,7 +123,7 @@ class GenshinModule implements IModule {
       await _kyaru.reply(
         update,
         msg,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
         hidePreview: true,
       );
       return null;
@@ -150,7 +150,7 @@ class GenshinModule implements IModule {
         reply,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
       return null;
     }
@@ -235,7 +235,7 @@ class GenshinModule implements IModule {
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
     );
   }
 
@@ -275,7 +275,7 @@ class GenshinModule implements IModule {
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
     );
   }
 }

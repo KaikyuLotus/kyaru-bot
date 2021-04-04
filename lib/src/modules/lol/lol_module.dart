@@ -54,7 +54,7 @@ class LoLModule implements IModule {
       return _kyaru.reply(
         update,
         'Player not found.',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
 
@@ -63,7 +63,7 @@ class LoLModule implements IModule {
       return _kyaru.reply(
         update,
         'Player has no recent matches.',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
 
@@ -71,7 +71,7 @@ class LoLModule implements IModule {
       return _kyaru.reply(
         update,
         'Given match not found, maximum match index found is ${matches.length}',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
 
@@ -96,7 +96,7 @@ class LoLModule implements IModule {
       await _kyaru.reply(
         update,
         "It seems i can't a champion used.",
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
       return _kyaru.noticeOwner(update, 'Master, update LoL characters!');
     }
@@ -133,6 +133,6 @@ class LoLModule implements IModule {
         ' *${participant.stats.win! ? 'Win' : 'Lost'}*\n'
         'Match lasted $durationMinutes minutes and $durationSeconds seconds';
 
-    return _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
+    return _kyaru.reply(update, message, parseMode: ParseMode.markdown);
   }
 }

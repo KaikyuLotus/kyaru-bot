@@ -79,7 +79,7 @@ class DanbooruModule implements IModule {
       return _kyaru.reply(
         update,
         'Please wait $diff more seconds, you horny.',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
 
@@ -130,7 +130,7 @@ class DanbooruModule implements IModule {
       elaboratedTags.add('rating:s');
     }
 
-    await _kyaru.brain.bot.sendChatAction(cid, ChatAction.UPLOAD_PHOTO);
+    await _kyaru.brain.bot.sendChatAction(cid, ChatAction.uploadPhoto);
 
     var randomPostList = await dnbClient.getPosts(
       tags: elaboratedTags,
@@ -170,10 +170,9 @@ class DanbooruModule implements IModule {
         .take(imagesCount)
         .map(
           (p) => InputMediaPhoto(
-            type: 'photo',
             media: p.largeFileUrl!,
             caption: captionMaker(p),
-            parseMode: ParseMode.MARKDOWN,
+            parseMode: ParseMode.markdown,
           ),
         )
         .toList();
@@ -182,12 +181,12 @@ class DanbooruModule implements IModule {
       return _kyaru.reply(
         update,
         'Telegram does not support .webm format\nTry again or with other tags.',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
 
     try {
-      await _kyaru.brain.bot.sendChatAction(cid, ChatAction.UPLOAD_PHOTO);
+      await _kyaru.brain.bot.sendChatAction(cid, ChatAction.uploadPhoto);
       await _kyaru.brain.bot.sendMediaGroup(
         cid,
         httpFiles,

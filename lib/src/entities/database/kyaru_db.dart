@@ -21,8 +21,8 @@ class KyaruDB {
     database[_instructionsCollection].delete({
       'uuid': instruction.uuid,
       'chat_id': instruction.chatId,
-      'type': UpperEnums.encodeUpper(instruction.instructionType),
-      'event_type': UpperEnums.encodeUpper(instruction.instructionEventType),
+      'type': instruction.instructionType.value,
+      'event_type': instruction.instructionEventType?.value,
       'function': instruction.function,
       'regex': instruction.regex,
       'require_quote': instruction.requireQuote,
@@ -72,9 +72,9 @@ class KyaruDB {
     int chatId, {
     InstructionEventType? eventType,
   }) {
-    var filter = {'type': UpperEnums.encodeUpper(type), 'chat_id': chatId};
+    var filter = {'type': type.value, 'chat_id': chatId};
     if (eventType != null) {
-      filter['event_type'] = UpperEnums.encodeUpper(eventType);
+      filter['event_type'] = eventType.value;
     }
     return database[_instructionsCollection].findAs(
       Instruction.fromJson,

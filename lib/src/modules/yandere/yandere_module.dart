@@ -115,7 +115,7 @@ class YandereModule implements IModule {
           update,
           caption,
           quote: update.message!.chat.type != 'private',
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       } else {
         _kyaru.replyPhoto(
@@ -123,7 +123,7 @@ class YandereModule implements IModule {
           photo,
           caption: caption,
           quote: update.message!.chat.type != 'private',
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       }
     });

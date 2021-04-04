@@ -57,7 +57,7 @@ class OwnerModule implements IModule {
         .join('\n- ');
 
     var message = '*Modules*\n\n- $mtext\n\nHealth check reports no issues.';
-    await _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
+    await _kyaru.reply(update, message, parseMode: ParseMode.markdown);
   }
 
   Future onNewGroup(Update update, _) async {
@@ -94,7 +94,7 @@ class OwnerModule implements IModule {
           _kyaru.brain.db.settings.ownerId,
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       } else {
         var message =
@@ -105,7 +105,7 @@ class OwnerModule implements IModule {
         await _kyaru.brain.bot.sendMessage(
           _kyaru.brain.db.settings.ownerId,
           message,
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       }
     } on Exception catch (e, s) {
@@ -114,7 +114,7 @@ class OwnerModule implements IModule {
       await _kyaru.brain.bot.sendMessage(
         _kyaru.brain.db.settings.ownerId,
         'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
   }
@@ -127,7 +127,7 @@ class OwnerModule implements IModule {
     await _kyaru.reply(
       update,
       startMessage,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       hidePreview: true,
     );
   }
@@ -163,7 +163,7 @@ class OwnerModule implements IModule {
     await _kyaru.reply(
       update,
       helpMessage,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       hidePreview: true,
     );
   }

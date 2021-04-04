@@ -132,7 +132,7 @@ class KyaruBrain {
 
     await modulesFunctions[function]?.function(update, instruction);
     _log.finest('Function ${instruction.function} executed');
-    return true;
+    return !instruction.volatile;
   }
 
   List<Instruction> getInstructions(
@@ -161,7 +161,11 @@ class KyaruBrain {
 
     if (validInstructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(validInstructions));
+    executeVolatilePrioritized(
+      validInstructions,
+      update,
+      runInstructionFunction,
+    );
     return true;
   }
 
@@ -184,7 +188,11 @@ class KyaruBrain {
 
     if (validInstructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(validInstructions));
+    executeVolatilePrioritized(
+      validInstructions,
+      update,
+      runInstructionFunction,
+    );
     return true;
   }
 
@@ -200,7 +208,7 @@ class KyaruBrain {
     );
     if (instructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(instructions));
+    executeVolatilePrioritized(instructions, update, runInstructionFunction);
     return true;
   }
 
@@ -232,5 +240,30 @@ class KyaruBrain {
       InstructionEventType.userJoined,
       update.message!.chat.id,
     );
+  }
+
+  void executeVolatilePrioritized(
+    Iterable<Instruction> instructions,
+    Update update,
+    Function(Update, Instruction) foo,
+  ) {
+    for (var instruction in instructions.where((i) => i.volatile)) {
+      executeGuarded(
+        () => foo(update, instruction),
+        'Could not execute ${instruction.command}',
+      );
+    }
+
+    var notVolatileInstructions = instructions.where((i) => !i.volatile);
+    if (notVolatileInstructions.isEmpty) return;
+    var instruction = choose(notVolatileInstructions);
+    executeGuarded(
+      () => foo(update, instruction),
+      'Could not execute ${instruction.command}',
+    );
+  }
+
+  void executeGuarded(Function foo, String errMsg) {
+    runZonedGuarded(() => foo(), (e, s) => _log.severe(errMsg, e, s));
   }
 }

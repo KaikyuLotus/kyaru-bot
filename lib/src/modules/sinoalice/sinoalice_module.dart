@@ -110,7 +110,7 @@ class SinoAliceModule implements IModule {
     return _kyaru.reply(
       update,
       buffer.toString(),
-      parseMode: ParseMode.MARKDOWNV2,
+      parseMode: ParseMode.markdownV2,
     );
   }
 
@@ -164,7 +164,7 @@ class SinoAliceModule implements IModule {
     return _kyaru.reply(
       update,
       '$nameLink ID: `${userData.gameId}`',
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       quote: true,
     );
   }

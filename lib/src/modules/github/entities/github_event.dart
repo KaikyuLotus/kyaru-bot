@@ -1,4 +1,3 @@
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:jiffy/jiffy.dart';
 
 import 'actor.dart';
@@ -28,7 +27,7 @@ class GithubEvent {
   static GithubEvent fromJson(Map<String, dynamic> json) {
     return GithubEvent(
       json['id'],
-      EnumHelper.decode(GithubEventType.values, json['type']),
+      GithubEventType.forValue(json['type']),
       Actor.fromJson(json['actor']),
       Repo.fromJson(json['repo']),
       Payload.fromJson(json['payload']),

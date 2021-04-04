@@ -95,7 +95,7 @@ class ApexModule implements IModule {
       update,
       HttpFile.fromBytes('banner.jpg', editedImage),
       caption: reply,
-      parseMode: ParseMode.MARKDOWNV2,
+      parseMode: ParseMode.markdownV2,
     );
   }
 }

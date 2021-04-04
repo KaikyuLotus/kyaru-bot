@@ -1,4 +1,3 @@
-import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,6 +14,7 @@ class Instruction {
   final String? regex;
   final bool requireQuote;
   final bool ownerOnly;
+  final bool volatile;
 
   Instruction(
     this.chatId,
@@ -27,6 +27,7 @@ class Instruction {
     // ignore: avoid_positional_boolean_parameters
     this.requireQuote,
     this.ownerOnly,
+    this.volatile,
   ) : uuid = Uuid().v4();
 
   Instruction._(
@@ -39,18 +40,15 @@ class Instruction {
     this.regex,
     this.requireQuote,
     this.ownerOnly,
+      this.volatile,
   );
 
   bool checkRequirements(Update update, Settings? settings) {
     if (requireQuote) {
-      if (update.message?.replyToMessage == null) {
-        return false;
-      }
+      if (update.message?.replyToMessage == null) return false;
     }
     if (ownerOnly) {
-      if (update.message?.from?.id != settings!.ownerId.chatId) {
-        return false;
-      }
+      if (update.message?.from?.id != settings!.ownerId.chatId) return false;
     }
     return true;
   }
@@ -59,15 +57,14 @@ class Instruction {
     return Instruction._(
       json['uuid'],
       json['chat_id'],
-      EnumHelper.decode(InstructionType.values, json['type']),
-      json['event_type'] != null
-          ? EnumHelper.decode(InstructionEventType.values, json['event_type'])
-          : null,
+      InstructionType.forValue(json['type']),
+      callIfNotNull(InstructionEventType.forValue, json['event_type']),
       callIfNotNull(CustomCommand.fromJson, json['command']),
       json['function'],
       json['regex'],
       json['require_quote'] ?? false,
       json['owner_only'] ?? false,
+      json['volatile'] ?? false,
     );
   }
 
@@ -75,13 +72,14 @@ class Instruction {
     return {
       'uuid': uuid,
       'chat_id': chatId,
-      'type': UpperEnums.encodeUpper(instructionType),
-      'event_type': UpperEnums.encodeUpper(instructionEventType),
+      'type': instructionType.value,
+      'event_type': instructionEventType?.value,
       'command': command?.toJson(),
       'function': function,
       'regex': regex,
       'require_quote': requireQuote,
-      'owner_only': ownerOnly
+      'owner_only': ownerOnly,
+      'volatile': volatile,
     };
   }
 }
