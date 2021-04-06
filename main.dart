@@ -28,6 +28,7 @@ void main(List<String> arguments) async {
       GenshinModule(kyaru),
       GithubModule(kyaru),
       DatabaseModule(kyaru),
+      QuotesModule(kyaru),
     ];
 
     kyaru.useModules(modules);
