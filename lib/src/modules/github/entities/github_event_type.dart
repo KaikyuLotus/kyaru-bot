@@ -30,21 +30,21 @@ class GithubEventType extends _Enum<String> {
   static const watchEvent = GithubEventType._('WATCH_EVENT');
 
   static const values = {
-    'COMMIT_COMMENT_EVENT': commitCommentEvent,
-    'CREATE_EVENT': createEvent,
-    'DELETE_EVENT': deleteEvent,
-    'FORK_EVENT': forkEvent,
-    'GOLLUM_EVENT': gollumEvent,
-    'ISSUE_COMMENT_EVENT': issueCommentEvent,
-    'ISSUES_EVENT': issuesEvent,
-    'MEMBER_EVENT': memberEvent,
-    'PUBLIC_EVENT': publicEvent,
-    'PULL_REQUEST_EVENT': pullRequestEvent,
-    'PULL_REQUEST_REVIEW_COMMENT_EVENT': pullRequestReviewCommentEvent,
-    'PUSH_EVENT': pushEvent,
-    'RELEASE_EVENT': releaseEvent,
-    'SPONSORSHIP_EVENT': sponsorshipEvent,
-    'WATCH_EVENT': watchEvent,
+    'CommitCommentEvent': commitCommentEvent,
+    'CreateEvent': createEvent,
+    'DeleteEvent': deleteEvent,
+    'ForkEvent': forkEvent,
+    'GollumEvent': gollumEvent,
+    'IssueCommentEvent': issueCommentEvent,
+    'IssuesEvent': issuesEvent,
+    'MemberEvent': memberEvent,
+    'PublicEvent': publicEvent,
+    'PullRequestEvent': pullRequestEvent,
+    'PullRequestReviewCommentEvent': pullRequestReviewCommentEvent,
+    'PushEvent': pushEvent,
+    'ReleaseEvent': releaseEvent,
+    'SponsorshipEvent': sponsorshipEvent,
+    'WatchEvent': watchEvent,
   };
 
   const GithubEventType._(String value) : super(value);
