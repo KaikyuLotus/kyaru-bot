@@ -8,5 +8,6 @@ export 'modules/insults/insults_module.dart';
 export 'modules/jikan/jikan_module.dart';
 export 'modules/lol/lol_module.dart';
 export 'modules/owner/owner_module.dart';
+export 'modules/quotes/quotes_module.dart';
 export 'modules/regex/regex_module.dart';
 export 'modules/yandere/yandere_module.dart';
