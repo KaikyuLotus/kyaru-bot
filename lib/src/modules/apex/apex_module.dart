@@ -11,11 +11,13 @@ import 'entities/apex_data.dart';
 class ApexModule implements IModule {
   final Kyaru _kyaru;
   late ApexClient _apexClient;
+  String? _key;
 
   late List<ModuleFunction> _moduleFunctions;
 
   ApexModule(this._kyaru) {
-    _apexClient = ApexClient(_kyaru.brain.db.settings.apexToken);
+    _key = _kyaru.brain.db.settings.apexToken;
+    _apexClient = ApexClient(_key);
     _moduleFunctions = [
       ModuleFunction(
         apex,
@@ -30,7 +32,9 @@ class ApexModule implements IModule {
   List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
-  bool isEnabled() => true;
+  bool isEnabled() {
+    return _key?.isNotEmpty ?? false;
+  }
 
   Future<Uint8List> setDarkBg(String link) async {
     var banner = decodePng(List.from(await _apexClient.downloadImage(link)))!;

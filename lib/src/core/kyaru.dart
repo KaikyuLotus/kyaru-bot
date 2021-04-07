@@ -7,7 +7,6 @@ import 'package:logging/logging.dart';
 import '../../kyaru.dart';
 
 class Kyaru {
-
   final _log = Logger('Kyaru');
 
   late final KyaruBrain brain;
@@ -27,7 +26,7 @@ class Kyaru {
   }
 
   Future onStartFailed(Bot bot, Object e, StackTrace st) async {
-    _log.shout('Start failed: $e,\n$st');
+    _log.shout('Start failed', e, st);
   }
 
   void start({
@@ -79,7 +78,7 @@ class Kyaru {
   }
 
   Future onError(Bot bot, Update updateNull, Object e, StackTrace s) async {
-    _log.severe('Kyaru machine broke\n$e\ns');
+    _log.severe('Kyaru machine broke', e, s);
     var update = updateNull;
     await noticeOwnerError(update, e, s);
     _log.severe('Update ID was: ${update.updateId}');

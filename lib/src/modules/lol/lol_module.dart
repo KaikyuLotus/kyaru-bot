@@ -6,11 +6,13 @@ import 'entities/lol_client.dart';
 class LoLModule implements IModule {
   final Kyaru _kyaru;
   late LOLClient _client;
+  String? _key;
 
   late List<ModuleFunction> _moduleFunctions;
 
   LoLModule(this._kyaru) {
-    _client = LOLClient(_kyaru.brain.db.settings.lolToken);
+    _key = _kyaru.brain.db.settings.lolToken;
+    _client = LOLClient(_key);
     _moduleFunctions = [
       ModuleFunction(
         getMe,
@@ -25,7 +27,9 @@ class LoLModule implements IModule {
   List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
-  bool isEnabled() => true;
+  bool isEnabled() {
+    return _key?.isNotEmpty ?? false;
+  }
 
   Future getMe(Update update, _) async {
     var args = update.message!.text!.split(' ')

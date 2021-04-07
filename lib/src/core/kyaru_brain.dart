@@ -54,6 +54,7 @@ class KyaruBrain {
 
   void useModules(List<IModule> modules) {
     this.modules.clear();
+    modules.removeWhere((module) => !module.isEnabled());
     this.modules.addAll(modules);
     for (var module in modules) {
       print(module.runtimeType);
