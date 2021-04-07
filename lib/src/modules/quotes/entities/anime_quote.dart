@@ -16,4 +16,11 @@ class AnimeQuote {
       json['quote'],
     );
   }
+
+  static List<AnimeQuote> listFromJsonArray(List<dynamic> jsonArray) {
+    return List.generate(
+      jsonArray.length,
+      (i) => AnimeQuote.fromJson(jsonArray[i]),
+    );
+  }
 }
