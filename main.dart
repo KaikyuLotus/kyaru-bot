@@ -29,6 +29,7 @@ void main(List<String> arguments) async {
       GithubModule(kyaru),
       DatabaseModule(kyaru),
       QuotesModule(kyaru),
+      LastfmModule(kyaru),
     ];
 
     kyaru.useModules(modules);
