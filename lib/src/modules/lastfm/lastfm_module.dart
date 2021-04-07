@@ -27,7 +27,9 @@ class LastfmModule implements IModule {
   List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
-  bool isEnabled() => true;
+  bool isEnabled() {
+    return _key?.isNotEmpty ?? false;
+  }
 
   Future lastTrack(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
