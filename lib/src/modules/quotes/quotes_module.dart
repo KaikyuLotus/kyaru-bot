@@ -69,20 +69,22 @@ class QuotesModule implements IModule {
     required String search,
     required String query,
   }) async {
-    var result = await quotesClient.getQuote(
-      mode: mode,
-      parameters: {
-        search: query,
-      },
-    );
-    if (result.containsKey('error')) {
+    try {
+      var result = await quotesClient.getQuotes(
+        mode: mode,
+        parameters: {
+          search: query,
+        },
+      );
+      result.shuffle();
+      var quote = result[0];
+      return _kyaru.reply(
+          update,
+          '_${MarkdownUtils.escape(quote.quote)}_\n\n'
+          '\\- ${MarkdownUtils.escape('${quote.character}, ${quote.anime}')}',
+          parseMode: ParseMode.markdownV2);
+    } on NotFound {
       return _kyaru.reply(update, 'No quote found from that $mode');
     }
-    var quote = AnimeQuote.fromJson(Map<String, dynamic>.from(result));
-    return _kyaru.reply(
-        update,
-        '_${MarkdownUtils.escape(quote.quote)}_\n\n'
-        '\\- ${MarkdownUtils.escape('${quote.character}, ${quote.anime}')}',
-        parseMode: ParseMode.markdownV2);
   }
 }
