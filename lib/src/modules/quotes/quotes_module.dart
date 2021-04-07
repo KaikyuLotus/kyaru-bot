@@ -1,7 +1,6 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
-import 'entities/anime_quote.dart';
 import 'entities/quotes_client.dart';
 
 class QuotesModule implements IModule {
