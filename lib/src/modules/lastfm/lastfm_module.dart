@@ -3,6 +3,24 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 import 'entities/lastfm_client.dart';
 
+extension on KyaruDB {
+  static const _lastfmDataCollection = 'lastfm_data';
+
+  void addLastfmUser(int userId, String user) {
+    database[_lastfmDataCollection].update(
+      {'user_id': userId},
+      {'user': user, 'user_id': userId},
+      true,
+    );
+  }
+
+  Map<String, dynamic>? getLastfmUser(int userId) {
+    return database[_lastfmDataCollection].findOne(
+      filter: {'user_id': userId},
+    );
+  }
+}
+
 class LastfmModule implements IModule {
   final Kyaru _kyaru;
   late LastfmClient lastfmClient;
@@ -14,6 +32,12 @@ class LastfmModule implements IModule {
     _key = _kyaru.brain.db.settings.lastfmToken;
     lastfmClient = LastfmClient(_key);
     _moduleFunctions = [
+      ModuleFunction(
+        saveUser,
+        'Saves your lastfm user',
+        'lastfm_name',
+        core: true,
+      ),
       ModuleFunction(
         lastTrack,
         'Get last/current song from lastfm',
@@ -31,18 +55,49 @@ class LastfmModule implements IModule {
     return _key?.isNotEmpty ?? false;
   }
 
-  Future lastTrack(Update update, _) async {
+  Future saveUser(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
     if (args.isEmpty) {
       return _kyaru.reply(
         update,
-        'This command needs a user as first argument.',
+        'This command needs a user as first argument',
       );
     }
+    var user = args.join(' ');
+    try {
+      await lastfmClient.getLastTrack(user);
+    } on LastfmException {
+      return _kyaru.reply(
+        update,
+        'No user found with that username',
+      );
+    }
+    _kyaru.brain.db.addLastfmUser(update.message!.from!.id, user);
+
+    return _kyaru.reply(
+      update,
+      'Use /lastfm to get your information!',
+    );
+  }
+
+  Future lastTrack(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    var user;
+
+    if (args.isEmpty) {
+      user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];
+      if (user == null) {
+        return _kyaru.reply(
+          update,
+          'This command needs a user as first argument.',
+        );
+      }
+    }
+    user ??= args.join(' ');
 
     try {
-      var track = await lastfmClient.getLastTrack(args.join(' '));
+      var track = await lastfmClient.getLastTrack(user);
       var imageUrl = MarkdownUtils.generateHiddenUrl(track.imageUrl);
       var userName = MarkdownUtils.escape(update.message!.from!.firstName);
       var title = MarkdownUtils.escape(track.title);
