@@ -54,17 +54,21 @@ class GithubEvent {
           what = 'branch ${payload?.ref}';
         }
         return '${actor.displayLogin} created $what';
+
       case GithubEventType.pushEvent:
         var newSha7 = payload?.head!.substring(0, 7);
         var branch = payload?.ref!.split('/').last;
         var message = payload?.commits!.last.message;
         return '${actor.displayLogin} made a commit ($newSha7) '
             'to ${repo.name} on branch $branch:\n$message';
+
       case GithubEventType.watchEvent:
         return '${actor.displayLogin} ${payload?.action}'
             ' watching the repository';
+
       case GithubEventType.forkEvent:
         return '${actor.displayLogin} forked ${repo.name}';
+
       case GithubEventType.pullRequestEvent:
         if (payload?.action == 'opened' || payload?.action == 'closed') {
           return '${actor.displayLogin} ${payload?.action} '
@@ -73,6 +77,25 @@ class GithubEvent {
           return '${actor.displayLogin} made an action: ${payload?.action} '
               'on PR#${payload?.number}';
         }
+
+      case GithubEventType.releaseEvent:
+        var release = payload!.release!;
+        var releaseType = release.prerelease! ? 'prerelease' : 'release';
+        var body = '';
+        var assetsMessage = '';
+        if (release.body!.isNotEmpty) {
+          body = '\n\n${release.body}';
+        }
+
+        if (release.assets!.isNotEmpty) {
+          var assets = release.assets!.map(
+              (a) => '- ${a.name} ${(a.size! / 1048576).toStringAsFixed(2)}MB');
+          assetsMessage = '\n\nAssets\n${assets.join('\n')}';
+        }
+
+        return '${actor.displayLogin} created a new $releaseType '
+            '(${release.name})$body$assetsMessage';
+
       default:
         return 'Unknown action on ${repo.name}';
     }
