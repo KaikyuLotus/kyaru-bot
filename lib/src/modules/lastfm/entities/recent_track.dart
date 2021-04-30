@@ -22,4 +22,11 @@ class RecentTrack {
       nowPlaying: json.containsKey('@attr'),
     );
   }
+
+  static List<RecentTrack> listFromJsonArray(List<dynamic> jsonArray) {
+    return List.generate(
+      jsonArray.length,
+      (i) => RecentTrack.fromJson(jsonArray[i]),
+    );
+  }
 }

@@ -33,6 +33,12 @@ class LastfmModule implements IModule {
     lastfmClient = LastfmClient(_key);
     _moduleFunctions = [
       ModuleFunction(
+        user,
+        'Get your profile info',
+        'lastfm_user',
+        core: true,
+      ),
+      ModuleFunction(
         saveUser,
         'Saves your lastfm user',
         'lastfm_name',
@@ -53,6 +59,42 @@ class LastfmModule implements IModule {
   @override
   bool isEnabled() {
     return _key?.isNotEmpty ?? false;
+  }
+
+  Future user(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    var user;
+
+    if (args.isEmpty) {
+      user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];
+      if (user == null) {
+        return _kyaru.reply(
+          update,
+          'This command needs a user as first argument.',
+        );
+      }
+    }
+    user ??= args.join(' ');
+
+    try {
+      var lastfmUser = await lastfmClient.getUser(user);
+      var recentTracks = await lastfmClient.getRecentTracks(user);
+      var imageUrl = MarkdownUtils.generateHiddenUrl(lastfmUser.imageUrl);
+      var userName = MarkdownUtils.generateUrl(lastfmUser.name, lastfmUser.url);
+      var country = MarkdownUtils.escape(lastfmUser.country);
+      var scrobbles = MarkdownUtils.escape(
+          recentTracks.map((t) => '• ${t.artist} - ${t.title}').join('\n'));
+      var message = '$imageUrl*$userName* \\($country\\)\n\n'
+          'Playcount: ${lastfmUser.playcount}\n\n'
+          'Last 5 scrobbles:\n$scrobbles';
+
+      return _kyaru.reply(update, message, parseMode: ParseMode.markdownV2);
+    } on LastfmException {
+      return _kyaru.reply(
+        update,
+        'No user found with that username',
+      );
+    }
   }
 
   Future saveUser(Update update, _) async {
@@ -77,7 +119,7 @@ class LastfmModule implements IModule {
 
     return _kyaru.reply(
       update,
-      'Use /lastfm to get your information!',
+      'Use /lastfm_user to get your information!',
     );
   }
 

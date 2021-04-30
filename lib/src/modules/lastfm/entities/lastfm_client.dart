@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import 'recent_track.dart';
+import 'user.dart';
 
 class LastfmException implements Exception {
   final String message;
@@ -28,7 +29,22 @@ class LastfmClient {
     return mapper(json.decode(body));
   }
 
-  Future<RecentTrack> getLastTrack(String user) {
+  Future<User> getUser(String user) {
+    return _get(
+        Uri.https(
+          baseUrl,
+          '/2.0/',
+          {
+            'api_key': _key,
+            'method': 'user.getinfo',
+            'user': user,
+            'format': 'json'
+          },
+        ),
+        (d) => User.fromJson(d['user']));
+  }
+
+  Future<List<RecentTrack>> getRecentTracks(String user, {int limit = 5}) {
     return _get(
       Uri.https(
         baseUrl,
@@ -38,10 +54,14 @@ class LastfmClient {
           'method': 'user.getrecenttracks',
           'user': user,
           'format': 'json',
-          'limit': '1',
+          'limit': '$limit',
         },
       ),
-      (d) => RecentTrack.fromJson(d['recenttracks']['track'][0]),
+      (d) => RecentTrack.listFromJsonArray(d['recenttracks']['track']),
     );
+  }
+
+  Future<RecentTrack> getLastTrack(String user) async {
+    return (await getRecentTracks(user, limit: 1))[0];
   }
 }
