@@ -30,6 +30,7 @@ void main(List<String> arguments) async {
       DatabaseModule(kyaru),
       QuotesModule(kyaru),
       LastfmModule(kyaru),
+      KitsuModule(kyaru),
     ];
 
     kyaru.useModules(modules);
