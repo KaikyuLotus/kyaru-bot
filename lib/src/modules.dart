@@ -6,6 +6,7 @@ export 'modules/genshin/genshin_module.dart';
 export 'modules/github/github_module.dart';
 export 'modules/insults/insults_module.dart';
 export 'modules/jikan/jikan_module.dart';
+export 'modules/kitsu/kitsu_module.dart';
 export 'modules/lastfm/lastfm_module.dart';
 export 'modules/lol/lol_module.dart';
 export 'modules/owner/owner_module.dart';
