@@ -4,7 +4,6 @@ import 'package:logging/logging.dart';
 import '../../../kyaru.dart';
 
 class OwnerModule implements IModule {
-
   final _log = Logger('OwnerModule');
 
   final Kyaru _kyaru;
@@ -71,7 +70,8 @@ class OwnerModule implements IModule {
     var chat = update.message!.chat;
     var chatId = ChatID(update.message!.chat.id);
     try {
-      var ownerMsg = 'New group!\n*${chat.title}*'
+      var chatTitle = MarkdownUtils.escape(chat.title, v2: false);
+      var ownerMsg = 'New group!\n*$chatTitle*'
           '\nID: ${chat.id}';
 
       if (update.message!.chat.username != null) {
@@ -83,7 +83,8 @@ class OwnerModule implements IModule {
       var newChat = await _kyaru.brain.bot.getChat(chatId);
 
       if (newChat.description != null) {
-        ownerMsg += '\nDescription:\n`${newChat.description}`';
+        var description = MarkdownUtils.escape(newChat.description, v2: false);
+        ownerMsg += '\nDescription:\n`$description`';
       }
 
       var bigFileId = newChat.photo?.bigFileId;
@@ -97,10 +98,17 @@ class OwnerModule implements IModule {
           parseMode: ParseMode.markdown,
         );
       } else {
-        var message =
-            'New group: `${update.message!.chat.title}`\nID: `${chat.id}`';
+        var chatTitle = MarkdownUtils.escape(
+          update.message!.chat.title,
+          v2: false,
+        );
+        var message = 'New group: `$chatTitle`\nID: `${chat.id}`';
         if (update.message!.chat.description != null) {
-          message += '\nDescription: `${update.message!.chat.description}`';
+          var description = MarkdownUtils.escape(
+            update.message!.chat.description,
+            v2: false,
+          );
+          message += '\nDescription: `$description`';
         }
         await _kyaru.brain.bot.sendMessage(
           _kyaru.brain.db.settings.ownerId,
@@ -111,16 +119,24 @@ class OwnerModule implements IModule {
     } on Exception catch (e, s) {
       _log.severe('Failed to notify new group', e, s);
 
+      var chatTitle = MarkdownUtils.escape(
+        update.message!.chat.title,
+        v2: false,
+      );
       await _kyaru.brain.bot.sendMessage(
         _kyaru.brain.db.settings.ownerId,
-        'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
+        'New group: `$chatTitle`\nID: `${chat.id}`',
         parseMode: ParseMode.markdown,
       );
     }
   }
 
   Future start(Update update, _) async {
-    var startMessage = 'Hi ${update.message!.from!.firstName},\n\n'
+    var firstName = MarkdownUtils.escape(
+      update.message!.from!.firstName,
+      v2: false,
+    );
+    var startMessage = 'Hi $firstName,\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         'If you want to know how I work or who made me use the /help command\n\n'
         '\nMade with ❤️ by [Kaikyu](https://t.me/kaikyu)';
@@ -133,7 +149,11 @@ class OwnerModule implements IModule {
   }
 
   Future help(Update update, _) async {
-    var helpMessage = 'Hi ${update.message!.from!.firstName},\n\n'
+    var firstName = MarkdownUtils.escape(
+      update.message!.from!.firstName,
+      v2: false,
+    );
+    var helpMessage = 'Hi $firstName,\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         "I'm still in a early beta phase, so I may have lots of errors"
         " and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
