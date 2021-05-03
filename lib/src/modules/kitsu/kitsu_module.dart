@@ -13,8 +13,14 @@ class KitsuModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         anime,
-        'Search for an anime on Kistu',
+        'Search for an anime on Kitsu',
         'kitsu',
+        core: true,
+      ),
+      ModuleFunction(
+        character,
+        'Search for a character on Kitsu',
+        'kitsu_character',
         core: true,
       ),
     ];
@@ -76,6 +82,46 @@ class KitsuModule implements IModule {
       reply,
       parseMode: ParseMode.markdownV2,
       replyMarkup: keyboard,
+    );
+  }
+
+  Future character(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command needs a search string, which '
+        'rappresents a character name, as first argument.',
+      );
+    }
+
+    var searchString = args.join(' ');
+
+    var matchingCharacters = await kitsuClient.searchCharacter(searchString);
+
+    if (matchingCharacters == null || matchingCharacters.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'No character found with the given search terms',
+      );
+    }
+
+    var character = matchingCharacters.first;
+
+    var hiddenLink = MarkdownUtils.generateHiddenUrl(character.imageUrl);
+    var name = MarkdownUtils.escape(character.names['en']);
+    var alternativeName = character.otherNames.isNotEmpty
+        ? MarkdownUtils.escape('(${character.otherNames.first})')
+        : '';
+    var description = MarkdownUtils.escape(character.description);
+
+    var reply = '$hiddenLink*$name $alternativeName*\n\n'
+        '$description';
+
+    return _kyaru.reply(
+      update,
+      reply,
+      parseMode: ParseMode.markdownV2,
     );
   }
 }
