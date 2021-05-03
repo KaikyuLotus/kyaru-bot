@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import 'anime.dart';
+import 'character.dart';
 
 class KitsuApiException implements Exception {
   final String message;
@@ -30,6 +31,15 @@ class KitsuClient {
         'filter[text]': query,
       }),
       (d) => Anime.listFromJsonArray(d['data']),
+    );
+  }
+
+  Future<List<Character>?> searchCharacter(String query) async {
+    return _get(
+      Uri.https(apiBaseUrl, '/api/edge/characters', {
+        'filter[name]': query,
+      }),
+      (d) => Character.listFromJsonArray(d['data']),
     );
   }
 }
