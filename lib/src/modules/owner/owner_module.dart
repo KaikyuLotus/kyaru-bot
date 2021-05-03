@@ -1,11 +1,15 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 
 class OwnerModule implements IModule {
+
+  final _log = Logger('OwnerModule');
+
   final Kyaru _kyaru;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   OwnerModule(this._kyaru) {
     _moduleFunctions = [
@@ -40,7 +44,7 @@ class OwnerModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -53,7 +57,7 @@ class OwnerModule implements IModule {
         .join('\n- ');
 
     var message = '*Modules*\n\n- $mtext\n\nHealth check reports no issues.';
-    await _kyaru.reply(update, message, parseMode: ParseMode.MARKDOWN);
+    await _kyaru.reply(update, message, parseMode: ParseMode.markdown);
   }
 
   Future onNewGroup(Update update, _) async {
@@ -87,10 +91,10 @@ class OwnerModule implements IModule {
         var file = await _kyaru.brain.bot.getFile(newChat.photo!.bigFileId);
         var bytes = await _kyaru.brain.bot.download(file.filePath!);
         await _kyaru.brain.bot.sendPhoto(
-          ChatID(_kyaru.brain.db.settings.ownerId),
+          _kyaru.brain.db.settings.ownerId,
           HttpFile.fromBytes('propic.jpg', bytes),
           caption: ownerMsg,
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       } else {
         var message =
@@ -99,18 +103,18 @@ class OwnerModule implements IModule {
           message += '\nDescription: `${update.message!.chat.description}`';
         }
         await _kyaru.brain.bot.sendMessage(
-          ChatID(_kyaru.brain.db.settings.ownerId),
+          _kyaru.brain.db.settings.ownerId,
           message,
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       }
     } on Exception catch (e, s) {
-      print('$e\n$s');
+      _log.severe('Failed to notify new group', e, s);
 
       await _kyaru.brain.bot.sendMessage(
-        ChatID(_kyaru.brain.db.settings.ownerId),
+        _kyaru.brain.db.settings.ownerId,
         'New group: `${update.message!.chat.title}`\nID: `${chat.id}`',
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
     }
   }
@@ -123,7 +127,7 @@ class OwnerModule implements IModule {
     await _kyaru.reply(
       update,
       startMessage,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       hidePreview: true,
     );
   }
@@ -131,9 +135,11 @@ class OwnerModule implements IModule {
   Future help(Update update, _) async {
     var helpMessage = 'Hi ${update.message!.from!.firstName},\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
-        "I'm still in a early beta phase, so I may have lots of errors and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
+        "I'm still in a early beta phase, so I may have lots of errors"
+        " and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
         'Follow my development on my [Trello](https://trello.com/b/BJgZ2PBs/kyaru-roadmap) board\n\n'
-        'Take a look at @KyaruLinks and join @KyaruNews to keep you updated on new commands and bug fixes!\n\n'
+        'Take a look at @KyaruLinks and join @KyaruNews to keep you'
+        ' updated on new commands and bug fixes!\n\n'
         "Currently I'm closed source, but all my libraries are open source:\n"
         '[Dart Telegram Bot (Telegram API Wrapper)](https://github.com/KaikyuDev/dart-telegram-bot)\n'
         '[Dart Mongo Lite (file-based MongoDB)](https://github.com/KaikyuDev/dart_mongo_lite)\n\n'
@@ -157,7 +163,7 @@ class OwnerModule implements IModule {
     await _kyaru.reply(
       update,
       helpMessage,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       hidePreview: true,
     );
   }

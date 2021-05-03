@@ -1,4 +1,5 @@
 import 'github_commit.dart';
+import 'github_release.dart';
 
 class Payload {
   String? ref;
@@ -8,8 +9,9 @@ class Payload {
   String? pusherType;
   String? action;
   String? head;
-
+  int? number;
   List<GithubCommit>? commits;
+  GithubRelease? release;
 
   Payload(
     this.ref,
@@ -19,7 +21,9 @@ class Payload {
     this.pusherType,
     this.action,
     this.head,
+    this.number,
     this.commits,
+    this.release,
   );
 
   static Payload fromJson(Map<String, dynamic> json) {
@@ -31,7 +35,9 @@ class Payload {
       json['pusher_type'],
       json['action'],
       json['head'],
+      json['number'],
       GithubCommit.listFromJsonArray(json['commits'] ?? []),
+      GithubRelease.fromJson(json['release'] ?? <String, dynamic>{}),
     );
   }
 }

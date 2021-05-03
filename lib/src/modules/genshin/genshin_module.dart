@@ -5,11 +5,29 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 import 'entities/genshin_client.dart';
 
+extension on KyaruDB {
+  static const _genshinDataCollection = 'genshin_data';
+
+  void addGenshinUser(int userId, int id) {
+    database[_genshinDataCollection].update(
+      {'user_id': userId},
+      {'id': id, 'user_id': userId},
+      true,
+    );
+  }
+
+  Map<String, dynamic>? getGenshinUser(int userId) {
+    return database[_genshinDataCollection].findOne(
+      filter: {'user_id': userId},
+    );
+  }
+}
+
 class GenshinModule implements IModule {
   final Kyaru _kyaru;
   final GenshinClient genshinClient = GenshinClient();
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
     _moduleFunctions = [
@@ -35,31 +53,30 @@ class GenshinModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
   Future saveId(Update update, _) async {
-    var args = update.message!.text!.split(' ')
-      ..removeAt(0);
+    var args = update.message!.text!.split(' ')..removeAt(0);
 
     var errorMsg =
         'This command requires an hoyolab.com user ID as parameter.\n\n'
         'To get your user ID go [here](https://www.hoyolab.com/genshin/accountCenter/postList?id=0) and check next to your name.';
 
     if (args.isEmpty) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
         update,
         errorMsg,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
         hidePreview: true,
       );
     }
 
     var id = int.tryParse(args.first);
     if (id == null) {
-      return await _kyaru.reply(
+      return _kyaru.reply(
           update, 'hoyolab.com is a number, your parameter wasn\'t.');
     }
 
@@ -76,9 +93,11 @@ class GenshinModule implements IModule {
     if (info['ok'] != true) {
       var errorMessage = '${info['response']}\n'
           '\n'
-          'Please remember that this command has a caching system, you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you information on hoyolab.com is public!';
-      return await _kyaru.brain.bot.editMessageText(
+          'Please remember that this command has a caching system, '
+          'you\'ll be able to retry in $cache.\n'
+          'While you wait, please make sure that you'
+          ' information on hoyolab.com is public!';
+      return _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
@@ -86,7 +105,7 @@ class GenshinModule implements IModule {
     }
 
     _kyaru.brain.db.addGenshinUser(update.message!.from!.id, id);
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       'Everything looks nice! Use /genshin to get your information!',
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
@@ -104,7 +123,7 @@ class GenshinModule implements IModule {
       await _kyaru.reply(
         update,
         msg,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
         hidePreview: true,
       );
       return null;
@@ -123,13 +142,15 @@ class GenshinModule implements IModule {
 
     if (!info['ok']) {
       var reply = '$response\n\n'
-          'Please remember that this command has a caching system, you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you information on hoyolab.com is public!';
+          'Please remember that this command has a caching system,'
+          ' you\'ll be able to retry in $cache.\n'
+          'While you wait, please make sure that you'
+          ' information on hoyolab.com is public!';
       await _kyaru.brain.bot.editMessageText(
         reply,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
-        parseMode: ParseMode.MARKDOWN,
+        parseMode: ParseMode.markdown,
       );
       return null;
     }
@@ -147,7 +168,7 @@ class GenshinModule implements IModule {
       return;
     }
 
-    var assembler = (data, phase) {
+    assembler(data, phase) {
       var mostDefeats = data['mostDefeats'];
       var sss = data['strongestSingleStrike'];
       var mostDmgTaken = data['mostDamageTaken'];
@@ -169,17 +190,22 @@ class GenshinModule implements IModule {
           'Total Stars: *$stars*\n'
           'Deepest Descent: *$dd*\n'
           'Battles: *$battles*\n'
-          'Most Defeats: *${mostDefeats['value']}* (`${mostDefeats['character']}`)\n'
-          'Strongest Strike: *${sss['value']}* (`${sss['character']}`)\n'
-          'Most Damage Taken: *${mostDmgTaken['value']}* (`${mostDmgTaken['character']}`)\n'
-          'Elemental Bursts: *${elemBurstCast['value']}* (`${elemBurstCast['character']}`)\n'
-          'Elemental Skills: *${elemSkillsCast['value']}* (`${elemSkillsCast['character']}`)\n';
-    };
+          'Most Defeats: *${mostDefeats['value']}*'
+          ' (`${mostDefeats['character']}`)\n'
+          'Strongest Strike: *${sss['value']}*'
+          ' (`${sss['character']}`)\n'
+          'Most Damage Taken: *${mostDmgTaken['value']}*'
+          ' (`${mostDmgTaken['character']}`)\n'
+          'Elemental Bursts: *${elemBurstCast['value']}* '
+          '(`${elemBurstCast['character']}`)\n'
+          'Elemental Skills: *${elemSkillsCast['value']}*'
+          ' (`${elemSkillsCast['character']}`)\n';
+    }
 
     var sentMessage = data['sent'];
     var abyss = data['response']['abyss'];
     var current = abyss['current'];
-    var last  = abyss['last'];
+    var last = abyss['last'];
 
     var hasCurrent = current['unleashedElementalBurst']['value'] != null;
     var hasLast = last['unleashedElementalBurst']['value'] != null;
@@ -198,20 +224,19 @@ class GenshinModule implements IModule {
     if (currentPart != null || lastPart != null) {
       reply = '';
       if (currentPart != null) {
-        reply += currentPart + '\n';
+        reply += '$currentPart\n';
       }
       if (lastPart != null) {
         reply += lastPart;
       }
     }
 
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
     );
-
   }
 
   Future genshin(Update update, _) async {
@@ -246,11 +271,11 @@ class GenshinModule implements IModule {
         '*Dragonspine* ${progress["dragonspine"]}%\n'
         '*Mondstadt* ${progress["mondstadt"]}%';
 
-    return await _kyaru.brain.bot.editMessageText(
+    return _kyaru.brain.bot.editMessageText(
       reply,
       chatId: ChatID(sentMessage.chat.id),
       messageId: sentMessage.messageId,
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
     );
   }
 }

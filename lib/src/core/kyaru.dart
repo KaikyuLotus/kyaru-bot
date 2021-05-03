@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../kyaru.dart';
 
 class Kyaru {
+  final _log = Logger('Kyaru');
+
   late final KyaruBrain brain;
 
   Kyaru({
@@ -23,7 +26,7 @@ class Kyaru {
   }
 
   Future onStartFailed(Bot bot, Object e, StackTrace st) async {
-    print('Start failed: $e,\n$st');
+    _log.shout('Start failed', e, st);
   }
 
   void start({
@@ -39,24 +42,17 @@ class Kyaru {
   Future _updatesHandler(Bot bot, Update update) async {
     try {
       if (update.callbackQuery != null) return;
-
       if (update.inlineQuery != null) return;
-
-      // TODO decide what to do with forwarded messages
       if (update.message?.forwardDate != null) return;
-
-      // TODO maybe work in channels too?
       if (update.message?.chat.type == 'channel') return;
-
-      // TODO owner stuff here
 
       if (await brain.readEvents(update)) return;
 
       if (update.message?.text == null || update.message?.from == null) return;
 
       await brain.readMessage(update);
-    } catch (e, s) {
-      print('My life is a failure: $e:\n$s');
+    } on Exception catch (e, s) {
+      _log.shout('My life is a failure', e, s);
       await onError(brain.bot, update, e, s);
     }
   }
@@ -73,20 +69,20 @@ class Kyaru {
             : null;
   }
 
-  Future noticeOwner(Update? update, Object e, StackTrace s) async {
-    await brain.bot.sendMessage(ChatID(brain.db.settings.ownerId), '$e\n$s');
+  Future noticeOwnerError(Update update, Object e, StackTrace s) async {
+    return noticeOwner(update, '$e\n$s');
   }
 
-  Future onError(Bot bot, Update? updateNull, Object e, StackTrace s) async {
-    print('Kyaru machine broke\n$e\ns');
+  Future noticeOwner(Update update, String message) async {
+    await brain.bot.sendMessage(brain.db.settings.ownerId, message);
+  }
+
+  Future onError(Bot bot, Update updateNull, Object e, StackTrace s) async {
+    _log.severe('Kyaru machine broke', e, s);
     var update = updateNull;
-    await noticeOwner(update, e, s);
-    if (update == null) {
-      print('Error outside of an update, something went wrong');
-      return;
-    }
-    print('Update ID was: ${update.updateId}');
-    await reply(
+    await noticeOwnerError(update, e, s);
+    _log.severe('Update ID was: ${update.updateId}');
+    return reply(
       update,
       'Sorry, an error has occurred...\n'
       'My owner has been already informed.\n'

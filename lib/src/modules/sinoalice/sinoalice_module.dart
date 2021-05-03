@@ -4,10 +4,41 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import '../../../kyaru.dart';
 import 'entities/user.dart';
 
+extension on KyaruDB {
+  static const _sinoAliceDataCollection = 'sinoalice_data';
+
+  List<UserSinoAliceData> getUsersSinoAliceData() {
+    return database[_sinoAliceDataCollection].findAs(
+      UserSinoAliceData.fromJson,
+    );
+  }
+
+  UserSinoAliceData? getUserSinoAliceData(int userId) {
+    return database[_sinoAliceDataCollection].findOneAs(
+      UserSinoAliceData.fromJson,
+      filter: {'user_id': userId},
+    );
+  }
+
+  void updateUserSinoAliceData(UserSinoAliceData data) {
+    database[_sinoAliceDataCollection].update(
+      {'user_id': data.userId},
+      data.toJson(),
+      true,
+    );
+  }
+
+  bool deleteUserSinoAliceData(int userId) {
+    return database[_sinoAliceDataCollection].delete(
+      {'user_id': userId},
+    );
+  }
+}
+
 class SinoAliceModule implements IModule {
   final Kyaru _kyaru;
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   SinoAliceModule(this._kyaru) {
     _moduleFunctions = [
@@ -33,7 +64,7 @@ class SinoAliceModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -62,7 +93,7 @@ class SinoAliceModule implements IModule {
       try {
         okUserData[userData.gameId] = await _kyaru.brain.bot.getChatMember(
           ChatID(update.message!.chat.id),
-          userData.userId!,
+          userData.userId,
         );
       } on APIException {
         // Pass
@@ -71,7 +102,7 @@ class SinoAliceModule implements IModule {
     final buffer = StringBuffer();
     for (var entry in okUserData.entries) {
       var nameLink = MarkdownUtils.generateUrl(
-        MarkdownUtils.escape(entry.value.user.firstName),
+        MarkdownUtils.escape(entry.value.user.firstName)!,
         'tg://user?id=${entry.value.user.id}',
       );
       buffer.write('\n$nameLink: `${entry.key}`');
@@ -79,7 +110,7 @@ class SinoAliceModule implements IModule {
     return _kyaru.reply(
       update,
       buffer.toString(),
-      parseMode: ParseMode.MARKDOWNV2,
+      parseMode: ParseMode.markdownV2,
     );
   }
 
@@ -102,8 +133,10 @@ class SinoAliceModule implements IModule {
         UserSinoAliceData(update.message!.from!.id, id),
       );
       return _kyaru.reply(
-          update, "I've registered your game ID\nJust type /sinid to show it",
-          quote: true);
+        update,
+        "I've registered your game ID\nJust type /sinid to show it",
+        quote: true,
+      );
     }
 
     var quote = update.message!.replyToMessage != null;
@@ -131,7 +164,7 @@ class SinoAliceModule implements IModule {
     return _kyaru.reply(
       update,
       '$nameLink ID: `${userData.gameId}`',
-      parseMode: ParseMode.MARKDOWN,
+      parseMode: ParseMode.markdown,
       quote: true,
     );
   }

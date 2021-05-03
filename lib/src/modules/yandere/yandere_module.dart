@@ -6,6 +6,10 @@ import '../../../kyaru.dart';
 import 'entities/yandere_client.dart';
 
 class YandereModule implements IModule {
+  final Kyaru _kyaru;
+  final YandereClient yandereClient = YandereClient();
+  late List<ModuleFunction> _moduleFunctions;
+
   YandereModule(this._kyaru) {
     _moduleFunctions = <ModuleFunction>[
       ModuleFunction(
@@ -23,13 +27,8 @@ class YandereModule implements IModule {
     ];
   }
 
-  final Kyaru _kyaru;
-  final YandereClient yandereClient = YandereClient();
-
-  List<ModuleFunction>? _moduleFunctions;
-
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -51,7 +50,7 @@ class YandereModule implements IModule {
 
     for (final mode in modeMap.keys) {
       if (mode == specifiedMode) {
-        return await modeMap[mode]!(update, _);
+        return modeMap[mode]!(update, _);
       }
     }
 
@@ -97,7 +96,7 @@ class YandereModule implements IModule {
       final photo = HttpFile.fromToken(
           randomPost.sampleUrl ?? randomPost.jpegUrl ?? randomPost.fileUrl!);
       var count = 0;
-      final tags = randomPost.tags!.split(' ').takeWhile((e) {
+      final tags = randomPost.tags.split(' ').takeWhile((e) {
         count++;
         return count < 11;
       }).toList();
@@ -116,7 +115,7 @@ class YandereModule implements IModule {
           update,
           caption,
           quote: update.message!.chat.type != 'private',
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       } else {
         _kyaru.replyPhoto(
@@ -124,7 +123,7 @@ class YandereModule implements IModule {
           photo,
           caption: caption,
           quote: update.message!.chat.type != 'private',
-          parseMode: ParseMode.MARKDOWN,
+          parseMode: ParseMode.markdown,
         );
       }
     });

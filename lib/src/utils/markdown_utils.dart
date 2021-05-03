@@ -1,9 +1,9 @@
 class MarkdownUtils {
-  static String generateUrl(String? text, String? link) {
+  static String generateUrl(String text, String link) {
     return '[${escape(text)}](${escape(link)})';
   }
 
-  static String generateHiddenUrl(String? link) {
+  static String generateHiddenUrl(String link) {
     return generateUrl('\u200D', link);
   }
 
@@ -29,7 +29,7 @@ class MarkdownUtils {
       '.',
       '!'
     ]) {
-      finalString = finalString!.replaceAll(c, '\\$c');
+      finalString = finalString?.replaceAll(c, '\\$c');
     }
     return finalString;
   }

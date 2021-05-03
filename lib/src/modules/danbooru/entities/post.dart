@@ -7,6 +7,10 @@ class Post {
   String? previewFileUrl;
   String? fileExt;
 
+  int width;
+  int height;
+  int fileSize;
+
   Post(
     this.id,
     this.rating,
@@ -15,6 +19,9 @@ class Post {
     this.largeFileUrl,
     this.previewFileUrl,
     this.fileExt,
+    this.width,
+    this.height,
+    this.fileSize,
   );
 
   static Post fromJson(Map<String, dynamic> json) {
@@ -26,6 +33,9 @@ class Post {
       json['large_file_url'],
       json['preview_file_url'],
       json['file_ext'],
+      json['image_width'],
+      json['image_height'],
+      json['file_size'],
     );
   }
 

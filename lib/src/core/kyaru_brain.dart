@@ -2,21 +2,24 @@ import 'dart:async';
 
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:logging/logging.dart';
 
 import '../../kyaru.dart';
 
 class KyaruBrain {
-  KyaruBrain({
-    required database,
-    required this.bot,
-  }) : db = database;
+  final _log = Logger('KyaruBrain');
 
   final KyaruDB db;
   final Bot bot;
 
-  var modulesFunctions = <String, ModuleFunction>{};
-  var coreFunctions = <String>[];
-  var modules = <IModule>[];
+  final modulesFunctions = <String, ModuleFunction>{};
+  final coreFunctions = <String>[];
+  final modules = <IModule>[];
+
+  KyaruBrain({
+    required database,
+    required this.bot,
+  }) : db = database;
 
   Future updateTelegramCommands() {
     return bot.setMyCommands(
@@ -39,21 +42,23 @@ class KyaruBrain {
   ) async {
     try {
       await moduleFunction.function(update, null);
-      print('Function ${moduleFunction.name} executed');
-    } catch (e, s) {
-      print('Error executing function ${moduleFunction.name}: $e\n$s');
+      _log.finer('Function ${moduleFunction.name} executed');
+    } on Exception catch (e, s) {
+      _log.severe('Error executing function ${moduleFunction.name}', e, s);
       await bot.sendMessage(
-        ChatID(db.settings.ownerId),
+        db.settings.ownerId,
         'Command ${moduleFunction.name} crashed: $e',
       );
     }
   }
 
   void useModules(List<IModule> modules) {
-    this.modules = modules;
+    this.modules.clear();
+    modules.removeWhere((module) => !module.isEnabled());
+    this.modules.addAll(modules);
     for (var module in modules) {
       print(module.runtimeType);
-      var moduleFunctions = module.moduleFunctions ?? [];
+      var moduleFunctions = module.moduleFunctions;
       for (var moduleFunction in moduleFunctions) {
         print('- ${moduleFunction.name}');
         modulesFunctions[moduleFunction.name] = moduleFunction;
@@ -99,7 +104,7 @@ class KyaruBrain {
     if (text == null) return;
 
     final chatId = update.message?.chat.id;
-    if (chatId == null) return print('Cannot proceed if chat id is null');
+    if (chatId == null) return _log.fine('Cannot proceed if chat id is null');
 
     final botCommand = BotCommandParser.fromMessage(update.message!);
 
@@ -107,7 +112,7 @@ class KyaruBrain {
 
     if (isCommandToBot) return onCommandToBot(update, botCommand!, chatId);
 
-    await onTextMessage(update, chatId);
+    return onTextMessage(update, chatId);
   }
 
   Future<bool> runInstructionFunction(
@@ -117,7 +122,9 @@ class KyaruBrain {
     if (instruction.function == null) return false;
 
     if (!modulesFunctions.containsKey(instruction.function)) {
-      print('Warning function ${instruction.function} not found in any module');
+      _log.warning(
+        'Warning function ${instruction.function} not found in any module',
+      );
       return false;
     }
 
@@ -125,8 +132,8 @@ class KyaruBrain {
     if (function == null) return false;
 
     await modulesFunctions[function]?.function(update, instruction);
-    print('Function ${instruction.function} executed');
-    return true;
+    _log.finest('Function ${instruction.function} executed');
+    return !instruction.volatile;
   }
 
   List<Instruction> getInstructions(
@@ -147,14 +154,19 @@ class KyaruBrain {
 
     final validInstructions = regexInstructions.where(
       (i) {
-        return RegExp(i.regex!).firstMatch(text!) != null &&
-            i.checkRequirements(update, db.settings);
+        return i.regex! == '' ||
+            (RegExp(i.regex!).firstMatch(text!) != null &&
+                i.checkRequirements(update, db.settings));
       },
     ).toList();
 
     if (validInstructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(validInstructions));
+    executeVolatilePrioritized(
+      validInstructions,
+      update,
+      runInstructionFunction,
+    );
     return true;
   }
 
@@ -177,7 +189,11 @@ class KyaruBrain {
 
     if (validInstructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(validInstructions));
+    executeVolatilePrioritized(
+      validInstructions,
+      update,
+      runInstructionFunction,
+    );
     return true;
   }
 
@@ -193,7 +209,7 @@ class KyaruBrain {
     );
     if (instructions.isEmpty) return false;
 
-    await runInstructionFunction(update, choose(instructions));
+    executeVolatilePrioritized(instructions, update, runInstructionFunction);
     return true;
   }
 
@@ -225,5 +241,30 @@ class KyaruBrain {
       InstructionEventType.userJoined,
       update.message!.chat.id,
     );
+  }
+
+  void executeVolatilePrioritized(
+    Iterable<Instruction> instructions,
+    Update update,
+    Function(Update, Instruction) foo,
+  ) {
+    for (var instruction in instructions.where((i) => i.volatile)) {
+      executeGuarded(
+        () => foo(update, instruction),
+        'Could not execute ${instruction.command}',
+      );
+    }
+
+    var notVolatileInstructions = instructions.where((i) => !i.volatile);
+    if (notVolatileInstructions.isEmpty) return;
+    var instruction = choose(notVolatileInstructions);
+    executeGuarded(
+      () => foo(update, instruction),
+      'Could not execute ${instruction.command}',
+    );
+  }
+
+  void executeGuarded(Function foo, String errMsg) {
+    runZonedGuarded(() => foo(), (e, s) => _log.severe(errMsg, e, s));
   }
 }

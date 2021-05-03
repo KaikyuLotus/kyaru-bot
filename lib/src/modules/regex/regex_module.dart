@@ -6,16 +6,16 @@ import '../../../kyaru.dart';
 
 class RegexModule implements IModule {
   final Kyaru _kyaru;
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   RegexModule(this._kyaru) {
     _moduleFunctions = [
-      ModuleFunction(regexReplace, 'asd', 'regexReplace'), // public: false
+      ModuleFunction(regexReplace, 'asd', 'regexReplace'),
     ];
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
@@ -31,15 +31,9 @@ class RegexModule implements IModule {
 
     var fixed = quotedText.replaceAll(first, second);
 
-    if (fixed == quotedText) {
-      return;
-    }
+    if (fixed == quotedText) return;
 
     var reply = '"$fixed"\n\nFixed!';
-    await _kyaru.brain.bot.sendMessage(
-      ChatID(update.message!.chat.id),
-      reply,
-      replyToMessageId: update.message?.replyToMessage?.messageId,
-    );
+    return _kyaru.reply(update, reply, quoteQuoted: true);
   }
 }

@@ -1,6 +1,4 @@
 import 'package:dart_mongo_lite/dart_mongo_lite.dart';
-import 'package:kyaru_bot/src/modules/github/entities/db/db_repo.dart';
-import 'package:kyaru_bot/src/modules/sinoalice/entities/user.dart';
 
 import '../../../kyaru.dart';
 import '../instruction.dart';
@@ -9,27 +7,22 @@ import '../settings.dart';
 class KyaruDB {
   static const _settingsCollection = 'settings';
   static const _instructionsCollection = 'instructions';
-  static const _repositoryCollection = 'repositories';
   static const _chatDataCollection = 'chat_data';
-  static const _sinoAliceDataCollection = 'sinoalice_data';
-  static const _genshinDataCollection = 'genshin_data';
 
-  final Database _database = Database('database/database.json');
+  final Database database = Database('database/database.json');
 
   Settings get settings {
-    return _database[_settingsCollection].findOneAs(
-      (json) => Settings.fromJson(json),
-    )!;
+    return database[_settingsCollection].findOneAs(Settings.fromJson)!;
   }
 
-  void syncDb() => _database.sync();
+  void syncDb() => database.sync();
 
   void deleteCustomInstruction(Instruction instruction) {
-    _database[_instructionsCollection].delete({
+    database[_instructionsCollection].delete({
       'uuid': instruction.uuid,
       'chat_id': instruction.chatId,
-      'type': UpperEnums.encodeUpper(instruction.instructionType),
-      'event_type': UpperEnums.encodeUpper(instruction.instructionEventType),
+      'type': instruction.instructionType.value,
+      'event_type': instruction.instructionEventType?.value,
       'function': instruction.function,
       'regex': instruction.regex,
       'require_quote': instruction.requireQuote,
@@ -37,72 +30,40 @@ class KyaruDB {
   }
 
   void addCustomInstruction(Instruction instruction) {
-    _database[_instructionsCollection].insert(instruction.toJson());
+    database[_instructionsCollection].insert(instruction.toJson());
+  }
+
+  bool removeChatData(int chatId) {
+    return database[_chatDataCollection].delete({'id': chatId});
   }
 
   void updateChatData(ChatData chatData) {
-    _database[_chatDataCollection].update(
+    database[_chatDataCollection].update(
       {'id': chatData.id},
       chatData.toJson(),
       true,
     );
   }
 
+  Map<String, int> getChatCounts() {
+    return {
+      'private': database[_chatDataCollection].count(filter: {
+        'is_private': true,
+      }),
+      'groups': database[_chatDataCollection].count(filter: {
+        'is_private': false,
+      }),
+    };
+  }
+
+  List<ChatData> getChats() {
+    return database[_chatDataCollection].findAs(ChatData.fromJson);
+  }
+
   ChatData? getChatData(int chatId) {
-    return _database[_chatDataCollection].findOneAs(
-      (json) => ChatData.fromJson(json),
+    return database[_chatDataCollection].findOneAs(
+      ChatData.fromJson,
       filter: {'id': chatId},
-    );
-  }
-
-  List<UserSinoAliceData> getUsersSinoAliceData() {
-    return _database[_sinoAliceDataCollection].findAs(
-      (json) => UserSinoAliceData.fromJson(json),
-    );
-  }
-
-  UserSinoAliceData? getUserSinoAliceData(int userId) {
-    return _database[_sinoAliceDataCollection].findOneAs(
-      (json) => UserSinoAliceData.fromJson(json),
-      filter: {'user_id': userId},
-    );
-  }
-
-  void updateUserSinoAliceData(UserSinoAliceData data) {
-    _database[_sinoAliceDataCollection].update(
-      {'user_id': data.userId},
-      data.toJson(),
-      true,
-    );
-  }
-
-  bool deleteUserSinoAliceData(int userId) {
-    return _database[_sinoAliceDataCollection].delete(
-      {'user_id': userId},
-    );
-  }
-
-  // TODO this creates a strict dependency between Kyaru and the github module, find a solution
-  List<DBRepo> getRepos() {
-    return _database[_repositoryCollection].findAs((r) => DBRepo.fromJson(r));
-  }
-
-  void addRepo(DBRepo repo) {
-    return _database[_repositoryCollection].insert(repo.toJson());
-  }
-
-  bool removeRepo(DBRepo repo) {
-    return _database[_repositoryCollection].delete(repo.toJson());
-  }
-
-  void addGenshinUser(int userId, int id) {
-    _database[_genshinDataCollection]
-        .update({'user_id': userId}, {'id': id, 'user_id': userId}, true);
-  }
-
-  Map<String, dynamic>? getGenshinUser(int userId) {
-    return _database[_genshinDataCollection].findOne(
-      filter: {'user_id': userId},
     );
   }
 
@@ -111,12 +72,12 @@ class KyaruDB {
     int chatId, {
     InstructionEventType? eventType,
   }) {
-    var filter = {'type': UpperEnums.encodeUpper(type), 'chat_id': chatId};
+    var filter = {'type': type.value, 'chat_id': chatId};
     if (eventType != null) {
-      filter['event_type'] = UpperEnums.encodeUpper(eventType);
+      filter['event_type'] = eventType.value;
     }
-    return _database[_instructionsCollection].findAs(
-      (json) => Instruction.fromJson(json),
+    return database[_instructionsCollection].findAs(
+      Instruction.fromJson,
       filter: filter,
     );
   }

@@ -9,7 +9,7 @@ class InsultsModule implements IModule {
   final Kyaru _kyaru;
   final InsultsClient insultsClient = InsultsClient();
 
-  List<ModuleFunction>? _moduleFunctions;
+  late List<ModuleFunction> _moduleFunctions;
 
   InsultsModule(this._kyaru) {
     _moduleFunctions = [
@@ -18,14 +18,14 @@ class InsultsModule implements IModule {
   }
 
   @override
-  List<ModuleFunction>? get moduleFunctions => _moduleFunctions;
+  List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
   bool isEnabled() => true;
 
   Future insult(Update update, _) async {
     var insult = await insultsClient.getInsult();
-    await _kyaru.reply(
+    return _kyaru.reply(
       update,
       '$insult',
       quoteQuoted: update.message!.replyToMessage != null,
