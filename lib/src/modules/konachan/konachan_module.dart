@@ -79,8 +79,6 @@ class KonachanModule implements IModule {
       );
     }
 
-    // TODO: Forbidden tags?
-
     var imagesCount = 1;
     if (tags.isNotEmpty) {
       var firstTagNum = int.tryParse(tags.first);
@@ -143,7 +141,7 @@ class KonachanModule implements IModule {
       return caption;
     }
 
-    posts.removeWhere((p) => p.fileUrl!.endsWith('webm'));
+    posts.removeWhere((p) => !['jpg', 'jpeg', 'png'].any(p.fileUrl!.endsWith));
 
     posts.shuffle();
     var httpFiles = posts
