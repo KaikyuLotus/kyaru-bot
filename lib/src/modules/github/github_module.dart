@@ -202,7 +202,17 @@ class GithubModule implements IModule {
 
     var username = args[0];
     var repo = args[1];
-    var dbRepo = DBRepo(update.message!.chat.id, username, repo);
+    var chatId = update.message!.chat.id;
+
+    var repoList = _kyaru.brain.db.getRepos().where((r) {
+      return r.chatID == chatId && r.user == username && r.repo == repo;
+    }).toList();
+
+    if (repoList.isNotEmpty) {
+      return _kyaru.reply(update, 'Repository already added');
+    }
+
+    var dbRepo = DBRepo(chatId, username, repo);
 
     try {
       await _githubClient.events(username, repo);

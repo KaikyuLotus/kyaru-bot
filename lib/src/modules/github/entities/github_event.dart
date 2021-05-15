@@ -96,6 +96,10 @@ class GithubEvent {
         return '${actor.displayLogin} created a new $releaseType '
             '(${release.name})$body$assetsMessage';
 
+      case GithubEventType.pullRequestReviewEvent:
+        return '${actor.displayLogin} (${payload!.review!.authorAssociation}) '
+            '${payload!.review!.state} PR#${payload!.review!.prNumber}';
+
       default:
         return 'Unknown action on ${repo.name}';
     }
