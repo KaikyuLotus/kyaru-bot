@@ -1,7 +1,6 @@
 import 'small_entities/selected_legend.dart';
 
 class LegendsData {
-
   SelectedLegend selected;
 
   LegendsData(this.selected);

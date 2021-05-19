@@ -3,7 +3,6 @@ import 'small_entities/battlepass.dart';
 import 'small_entities/rank.dart';
 
 class GlobalData {
-
   String name;
   int uid;
   String? platform;

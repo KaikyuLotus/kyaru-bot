@@ -1,4 +1,3 @@
-
 import '../../kyaru.dart';
 
 class CustomCommand {

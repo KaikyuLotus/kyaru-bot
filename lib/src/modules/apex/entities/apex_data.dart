@@ -10,7 +10,6 @@ class ApexException implements Exception {
 }
 
 class ApexData {
-
   GlobalData? global;
   LegendsData? legends;
   RealtimeData? realtime;
