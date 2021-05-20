@@ -76,11 +76,7 @@ class DanbooruModule implements IModule {
     if (slowDownChats.containsKey(update.message!.chat.id)) {
       var lockedTime = slowDownChats[update.message!.chat.id]!;
       var diff = lockedTime.difference(DateTime.now()).inSeconds;
-      return _kyaru.reply(
-        update,
-        'Please wait $diff more seconds, you horny.',
-        parseMode: ParseMode.markdown,
-      );
+      return _kyaru.reply(update, 'Please wait $diff more seconds, you horny.');
     }
 
     var elaboratedTags = tags ?? [];
@@ -181,7 +177,6 @@ class DanbooruModule implements IModule {
       return _kyaru.reply(
         update,
         'Telegram does not support .webm format\nTry again or with other tags.',
-        parseMode: ParseMode.markdown,
       );
     }
 

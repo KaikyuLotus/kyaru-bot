@@ -61,7 +61,11 @@ class LastfmClient {
     );
   }
 
-  Future<RecentTrack> getLastTrack(String user) async {
-    return (await getRecentTracks(user, limit: 1))[0];
+  Future<RecentTrack?> getLastTrack(String user) async {
+    var recentTracks = await getRecentTracks(user, limit: 1);
+    if (recentTracks.isNotEmpty) {
+      return recentTracks.first;
+    }
+    return null;
   }
 }

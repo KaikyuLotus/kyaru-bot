@@ -10,7 +10,6 @@ import 'match_info.dart';
 import 'summoner.dart';
 
 class LOLClient {
-
   final _log = Logger('LOLClient');
 
   final String dataBaseUrl = 'ddragon.leagueoflegends.com';

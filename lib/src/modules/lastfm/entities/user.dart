@@ -5,7 +5,7 @@ class User {
   final String imageUrl;
   final int playcount;
   final int playlists;
-  final String country;
+  final String? country;
 
   User(
     this.name,
@@ -18,6 +18,7 @@ class User {
   );
 
   static User fromJson(Map<String, dynamic> json) {
+    var country = json['country'] == 'None' ? null : json['country'];
     return User(
       json['name'],
       json['realname'],
@@ -25,7 +26,7 @@ class User {
       json['image'].last['#text'],
       int.parse(json['playcount']),
       int.parse(json['playlists']),
-      json['country'],
+      country,
     );
   }
 }

@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Dart SDK
-        uses: cedx/setup-dart@v2
+        uses: dart-lang/setup-dart@v1
 
       - name: Install Python 3.7
         uses: actions/setup-python@v2
@@ -31,16 +31,16 @@ jobs:
       - name: Install requirements
         run: pip install -r .github/workflows/requirements.txt
 
-      - name: Install Pub Spec
-        run: pub get
-
-      - name: Dartanalyzer
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+      
+      - name: Analyze project source
         id: analysis
-        run: dartanalyzer --format machine . 2>&1 >/dev/null | python3 .github/workflows/deployer.py check_analyzer_output
+        run: dart analyze --format machine . 2>&1 >/dev/null | python3 .github/workflows/deployer.py check_analyzer_output
 
-      # TODO add a step on failure
-
-  # Maybe do this only on master?
   compile:
     needs: [check_quality]
     if: success()
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Dart SDK
-        uses: cedx/setup-dart@v2
+        uses: dart-lang/setup-dart@v1
 
       - name: Install Python 3.7
         uses: actions/setup-python@v2
@@ -68,11 +68,11 @@ jobs:
       - name: Install requirements
         run: pip install -r .github/workflows/requirements.txt
 
-      - name: Install Pub Spec
-        run: pub get
+      - name: Install dependencies
+        run: dart pub get
 
       - name: Build Executable
-        run: dart2native main.dart -o kyaru-dev
+        run: dart compile exe main.dart -o kyaru-dev
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v2

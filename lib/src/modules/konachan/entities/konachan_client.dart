@@ -4,27 +4,27 @@ import 'package:http/http.dart';
 
 import 'post.dart';
 
-class YandereException {
+class KonachanException implements Exception {
   final String message;
 
-  YandereException(this.message);
+  KonachanException(this.message);
 }
 
-class YandereClient {
-  final String baseUrl = 'yande.re';
+class KonachanClient {
+  final String baseUrl = 'konachan.com';
 
   final Client _client = Client();
 
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
     final response = await _client.get(uri).timeout(Duration(seconds: 10));
     if (response.statusCode != 200) {
-      throw YandereException(response.body);
+      throw KonachanException(response.body);
     }
     return mapper(json.decode(response.body));
   }
 
-  Future<List<Post>?> getPosts({
-    List<String>? tags,
+  Future<List<Post>> getPosts({
+    List<String> tags = const <String>[],
     int limit = 100,
     bool random = true,
   }) {
@@ -33,7 +33,7 @@ class YandereClient {
         baseUrl,
         '/post.json',
         {
-          'tags': (tags ?? <String>[]).join(' '),
+          'tags': tags.join(' '),
           'limit': '$limit',
           'random': '$random',
         },

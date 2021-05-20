@@ -22,6 +22,8 @@ class GithubEventType extends _Enum<String> {
   static const memberEvent = GithubEventType._('MEMBER_EVENT');
   static const publicEvent = GithubEventType._('PUBLIC_EVENT');
   static const pullRequestEvent = GithubEventType._('PULL_REQUEST_EVENT');
+  static const pullRequestReviewEvent =
+      GithubEventType._('PULL_REQUEST_REVIEW_EVENT');
   static const pullRequestReviewCommentEvent =
       GithubEventType._('PULL_REQUEST_REVIEW_COMMENT_EVENT');
   static const pushEvent = GithubEventType._('PUSH_EVENT');
@@ -40,6 +42,7 @@ class GithubEventType extends _Enum<String> {
     'MemberEvent': memberEvent,
     'PublicEvent': publicEvent,
     'PullRequestEvent': pullRequestEvent,
+    'PullRequestReviewEvent': pullRequestReviewEvent,
     'PullRequestReviewCommentEvent': pullRequestReviewCommentEvent,
     'PushEvent': pushEvent,
     'ReleaseEvent': releaseEvent,

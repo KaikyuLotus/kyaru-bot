@@ -21,7 +21,7 @@ class ApexModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         apex,
-        'Returns currents stats for the given player',
+        'Returns current stats for the given player',
         'apex',
         core: true,
       ),

@@ -4,6 +4,12 @@ import 'package:http/http.dart';
 
 import 'post.dart';
 
+class DanbooruException implements Exception {
+  final String message;
+
+  DanbooruException(this.message);
+}
+
 class DanbooruClient {
   final String baseUrl = 'danbooru.donmai.us';
 
@@ -11,6 +17,9 @@ class DanbooruClient {
 
   Future<T> _get<T>(Uri uri, T Function(dynamic) mapper) async {
     var response = await _client.get(uri).timeout(Duration(seconds: 10));
+    if (response.statusCode != 200) {
+      throw DanbooruException(response.body);
+    }
     return mapper(json.decode(response.body));
   }
 

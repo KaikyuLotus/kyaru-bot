@@ -7,30 +7,12 @@ class MarkdownUtils {
     return generateUrl('\u200D', link);
   }
 
-  static String? escape(String? string) {
-    var finalString = string;
-    for (var c in [
-      '_',
-      '*',
-      '[',
-      ']',
-      '(',
-      ')',
-      '~',
-      '`',
-      '>',
-      '#',
-      '+',
-      '-',
-      '=',
-      '|',
-      '{',
-      '}',
-      '.',
-      '!'
-    ]) {
-      finalString = finalString?.replaceAll(c, '\\$c');
-    }
-    return finalString;
+  static String? escape(String? string, {bool v2 = true}) {
+    var markdownV1 = RegExp(r'[_*`[]');
+    var markdownV2 = RegExp(r'[_*[\]()~`>#+\-=|{}.!]');
+
+    var pattern = v2 ? markdownV2 : markdownV1;
+
+    return string?.replaceAllMapped(pattern, (match) => '\\${match.group(0)}');
   }
 }

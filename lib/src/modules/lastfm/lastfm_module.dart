@@ -81,10 +81,13 @@ class LastfmModule implements IModule {
       var recentTracks = await lastfmClient.getRecentTracks(user);
       var imageUrl = MarkdownUtils.generateHiddenUrl(lastfmUser.imageUrl);
       var userName = MarkdownUtils.generateUrl(lastfmUser.name, lastfmUser.url);
-      var country = MarkdownUtils.escape(lastfmUser.country);
+      var country = '';
+      if (lastfmUser.country != null) {
+        country = MarkdownUtils.escape('(${lastfmUser.country})')!;
+      }
       var scrobbles = MarkdownUtils.escape(
           recentTracks.map((t) => '• ${t.artist} - ${t.title}').join('\n'));
-      var message = '$imageUrl*$userName* \\($country\\)\n\n'
+      var message = '$imageUrl*$userName* $country\n\n'
           'Playcount: ${lastfmUser.playcount}\n\n'
           'Last 5 scrobbles:\n$scrobbles';
 
@@ -140,13 +143,16 @@ class LastfmModule implements IModule {
 
     try {
       var track = await lastfmClient.getLastTrack(user);
-      var imageUrl = MarkdownUtils.generateHiddenUrl(track.imageUrl);
-      var userName = MarkdownUtils.escape(update.message!.from!.firstName);
-      var title = MarkdownUtils.escape(track.title);
-      var artist = MarkdownUtils.escape(track.artist);
-      var status = track.nowPlaying ? 'is listening' : 'last listened';
+      var message = 'This user has no scrobbles';
+      if (track != null) {
+        var imageUrl = MarkdownUtils.generateHiddenUrl(track.imageUrl);
+        var userName = MarkdownUtils.escape(update.message!.from!.firstName);
+        var title = MarkdownUtils.escape(track.title);
+        var artist = MarkdownUtils.escape(track.artist);
+        var status = track.nowPlaying ? 'is listening' : 'last listened';
 
-      var message = '$imageUrl*$userName* $status to *$title* by *$artist*';
+        message = '$imageUrl*$userName* $status to *$title* by *$artist*';
+      }
 
       return _kyaru.reply(
         update,

@@ -31,6 +31,7 @@ void main(List<String> arguments) async {
       QuotesModule(kyaru),
       LastfmModule(kyaru),
       KitsuModule(kyaru),
+      KonachanModule(kyaru),
     ];
 
     kyaru.useModules(modules);

@@ -6,11 +6,9 @@ import 'anime.dart';
 import 'character.dart';
 
 class JikanApiException implements Exception {
-
   final String message;
 
   JikanApiException(this.message);
-
 }
 
 class JikanClient {

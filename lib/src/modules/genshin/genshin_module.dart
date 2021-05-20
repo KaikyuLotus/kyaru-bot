@@ -33,13 +33,13 @@ class GenshinModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         saveId,
-        'Gets your hoyolab.com public info',
+        'Saves your hoyolab.com ID',
         'genshin_id',
         core: true,
       ),
       ModuleFunction(
         genshin,
-        'Saves your hoyolab.com ID',
+        'Gets your hoyolab.com public info',
         'genshin',
         core: true,
       ),
@@ -77,7 +77,9 @@ class GenshinModule implements IModule {
     var id = int.tryParse(args.first);
     if (id == null) {
       return _kyaru.reply(
-          update, 'hoyolab.com is a number, your parameter wasn\'t.');
+        update,
+        'hoyolab.com user id is a number, your parameter wasn\'t.',
+      );
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
@@ -95,8 +97,8 @@ class GenshinModule implements IModule {
           '\n'
           'Please remember that this command has a caching system, '
           'you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you'
-          ' information on hoyolab.com is public!';
+          'While you wait, please make sure that your'
+          'information on hoyolab.com is public!';
       return _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
@@ -142,15 +144,14 @@ class GenshinModule implements IModule {
 
     if (!info['ok']) {
       var reply = '$response\n\n'
-          'Please remember that this command has a caching system,'
-          ' you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that you'
-          ' information on hoyolab.com is public!';
+          'Please remember that this command has a caching system, '
+          'you\'ll be able to retry in $cache.\n'
+          'While you wait, please make sure that your '
+          'information on hoyolab.com is public!';
       await _kyaru.brain.bot.editMessageText(
         reply,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
-        parseMode: ParseMode.markdown,
       );
       return null;
     }

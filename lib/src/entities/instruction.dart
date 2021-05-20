@@ -40,7 +40,7 @@ class Instruction {
     this.regex,
     this.requireQuote,
     this.ownerOnly,
-      this.volatile,
+    this.volatile,
   );
 
   bool checkRequirements(Update update, Settings? settings) {

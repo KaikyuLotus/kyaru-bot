@@ -55,27 +55,18 @@ class LoLModule implements IModule {
     var summoner = await _client.getSummoner(user);
 
     if (summoner == null) {
-      return _kyaru.reply(
-        update,
-        'Player not found.',
-        parseMode: ParseMode.markdown,
-      );
+      return _kyaru.reply(update, 'Player not found.');
     }
 
     var matches = await _client.getMatches(summoner.accountId);
     if (matches.isEmpty) {
-      return _kyaru.reply(
-        update,
-        'Player has no recent matches.',
-        parseMode: ParseMode.markdown,
-      );
+      return _kyaru.reply(update, 'Player has no recent matches.');
     }
 
     if (playIndexInt > matches.length - 1) {
       return _kyaru.reply(
         update,
         'Given match not found, maximum match index found is ${matches.length}',
-        parseMode: ParseMode.markdown,
       );
     }
 
@@ -97,11 +88,7 @@ class LoLModule implements IModule {
     var usedChampion = _client.findChampionById('${participant.championId}');
 
     if (usedChampion == null || mainChamp == null) {
-      await _kyaru.reply(
-        update,
-        "It seems i can't a champion used.",
-        parseMode: ParseMode.markdown,
-      );
+      await _kyaru.reply(update, "It seems i can't get a champion used.");
       return _kyaru.noticeOwner(update, 'Master, update LoL characters!');
     }
 
