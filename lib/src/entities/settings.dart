@@ -5,6 +5,7 @@ class Settings {
   String? lolToken;
   String? apexToken;
   String? lastfmToken;
+  String? weatherToken;
   ChatID ownerId;
 
   Settings(
@@ -12,6 +13,7 @@ class Settings {
     this.lolToken,
     this.apexToken,
     this.lastfmToken,
+    this.weatherToken,
     this.ownerId,
   );
 
@@ -21,6 +23,7 @@ class Settings {
       json['lol_token'],
       json['apex_token'],
       json['lastfm_token'],
+      json['weather_token'],
       ChatID(json['owner_id']),
     );
   }
@@ -31,6 +34,7 @@ class Settings {
       'lol_token': lolToken,
       'apex_token': apexToken,
       'lastfm_token': lastfmToken,
+      'weather_token': weatherToken,
       'owner_id': ownerId.chatId,
     };
   }
