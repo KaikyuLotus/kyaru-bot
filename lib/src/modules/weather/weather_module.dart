@@ -28,6 +28,7 @@ Future _eventsIsolateLoop(SendPort sendPort) async {
   var _db = KyaruDB();
 
   void timerFunction() {
+    _db.syncDb();
     _db.getCities().forEach((e) => sendPort.send(e.toJson()));
     return;
   }
@@ -54,8 +55,8 @@ class WeatherModule implements IModule {
       ),
       ModuleFunction(
         registerCity,
-        'Save your city',
-        'savecity',
+        'Register your city',
+        'registercity',
         core: true,
       ),
       ModuleFunction(
@@ -66,7 +67,9 @@ class WeatherModule implements IModule {
       ),
     ];
 
-    startEventIsolate();
+    if (isEnabled()) {
+      startEventIsolate();
+    }
   }
 
   @override
@@ -93,9 +96,9 @@ class WeatherModule implements IModule {
           : ', but probably you\'re feeling $tempFeelsLike degrees.';
       var message = 'At ${weather.name} currently there are $temp degrees'
           '$feelsLike\n'
-          'The humidity is at ${weather.temperature.humidity}%'
-          '\nThe sunrise is at ${sunrise.hour}:${sunrise.minute} '
-          'and the sunset is at ${sunset.hour}:${sunset.minute}';
+          'The humidity is at ${weather.temperature.humidity}%\n'
+          'The sunrise is at ${sunrise.hour}:${sunrise.minute} '
+          'and the sunset is at ${sunset.hour}:${sunset.minute}.';
 
       return message;
     } on Exception {
@@ -126,7 +129,7 @@ class WeatherModule implements IModule {
     if (update.message!.chat.type != 'private') {
       return _kyaru.reply(
         update,
-        'This command works only in private',
+        'This command works only in private.',
       );
     }
 
@@ -135,7 +138,7 @@ class WeatherModule implements IModule {
     if (args.isEmpty) {
       return _kyaru.reply(
         update,
-        'This command needs a city as first parameter',
+        'This command needs a city as first argument.',
       );
     }
 
@@ -149,7 +152,7 @@ class WeatherModule implements IModule {
       _kyaru.brain.db.addCity(broadcast);
       return _kyaru.reply(
         update,
-        'City added',
+        'City added.',
       );
     } on Exception {
       return _kyaru.reply(
@@ -161,7 +164,7 @@ class WeatherModule implements IModule {
 
   Future removeCity(Update update, _) {
     _kyaru.brain.db.removeCity(update.message!.chat.id);
-    return _kyaru.reply(update, 'City removed');
+    return _kyaru.reply(update, 'City removed.');
   }
 
   void startEventIsolate() {
