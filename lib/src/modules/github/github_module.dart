@@ -28,18 +28,35 @@ extension on KyaruDB {
   }
 }
 
-Future eventsIsolateLoop(SendPort sendPort) async {
+class GithubEventLoop {
   // Always do db.syncDb() after updating data
   // Also this may case data loss with main isolate
-  var db = KyaruDB();
+  final db = KyaruDB();
 
   final _log = Logger('GithubIsolate');
-
+  final SendPort sendPort;
   final githubClient = GithubClient();
   final etagStore = <String?, String?>{};
   final readUpdates = <String>[];
 
   int? rateLimitSeconds;
+
+  GithubEventLoop(this.sendPort) {
+    _log.fine('Bootstrapping Github event isolate');
+    Timer.periodic(const Duration(minutes: 2), reposChecker);
+  }
+
+  Future<void> reposChecker(Timer? timer) async {
+    _log.fine('First check on repos');
+    if (rateLimitSeconds != null) {
+      _log.severe('Found API rate limit, waiting $rateLimitSeconds seconds');
+      await Future.delayed(Duration(seconds: rateLimitSeconds!));
+      rateLimitSeconds = null;
+    }
+    _log.fine('Checking github updates...');
+    db.syncDb();
+    db.getRepos().forEach(analyzeRepo);
+  }
 
   Future elaborateResponse(
     DBRepo repo,
@@ -69,6 +86,7 @@ Future eventsIsolateLoop(SendPort sendPort) async {
 
   Future analyzeRepo(DBRepo repo) async {
     try {
+      _log.finer('Analyze ${repo.repo}');
       var response = await githubClient.events(
         repo.user,
         repo.repo,
@@ -96,21 +114,8 @@ Future eventsIsolateLoop(SendPort sendPort) async {
     }
   }
 
-  void timerFunction() {
-    _log.fine('Checking github updates...');
-    db.syncDb();
-    db.getRepos().forEach(analyzeRepo);
-  }
-
-  _log.info('Bootstrapping Github event isolate');
-  while (true) {
-    if (rateLimitSeconds != null) {
-      _log.severe('Found API rate limit, waiting $rateLimitSeconds seconds');
-      await Future.delayed(Duration(seconds: rateLimitSeconds!));
-      rateLimitSeconds = null;
-    }
-    timerFunction();
-    await Future.delayed(const Duration(minutes: 2));
+  static void start(SendPort port) {
+    GithubEventLoop(port);
   }
 }
 
@@ -182,7 +187,7 @@ class GithubModule implements IModule {
   void startEventsIsolate() {
     var receivePort = ReceivePort();
     Isolate.spawn(
-      eventsIsolateLoop,
+      GithubEventLoop.start,
       receivePort.sendPort,
       errorsAreFatal: false,
     );
