@@ -82,7 +82,7 @@ class WeatherModule implements IModule {
     try {
       var weather = await openWeather.currentWeatherByName(
         city,
-        units: Units.METRIC,
+        units: Units.metric,
       );
 
       var sunrise = DateTime.fromMillisecondsSinceEpoch(
