@@ -25,11 +25,14 @@ extension on KyaruDB {
 
 class GenshinModule implements IModule {
   final Kyaru _kyaru;
-  final GenshinClient genshinClient = GenshinClient();
+  late GenshinClient _genshinClient;
+  String? _url;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
+    _url = _kyaru.brain.db.settings.genshinUrl;
+    _genshinClient = GenshinClient(_url ?? '');
     _moduleFunctions = [
       ModuleFunction(
         saveId,
@@ -56,7 +59,9 @@ class GenshinModule implements IModule {
   List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
-  bool isEnabled() => true;
+  bool isEnabled() {
+    return _url?.isNotEmpty ?? false;
+  }
 
   Future saveId(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
@@ -84,7 +89,7 @@ class GenshinModule implements IModule {
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
-    var fullInfo = await genshinClient.getUser(id);
+    var fullInfo = await _genshinClient.getUser(id);
     var cache = fullInfo['cache'];
     if (cache == 0) {
       cache = 'unknown time, sorry';
@@ -132,7 +137,7 @@ class GenshinModule implements IModule {
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-    var fullInfo = await genshinClient.getUser(userData['id']);
+    var fullInfo = await _genshinClient.getUser(userData['id']);
     var cache = fullInfo['cache'];
     if (cache == 0) {
       cache = 'unknown time, sorry';
