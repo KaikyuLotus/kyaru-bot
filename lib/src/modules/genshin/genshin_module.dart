@@ -197,15 +197,15 @@ class GenshinModule implements IModule {
           'Deepest Descent: *$dd*\n'
           'Battles: *$battles*\n'
           'Most Defeats: *${mostDefeats['value']}*'
-          ' (`${mostDefeats['character']}`)\n'
+          ' (`${characterName(mostDefeats['character'])}`)\n'
           'Strongest Strike: *${sss['value']}*'
-          ' (`${sss['character']}`)\n'
+          ' (`${characterName(sss['character'])}`)\n'
           'Most Damage Taken: *${mostDmgTaken['value']}*'
-          ' (`${mostDmgTaken['character']}`)\n'
+          ' (`${characterName(mostDmgTaken['character'])}`)\n'
           'Elemental Bursts: *${elemBurstCast['value']}* '
-          '(`${elemBurstCast['character']}`)\n'
+          '(`${characterName(elemBurstCast['character'])}`)\n'
           'Elemental Skills: *${elemSkillsCast['value']}*'
-          ' (`${elemSkillsCast['character']}`)\n';
+          ' (`${characterName(elemSkillsCast['character'])}`)\n';
     }
 
     var sentMessage = data['sent'];
@@ -283,5 +283,15 @@ class GenshinModule implements IModule {
       messageId: sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
+  }
+
+  String characterName(String character) {
+    var characters = {
+      'Ambor': 'Amber',
+      'Feiyan': 'Yanfei',
+      'Noel': 'Noelle',
+      'Qin': 'Jean',
+    };
+    return characters[character] ?? character;
   }
 }
