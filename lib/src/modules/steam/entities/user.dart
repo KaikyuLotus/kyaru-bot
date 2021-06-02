@@ -6,6 +6,7 @@ class User {
   final String avatar;
   final String avatarMedium;
   final String avatarFull;
+  final String primaryClanId;
   final int lastLogOff;
   final int timeCreated;
   final int communityVisibilityState;
@@ -19,6 +20,7 @@ class User {
     this.avatar,
     this.avatarMedium,
     this.avatarFull,
+    this.primaryClanId,
     this.lastLogOff,
     this.timeCreated,
     this.communityVisibilityState,
@@ -34,6 +36,7 @@ class User {
       json['avatar'],
       json['avatarmedium'],
       json['avatarfull'],
+      json['primaryclanid'],
       json['lastlogoff'],
       json['timecreated'],
       json['communityvisibilitystate'],

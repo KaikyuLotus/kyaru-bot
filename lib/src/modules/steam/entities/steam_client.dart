@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 
+import 'group.dart';
 import 'user.dart';
 
 class SteamException implements Exception {
@@ -25,7 +26,21 @@ class SteamClient {
     if (response.statusCode != 200) {
       throw SteamException(body);
     }
-    return mapper(json.decode(body)['response']);
+    var bodyResponse = json.decode(body)['response'];
+    if (bodyResponse['message'].toLowerCase() == 'no match') {
+      throw SteamException(body);
+    }
+    return mapper(bodyResponse);
+  }
+
+  Future<T> _getXml<T>(Uri uri, T Function(String) mapper) async {
+    var request = Request('GET', uri);
+    var response = await _client.send(request).timeout(Duration(seconds: 120));
+    var body = await response.stream.bytesToString();
+    if (response.statusCode != 200) {
+      throw SteamException(body);
+    }
+    return mapper(body);
   }
 
   Future<String> idFromUser(String user) async {
@@ -54,6 +69,16 @@ class SteamClient {
         },
       ),
       (d) => User.fromJson(d['players'][0]),
+    );
+  }
+
+  Future<Group> getGroup(String groupId) async {
+    return _getXml(
+      Uri.https(
+        'steamcommunity.com',
+        '/gid/$groupId/memberslistxml/',
+      ),
+      Group.fromXml,
     );
   }
 }
