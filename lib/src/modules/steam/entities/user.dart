@@ -6,7 +6,7 @@ class User {
   final String avatar;
   final String avatarMedium;
   final String avatarFull;
-  final String primaryClanId;
+  final String? primaryClanId;
   final int lastLogOff;
   final int timeCreated;
   final int communityVisibilityState;

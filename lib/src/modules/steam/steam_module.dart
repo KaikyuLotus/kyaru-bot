@@ -57,8 +57,10 @@ class SteamModule implements IModule {
           '${createdDate.day}/${createdDate.month}/${createdDate.year}');
       var profileState =
           user.communityVisibilityState == 3 ? 'public' : 'private';
-      var clan = MarkdownUtils.escape(
-          '${user.primaryClanId} (use /steamgroup for more info)');
+      var clan = user.primaryClanId != null
+          ? MarkdownUtils.escape(
+              '${user.primaryClanId} (use /steamgroup for more info)')
+          : 'None';
       return _kyaru.reply(
         update,
         '$image$url\n\n'
