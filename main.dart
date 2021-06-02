@@ -33,6 +33,7 @@ void main(List<String> arguments) async {
       KitsuModule(kyaru),
       KonachanModule(kyaru),
       WeatherModule(kyaru),
+      SteamModule(kyaru),
     ];
 
     kyaru.useModules(modules);

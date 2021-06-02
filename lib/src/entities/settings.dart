@@ -6,6 +6,7 @@ class Settings {
   String? apexToken;
   String? lastfmToken;
   String? weatherToken;
+  String? steamToken;
   String? genshinUrl;
   ChatID ownerId;
 
@@ -15,6 +16,7 @@ class Settings {
     this.apexToken,
     this.lastfmToken,
     this.weatherToken,
+    this.steamToken,
     this.genshinUrl,
     this.ownerId,
   );
@@ -26,6 +28,7 @@ class Settings {
       json['apex_token'],
       json['lastfm_token'],
       json['weather_token'],
+      json['steam_token'],
       json['genshin_url'],
       ChatID(json['owner_id']),
     );
@@ -38,6 +41,7 @@ class Settings {
       'apex_token': apexToken,
       'lastfm_token': lastfmToken,
       'weather_token': weatherToken,
+      'steam_token': steamToken,
       'genshin_url': genshinUrl,
       'owner_id': ownerId.chatId,
     };
