@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 
+import 'platform.dart';
 import 'videogame.dart';
 import 'videogame_details.dart';
 
@@ -54,6 +55,19 @@ class VideogameClient {
         },
       ),
       VideogameDetails.fromJson,
+    );
+  }
+
+  Future<List<Platform>> getPlatformList() async {
+    return _get(
+      Uri.https(
+        baseUrl,
+        '/api/platforms',
+        {
+          'key': _key,
+        },
+      ),
+      (d) => Platform.listFromJsonArray(d['results']),
     );
   }
 }

@@ -19,7 +19,13 @@ class VideogameModule implements IModule {
         'Get game info',
         'game',
         core: true,
-      )
+      ),
+      ModuleFunction(
+        platforms,
+        'Get a list of platforms',
+        'platforms',
+        core: true,
+      ),
     ];
   }
 
@@ -31,7 +37,6 @@ class VideogameModule implements IModule {
     return _key?.isNotEmpty ?? false;
   }
 
-  // TODO: Improve
   Future game(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
@@ -43,6 +48,24 @@ class VideogameModule implements IModule {
     }
     var game = await videogameClient.getVideogameDetails(args.join(' '));
     var description = removeAllHtmlTags(game.description);
-    return _kyaru.reply(update, '${game.name}\n\n$description');
+    var platforms =
+        game.platforms.map((platform) => '- ${platform.name}\n').join();
+    var genres = game.genres.map((genre) => '- ${genre.name}\n').join();
+    return _kyaru.reply(
+      update,
+      '${game.name}\n\n'
+      '$description\n\n'
+      'Genres:\n$genres\n'
+      'Platforms:\n$platforms',
+    );
+  }
+
+  Future platforms(Update update, _) async {
+    var platforms = await videogameClient.getPlatformList();
+    var message = platforms
+        .map(
+            (platform) => '- ${platform.name} (${platform.gamesCount} games)\n')
+        .join();
+    return _kyaru.reply(update, message);
   }
 }
