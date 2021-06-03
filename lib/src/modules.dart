@@ -14,5 +14,6 @@ export 'modules/owner/owner_module.dart';
 export 'modules/quotes/quotes_module.dart';
 export 'modules/regex/regex_module.dart';
 export 'modules/steam/steam_module.dart';
+export 'modules/videogame/videogame_module.dart';
 export 'modules/weather/weather_module.dart';
 export 'modules/yandere/yandere_module.dart';

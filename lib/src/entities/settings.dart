@@ -7,6 +7,7 @@ class Settings {
   String? lastfmToken;
   String? weatherToken;
   String? steamToken;
+  String? videogameToken;
   String? genshinUrl;
   ChatID ownerId;
 
@@ -17,6 +18,7 @@ class Settings {
     this.lastfmToken,
     this.weatherToken,
     this.steamToken,
+    this.videogameToken,
     this.genshinUrl,
     this.ownerId,
   );
@@ -29,6 +31,7 @@ class Settings {
       json['lastfm_token'],
       json['weather_token'],
       json['steam_token'],
+      json['videogame_token'],
       json['genshin_url'],
       ChatID(json['owner_id']),
     );
@@ -42,6 +45,7 @@ class Settings {
       'lastfm_token': lastfmToken,
       'weather_token': weatherToken,
       'steam_token': steamToken,
+      'videogame_token': videogameToken,
       'genshin_url': genshinUrl,
       'owner_id': ownerId.chatId,
     };

@@ -34,6 +34,7 @@ void main(List<String> arguments) async {
       KonachanModule(kyaru),
       WeatherModule(kyaru),
       SteamModule(kyaru),
+      VideogameModule(kyaru),
     ];
 
     kyaru.useModules(modules);
