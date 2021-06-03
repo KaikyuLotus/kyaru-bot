@@ -113,7 +113,8 @@ class KitsuModule implements IModule {
     var alternativeName = character.otherNames.isNotEmpty
         ? MarkdownUtils.escape('(${character.otherNames.first})')
         : '';
-    var description = MarkdownUtils.escape(character.description);
+    var description =
+        MarkdownUtils.escape(removeAllHtmlTags(character.description));
 
     var reply = '$hiddenLink*$name $alternativeName*\n\n'
         '$description';

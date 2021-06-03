@@ -3,6 +3,7 @@ import 'package:xml/xml.dart';
 class Group {
   final String id64;
   final String name;
+  final String url;
   final String summary;
   final String avatarIcon;
   final String avatarMedium;
@@ -15,6 +16,7 @@ class Group {
   Group(
     this.id64,
     this.name,
+    this.url,
     this.summary,
     this.avatarIcon,
     this.avatarMedium,
@@ -31,6 +33,7 @@ class Group {
     return Group(
       xmlData.getElement('groupID64')!.text,
       details.getElement('groupName')!.text,
+      details.getElement('groupURL')!.text,
       details.getElement('summary')!.text,
       details.getElement('avatarIcon')!.text,
       details.getElement('avatarMedium')!.text,

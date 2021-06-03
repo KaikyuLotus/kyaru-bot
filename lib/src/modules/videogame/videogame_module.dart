@@ -1,7 +1,6 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
-import 'entities/util.dart';
 import 'entities/videogame_client.dart';
 
 class VideogameModule implements IModule {

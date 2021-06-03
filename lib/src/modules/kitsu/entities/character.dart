@@ -1,5 +1,3 @@
-import 'util.dart';
-
 class Character {
   final String id;
   final Map names;
@@ -24,7 +22,7 @@ class Character {
       attributes['names'],
       attributes['canonicalName'],
       attributes['otherNames'],
-      removeAllHtmlTags(attributes['description']),
+      attributes['description'],
       attributes['image']['original'],
     );
   }

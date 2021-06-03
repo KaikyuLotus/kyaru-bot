@@ -2,7 +2,6 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 import 'entities/steam_client.dart';
-import 'entities/util.dart';
 
 class SteamModule implements IModule {
   final Kyaru _kyaru;
