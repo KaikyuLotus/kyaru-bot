@@ -10,7 +10,7 @@ class User {
   final int lastLogOff;
   final int timeCreated;
   final int communityVisibilityState;
-  final int commentPermission;
+  final int? commentPermission;
 
   User(
     this.steamId,

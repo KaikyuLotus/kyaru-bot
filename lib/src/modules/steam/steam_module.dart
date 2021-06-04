@@ -54,8 +54,9 @@ class SteamModule implements IModule {
           DateTime.fromMillisecondsSinceEpoch(user.timeCreated * 1000);
       var created = MarkdownUtils.escape(
           '${createdDate.day}/${createdDate.month}/${createdDate.year}');
-      var profileState =
-          user.communityVisibilityState == 3 ? 'public' : 'private';
+      // Steam dumb af
+      /*var profileState =
+          user.communityVisibilityState == 3 ? 'public' : 'private';*/
       var clan = user.primaryClanId != null
           ? MarkdownUtils.escape(
               '${user.primaryClanId} (use /steamgroup for more info)')
@@ -63,8 +64,7 @@ class SteamModule implements IModule {
       return _kyaru.reply(
         update,
         '$image$url\n\n'
-        'This profile is $profileState '
-        'and currently ${userStatus(user.profileState)}\n'
+        'This profile is currently ${userStatus(user.profileState)}\n'
         'Created on: $created\n'
         'Main group: $clan',
         parseMode: ParseMode.markdownV2,

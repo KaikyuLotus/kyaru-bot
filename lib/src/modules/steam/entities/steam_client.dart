@@ -27,7 +27,7 @@ class SteamClient {
       throw SteamException(body);
     }
     var bodyResponse = json.decode(body)['response'];
-    if (bodyResponse['message'].toLowerCase() == 'no match') {
+    if (bodyResponse['message']?.toLowerCase() == 'no match') {
       throw SteamException(body);
     }
     return mapper(bodyResponse);
