@@ -34,7 +34,7 @@ class LastfmModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         user,
-        'Get your profile info',
+        'Get your lastfm profile info',
         'lastfm_user',
         core: true,
       ),
@@ -70,7 +70,7 @@ class LastfmModule implements IModule {
       if (user == null) {
         return _kyaru.reply(
           update,
-          'This command needs a user as first argument.',
+          'This command needs a lastfm user as first argument.',
         );
       }
     }

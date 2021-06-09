@@ -16,7 +16,7 @@ class SteamModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         user,
-        'Get your profile info',
+        'Get your steam profile info',
         'steam',
         core: true,
       ),
@@ -43,7 +43,7 @@ class SteamModule implements IModule {
     if (args.isEmpty) {
       return _kyaru.reply(
         update,
-        'This command needs a user as first argument.',
+        'This command needs a steam user as first argument.',
       );
     }
     try {

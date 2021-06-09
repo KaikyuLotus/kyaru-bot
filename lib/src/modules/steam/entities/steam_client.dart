@@ -58,17 +58,22 @@ class SteamClient {
   }
 
   Future<User> getUser(String user) async {
-    var steamId = await idFromUser(user);
+    var steamId = int.tryParse(user) ?? await idFromUser(user);
     return _get(
       Uri.https(
         baseUrl,
         '/ISteamUser/GetPlayerSummaries/v0002/',
         {
           'key': _key,
-          'steamids': steamId,
+          'steamids': '$steamId',
         },
       ),
-      (d) => User.fromJson(d['players'][0]),
+      (d) {
+        if (d['players'].isEmpty) {
+          throw SteamException('No player found');
+        }
+        return User.fromJson(d['players'][0]);
+      },
     );
   }
 

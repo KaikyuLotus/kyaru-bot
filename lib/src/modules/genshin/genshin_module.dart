@@ -102,7 +102,7 @@ class GenshinModule implements IModule {
           '\n'
           'Please remember that this command has a caching system, '
           'you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that your'
+          'While you wait, please make sure that your '
           'information on hoyolab.com is public!';
       return _kyaru.brain.bot.editMessageText(
         errorMessage,

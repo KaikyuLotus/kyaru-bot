@@ -16,14 +16,14 @@ class VideogameModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         game,
-        'Get game info',
+        'Get videogame information',
         'game',
         core: true,
       ),
       ModuleFunction(
         platforms,
-        'Get a list of platforms',
-        'platforms',
+        'Get a list of available platforms',
+        'game_platforms',
         core: true,
       ),
     ];
