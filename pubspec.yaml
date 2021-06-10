@@ -14,6 +14,7 @@ dependencies:
   image: ^3.0.2
   jiffy: ^4.1.0
   logging: ^1.0.1
+  html: ^0.15.0
   openweathermap: ^0.1.4
 
 dev_dependencies:
