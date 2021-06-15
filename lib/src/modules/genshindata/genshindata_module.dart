@@ -19,7 +19,13 @@ class GenshinDataModule implements IModule {
         'Gets informations about a character',
         'genshin_character',
         core: true,
-      )
+      ),
+      ModuleFunction(
+        constellations,
+        'Gets informations about a character constellations',
+        'genshin_constellations',
+        core: true,
+      ),
     ];
   }
 
@@ -68,6 +74,33 @@ class GenshinDataModule implements IModule {
         update,
         message,
         parseMode: ParseMode.markdownV2,
+      );
+    } on GenshinDataException {
+      return _kyaru.reply(update, 'Character not found');
+    }
+  }
+
+  Future constellations(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command needs a character name as first argument.',
+      );
+    }
+
+    var name = args.join(' ');
+
+    try {
+      var result = await _genshinDataClient.getConstellations(name);
+      var constellations = result.constellations
+          .map((e) => '*${e.name}*\n${e.effect.replaceAll('**', '*')}\n\n')
+          .join('');
+      return _kyaru.reply(
+        update,
+        '${result.character}\n\n$constellations',
+        parseMode: ParseMode.markdown,
       );
     } on GenshinDataException {
       return _kyaru.reply(update, 'Character not found');

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import 'character.dart';
+import 'constellations.dart';
 
 class GenshinDataException implements Exception {
   final String message;
@@ -38,6 +39,19 @@ class GenshinDataClient {
         },
       ),
       Character.fromJson,
+    );
+  }
+
+  Future<Constellations> getConstellations(String character) async {
+    return _get(
+      Uri.http(
+        _url,
+        '/constellations',
+        {
+          'character': character,
+        },
+      ),
+      Constellations.fromJson,
     );
   }
 }
