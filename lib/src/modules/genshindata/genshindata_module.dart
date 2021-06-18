@@ -26,6 +26,12 @@ class GenshinDataModule implements IModule {
         'genshin_constellations',
         core: true,
       ),
+      ModuleFunction(
+        weapon,
+        'Gets informations about a weapon',
+        'genshin_weapon',
+        core: true,
+      ),
     ];
   }
 
@@ -104,6 +110,46 @@ class GenshinDataModule implements IModule {
       );
     } on GenshinDataException {
       return _kyaru.reply(update, 'Character not found');
+    }
+  }
+
+  Future weapon(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command needs a weapon name as first argument.',
+      );
+    }
+
+    var ref = 1;
+
+    if (int.tryParse(args.first) != null) {
+      ref = int.parse(args.removeAt(0)).clamp(1, 5);
+    }
+    ref--;
+    var name = args.join(' ');
+
+    try {
+      var weapon = await _genshinDataClient.getWeapon(name);
+      var description = MarkdownUtils.escape(weapon.description);
+      var reg = RegExp(r'{(\w*)}');
+      var effect = weapon.effect.replaceAllMapped(reg,
+          (match) => '${weapon.refinement[ref][int.parse(match.group(1)!)]}');
+      effect = MarkdownUtils.escape(effect)!;
+      return _kyaru.reply(
+        update,
+        '*${weapon.name}*\n\n$description\n\n'
+        '*Rarity:* ${'★' * weapon.rarity}\n'
+        '*Type:* ${weapon.weaponType}\n'
+        '*Sub Stat:* ${weapon.subStat}\n\n'
+        '*${weapon.effectName}*\n'
+        '$effect',
+        parseMode: ParseMode.markdownV2,
+      );
+    } on GenshinDataException {
+      return _kyaru.reply(update, 'Weapon not found');
     }
   }
 }
