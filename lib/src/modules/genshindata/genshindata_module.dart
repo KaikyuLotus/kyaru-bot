@@ -133,18 +133,20 @@ class GenshinDataModule implements IModule {
 
     try {
       var weapon = await _genshinDataClient.getWeapon(name);
+      var weaponName = MarkdownUtils.escape(weapon.name);
       var description = MarkdownUtils.escape(weapon.description);
-      var reg = RegExp(r'{(\w*)}');
-      var effect = weapon.effect.replaceAllMapped(reg,
-          (match) => '${weapon.refinement[ref][int.parse(match.group(1)!)]}');
-      effect = MarkdownUtils.escape(effect)!;
+      var effectName = MarkdownUtils.escape(weapon.effectName);
+      var effect = MarkdownUtils.escape(weapon.effect)!;
+      var reg = RegExp(r'\\{(\w*)\\}');
+      effect = effect.replaceAllMapped(reg,
+          (match) => '*${weapon.refinement[ref][int.parse(match.group(1)!)]}*');
       return _kyaru.reply(
         update,
-        '*${weapon.name}*\n\n$description\n\n'
+        '*$weaponName*\n\n$description\n\n'
         '*Rarity:* ${'★' * weapon.rarity}\n'
         '*Type:* ${weapon.weaponType}\n'
         '*Sub Stat:* ${weapon.subStat}\n\n'
-        '*${weapon.effectName}*\n'
+        '*$effectName*\n'
         '$effect',
         parseMode: ParseMode.markdownV2,
       );
