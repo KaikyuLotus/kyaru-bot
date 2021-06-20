@@ -125,8 +125,8 @@ class GenshinDataModule implements IModule {
 
     var ref = 1;
 
-    if (int.tryParse(args.first) != null) {
-      ref = int.parse(args.removeAt(0)).clamp(1, 5);
+    if (int.tryParse(args.last) != null) {
+      ref = int.parse(args.removeLast()).clamp(1, 5);
     }
     ref--;
     var name = args.join(' ');
