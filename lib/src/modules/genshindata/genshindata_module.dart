@@ -32,6 +32,12 @@ class GenshinDataModule implements IModule {
         'genshin_weapon',
         core: true,
       ),
+      ModuleFunction(
+        talents,
+        'Gets informations about talents',
+        'genshin_talents',
+        core: true,
+      ),
     ];
   }
 
@@ -153,5 +159,57 @@ class GenshinDataModule implements IModule {
     } on GenshinDataException {
       return _kyaru.reply(update, 'Weapon not found');
     }
+  }
+
+  Future talents(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command needs a character name as first argument.',
+      );
+    }
+
+    var talent = -1;
+    if (int.tryParse(args.last) != null) {
+      talent = int.parse(args.removeLast()).clamp(1, 6) - 1;
+    }
+
+    var name = args.join(' ');
+
+    var result = await _genshinDataClient.getTalents(name);
+    var message;
+    if (talent == -1) {
+      message = result
+          .map((t) => '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n')
+          .join();
+    } else {
+      var t = result[talent];
+      var reg = RegExp(r'\{(\w*):(\w*)\}');
+      var labels = t.labels
+              ?.map((l) => l.replaceAllMapped(reg, (match) {
+                    var type = match.group(2)!;
+                    var value = t.parameters?[match.group(1)][0];
+                    return '${talentValue(type, value)}';
+                  }))
+              .join('\n') ??
+          '';
+      message = '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n'
+          '$labels';
+    }
+    return _kyaru.reply(
+      update,
+      message,
+      parseMode: ParseMode.markdown,
+    );
+  }
+
+  String talentValue(String type, num value) {
+    var map = {
+      'F1P': '${(value * 100).toStringAsFixed(1)}%',
+      'P': '${(value * 100).toStringAsFixed(0)}%',
+    };
+    return map[type] ?? '$value';
   }
 }

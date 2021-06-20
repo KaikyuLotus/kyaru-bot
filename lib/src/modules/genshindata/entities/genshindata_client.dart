@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 
 import 'character.dart';
 import 'constellations.dart';
+import 'talent.dart';
 import 'weapon.dart';
 
 class GenshinDataException implements Exception {
@@ -66,6 +67,19 @@ class GenshinDataClient {
         },
       ),
       Weapon.fromJson,
+    );
+  }
+
+  Future<List<Talent>> getTalents(String character) async {
+    return _get(
+      Uri.http(
+        _url,
+        '/talents',
+        {
+          'character': character,
+        },
+      ),
+      Talent.listFromJsonArray,
     );
   }
 }
