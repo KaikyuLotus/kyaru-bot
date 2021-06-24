@@ -63,7 +63,7 @@ class LastfmModule implements IModule {
 
   Future user(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
-    var user;
+    String? user;
 
     if (args.isEmpty) {
       user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];
@@ -128,7 +128,7 @@ class LastfmModule implements IModule {
 
   Future lastTrack(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
-    var user;
+    String? user;
 
     if (args.isEmpty) {
       user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];

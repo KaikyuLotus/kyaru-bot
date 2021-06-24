@@ -216,8 +216,8 @@ class GenshinModule implements IModule {
     var hasCurrent = current['unleashedElementalBurst']['value'] != null;
     var hasLast = last['unleashedElementalBurst']['value'] != null;
 
-    var currentPart;
-    var lastPart;
+    String? currentPart;
+    String? lastPart;
 
     if (hasCurrent) {
       currentPart = assembler(current, 'This');

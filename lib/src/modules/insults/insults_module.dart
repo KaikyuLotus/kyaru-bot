@@ -27,7 +27,7 @@ class InsultsModule implements IModule {
     var insult = await insultsClient.getInsult();
     return _kyaru.reply(
       update,
-      '$insult',
+      insult,
       quoteQuoted: update.message!.replyToMessage != null,
     );
   }

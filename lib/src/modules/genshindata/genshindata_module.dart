@@ -59,7 +59,7 @@ class GenshinDataModule implements IModule {
       );
     }
     var name = args[0];
-    var level;
+    int? level;
     if (args.length > 1) {
       level = int.tryParse(args[1])?.clamp(1, 90);
     }
@@ -179,7 +179,7 @@ class GenshinDataModule implements IModule {
     var name = args.join(' ');
 
     var result = await _genshinDataClient.getTalents(name);
-    var message;
+    String message;
     if (talent == -1) {
       message = result
           .map((t) => '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n')
@@ -191,7 +191,7 @@ class GenshinDataModule implements IModule {
               ?.map((l) => l.replaceAllMapped(reg, (match) {
                     var type = match.group(2)!;
                     var value = t.parameters?[match.group(1)][0];
-                    return '${talentValue(type, value)}';
+                    return talentValue(type, value);
                   }))
               .join('\n') ??
           '';

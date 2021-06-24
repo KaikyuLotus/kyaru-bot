@@ -22,7 +22,7 @@ class GithubClient {
       {String? etag}) async {
     return _get(
       Uri.https(apiBaseUrl, '/networks/$user/$repo/events'),
-      headers: {'If-None-Match': '$etag'},
+      headers: {'If-None-Match': etag ?? ''},
     ).then((httpResponse) {
       int? getIntHeader(String name) {
         return int.tryParse(httpResponse.headers[name] ?? '');
