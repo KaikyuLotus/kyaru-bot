@@ -7,8 +7,8 @@ environment:
   sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
-  dart_telegram_bot: ^0.5.2
-  dart_mongo_lite: ^0.1.0-beta.2
+  dart_telegram_bot: ^0.6.0
+  dart_mongo_lite: ^0.1.1
   http: ^0.13.1
   uuid: ^3.0.3
   image: ^3.0.2
