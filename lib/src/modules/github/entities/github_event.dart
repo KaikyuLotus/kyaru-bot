@@ -101,7 +101,7 @@ class GithubEvent {
             '${payload!.review!.state} PR#${payload!.review!.prNumber}';
 
       case GithubEventType.deleteEvent:
-        return '${actor.displayLogin} deleted ${payload!.refType}'
+        return '${actor.displayLogin} deleted ${payload!.refType} '
             '${payload!.ref} on ${repo.name}';
 
       default:

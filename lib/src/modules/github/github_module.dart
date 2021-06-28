@@ -35,13 +35,14 @@ class GithubEventLoop {
 
   final _log = Logger('GithubIsolate');
   final SendPort sendPort;
-  final githubClient = GithubClient();
+  late GithubClient githubClient;
   final etagStore = <String?, String?>{};
   final readUpdates = <String>[];
 
   int? rateLimitSeconds;
 
   GithubEventLoop(this.sendPort) {
+    githubClient = GithubClient(db.settings.githubToken);
     _log.fine('Bootstrapping Github event isolate');
     Timer.periodic(const Duration(minutes: 2), reposChecker);
   }
@@ -122,11 +123,12 @@ class GithubEventLoop {
 class GithubModule implements IModule {
   final _log = Logger('GithubModule');
   final Kyaru _kyaru;
-  final _githubClient = GithubClient();
+  late GithubClient _githubClient;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GithubModule(this._kyaru) {
+    _githubClient = GithubClient(_kyaru.brain.db.settings.githubToken);
     _log.info('Github module started at ${DateTime.now().toIso8601String()}');
     _moduleFunctions = [
       ModuleFunction(

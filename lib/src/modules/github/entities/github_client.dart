@@ -11,8 +11,11 @@ import 'github_events_response.dart';
 
 class GithubClient {
   final String apiBaseUrl = 'api.github.com';
+  final String? token;
 
   final _client = Client();
+
+  GithubClient(this.token);
 
   Future<Response> _get<T>(Uri uri, {Map<String, String>? headers}) {
     return _client.get(uri, headers: headers).timeout(Duration(seconds: 120));
@@ -22,7 +25,10 @@ class GithubClient {
       {String? etag}) async {
     return _get(
       Uri.https(apiBaseUrl, '/networks/$user/$repo/events'),
-      headers: {'If-None-Match': etag ?? ''},
+      headers: {
+        'If-None-Match': etag ?? '',
+        'Authorization': 'Basic $token',
+      },
     ).then((httpResponse) {
       int? getIntHeader(String name) {
         return int.tryParse(httpResponse.headers[name] ?? '');
