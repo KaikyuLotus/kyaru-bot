@@ -14,6 +14,8 @@ Kyaru is an utility bot made mainly for groups.
             "steam_token": "String",
             "videogame_token": "String",
             "genshin_url": "String",
+            "genshin_data_url": "String",
+            "github_token": "github_token",
             "owner_id": "int"
         }
     ]
@@ -30,4 +32,6 @@ All fields, except the token and the owner_id, can be empty or omitted.
 `steam_token`: Steam api key, obtainable [here](https://steamcommunity.com/dev/apikey)<br>
 `videogame_token`: RAWG api key, obtainable [here](https://rawg.io/apidocs)<br>
 `genshin_url`<br>
+`genshin_data_url`<br>
+`github_token`: obtainable [here](https://github.com/settings/tokens)<br>
 `owner_id`: Your telegram id<br>

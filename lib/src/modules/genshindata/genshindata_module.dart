@@ -65,8 +65,8 @@ class GenshinDataModule implements IModule {
     }
     try {
       var character = await _genshinDataClient.getCharacter(name, level: level);
-      var image =
-          MarkdownUtils.generateHiddenUrl(character.images['hoyolab-avatar']!);
+      var image = MarkdownUtils.generateHiddenUrl(
+          character.images['cover1'] ?? character.images.values.first);
       var message = '${character.name} (${character.title})\n\n'
           '${character.description}\n\n'
           'Rarity: ${'★' * character.rarity}\n'
