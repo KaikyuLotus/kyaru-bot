@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 class GenshinClient {
-  final String baseUrl = 'localhost:3000';
+  final String baseUrl;
 
   final _client = Client();
+
+  GenshinClient(this.baseUrl);
 
   Future<Map<String, dynamic>> getUser(int? id) async {
     var response = await _client

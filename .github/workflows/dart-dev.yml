@@ -37,9 +37,14 @@ jobs:
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
       
+      - name: Formatting check failed
+        if: failure()
+        run: python3 .github/workflows/deployer.py format_failed
+      
       - name: Analyze project source
         id: analysis
         run: dart analyze --format machine . 2>&1 >/dev/null | python3 .github/workflows/deployer.py check_analyzer_output
+
 
   compile:
     needs: [check_quality]

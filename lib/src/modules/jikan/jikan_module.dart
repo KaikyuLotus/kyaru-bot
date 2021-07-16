@@ -132,11 +132,11 @@ class JikanModule implements IModule {
         : '';
 
     var anime = character.anime
-        .map((a) => MarkdownUtils.generateUrl('${a.name}', '${a.url}'))
+        .map((a) => MarkdownUtils.generateUrl(a.name!, a.url!))
         .join('\n');
 
     var manga = character.manga
-        .map((m) => MarkdownUtils.generateUrl('${m.name}', '${m.url}'))
+        .map((m) => MarkdownUtils.generateUrl(m.name!, m.url!))
         .join('\n');
 
     var reply = '$hiddenLink*$name $alternativeName*\n\n'

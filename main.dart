@@ -32,6 +32,10 @@ void main(List<String> arguments) async {
       LastfmModule(kyaru),
       KitsuModule(kyaru),
       KonachanModule(kyaru),
+      WeatherModule(kyaru),
+      SteamModule(kyaru),
+      VideogameModule(kyaru),
+      GenshinDataModule(kyaru),
     ];
 
     kyaru.useModules(modules);

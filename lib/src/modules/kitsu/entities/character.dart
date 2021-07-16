@@ -1,12 +1,10 @@
-import 'util.dart';
-
 class Character {
   final String id;
   final Map names;
   final String canonicalName;
   final List otherNames;
   final String description;
-  final String imageUrl;
+  final String? imageUrl;
 
   Character(
     this.id,
@@ -24,8 +22,8 @@ class Character {
       attributes['names'],
       attributes['canonicalName'],
       attributes['otherNames'],
-      removeAllHtmlTags(attributes['description']),
-      attributes['image']['original'],
+      attributes['description'],
+      attributes['image']?['original'],
     );
   }
 

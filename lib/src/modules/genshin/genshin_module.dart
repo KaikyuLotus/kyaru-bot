@@ -25,11 +25,14 @@ extension on KyaruDB {
 
 class GenshinModule implements IModule {
   final Kyaru _kyaru;
-  final GenshinClient genshinClient = GenshinClient();
+  late GenshinClient _genshinClient;
+  String? _url;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
+    _url = _kyaru.brain.db.settings.genshinUrl;
+    _genshinClient = GenshinClient(_url ?? '');
     _moduleFunctions = [
       ModuleFunction(
         saveId,
@@ -56,7 +59,9 @@ class GenshinModule implements IModule {
   List<ModuleFunction> get moduleFunctions => _moduleFunctions;
 
   @override
-  bool isEnabled() => true;
+  bool isEnabled() {
+    return _url?.isNotEmpty ?? false;
+  }
 
   Future saveId(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
@@ -84,7 +89,7 @@ class GenshinModule implements IModule {
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
-    var fullInfo = await genshinClient.getUser(id);
+    var fullInfo = await _genshinClient.getUser(id);
     var cache = fullInfo['cache'];
     if (cache == 0) {
       cache = 'unknown time, sorry';
@@ -97,7 +102,7 @@ class GenshinModule implements IModule {
           '\n'
           'Please remember that this command has a caching system, '
           'you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that your'
+          'While you wait, please make sure that your '
           'information on hoyolab.com is public!';
       return _kyaru.brain.bot.editMessageText(
         errorMessage,
@@ -132,7 +137,7 @@ class GenshinModule implements IModule {
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-    var fullInfo = await genshinClient.getUser(userData['id']);
+    var fullInfo = await _genshinClient.getUser(userData['id']);
     var cache = fullInfo['cache'];
     if (cache == 0) {
       cache = 'unknown time, sorry';
@@ -192,15 +197,15 @@ class GenshinModule implements IModule {
           'Deepest Descent: *$dd*\n'
           'Battles: *$battles*\n'
           'Most Defeats: *${mostDefeats['value']}*'
-          ' (`${mostDefeats['character']}`)\n'
+          ' (`${characterName(mostDefeats['character'])}`)\n'
           'Strongest Strike: *${sss['value']}*'
-          ' (`${sss['character']}`)\n'
+          ' (`${characterName(sss['character'])}`)\n'
           'Most Damage Taken: *${mostDmgTaken['value']}*'
-          ' (`${mostDmgTaken['character']}`)\n'
+          ' (`${characterName(mostDmgTaken['character'])}`)\n'
           'Elemental Bursts: *${elemBurstCast['value']}* '
-          '(`${elemBurstCast['character']}`)\n'
+          '(`${characterName(elemBurstCast['character'])}`)\n'
           'Elemental Skills: *${elemSkillsCast['value']}*'
-          ' (`${elemSkillsCast['character']}`)\n';
+          ' (`${characterName(elemSkillsCast['character'])}`)\n';
     }
 
     var sentMessage = data['sent'];
@@ -211,8 +216,8 @@ class GenshinModule implements IModule {
     var hasCurrent = current['unleashedElementalBurst']['value'] != null;
     var hasLast = last['unleashedElementalBurst']['value'] != null;
 
-    var currentPart;
-    var lastPart;
+    String? currentPart;
+    String? lastPart;
 
     if (hasCurrent) {
       currentPart = assembler(current, 'This');
@@ -278,5 +283,15 @@ class GenshinModule implements IModule {
       messageId: sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
+  }
+
+  String characterName(String character) {
+    var characters = {
+      'Ambor': 'Amber',
+      'Feiyan': 'Yanfei',
+      'Noel': 'Noelle',
+      'Qin': 'Jean',
+    };
+    return characters[character] ?? character;
   }
 }

@@ -100,6 +100,10 @@ class GithubEvent {
         return '${actor.displayLogin} (${payload!.review!.authorAssociation}) '
             '${payload!.review!.state} PR#${payload!.review!.prNumber}';
 
+      case GithubEventType.deleteEvent:
+        return '${actor.displayLogin} deleted ${payload!.refType} '
+            '${payload!.ref} on ${repo.name}';
+
       default:
         return 'Unknown action on ${repo.name}';
     }

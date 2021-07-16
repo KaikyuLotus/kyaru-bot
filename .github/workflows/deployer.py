@@ -98,6 +98,10 @@ def quality_check_failed(issues_count: int, non_lint_issues_count: int):
                       f"This is outrageous and I'll refuse to compile until you fix all the critical issues.")
 
 
+def format_failed():
+    broadcast_message("Dart format check failed, please check the logs.")
+
+
 def build_failed():
     broadcast_message("Dart build failed, please check the logs.")
 
@@ -115,6 +119,9 @@ def build_succeeded():
 def main():
     if "DISABLE_TELEGRAM" in os.environ and os.environ["DISABLE_TELEGRAM"].lower() == "true":
         return
+
+    if mode == "format_failed":
+        return format_failed()
 
     if mode == "check_analyzer_output":
         return check_analyzer_output()

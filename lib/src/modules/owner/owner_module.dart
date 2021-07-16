@@ -78,7 +78,7 @@ class OwnerModule implements IModule {
         ownerMsg += '\nUsername: `@${chat.username}`';
       }
 
-      var usersCount = await _kyaru.brain.bot.getChatMembersCount(chatId);
+      var usersCount = await _kyaru.brain.bot.getChatMemberCount(chatId);
       ownerMsg += '\nMembers: *$usersCount*';
       var newChat = await _kyaru.brain.bot.getChat(chatId);
 
