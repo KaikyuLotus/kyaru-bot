@@ -1,9 +1,3 @@
-String removeAllHtmlTags(String htmlText) {
-  var exp = RegExp(
-    r"<[^>]*>",
-    multiLine: true,
-    caseSensitive: true,
-  );
+import 'package:html/parser.dart';
 
-  return htmlText.replaceAll('<br>', '\n').replaceAll(exp, '');
-}
+String removeAllHtmlTags(String htmlText) => parse(htmlText).body!.text;

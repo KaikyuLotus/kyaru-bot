@@ -108,7 +108,7 @@ class KitsuModule implements IModule {
 
     var character = matchingCharacters.first;
 
-    var hiddenLink = MarkdownUtils.generateHiddenUrl(character.imageUrl);
+    var hiddenLink = MarkdownUtils.generateHiddenUrl(character.imageUrl ?? '');
     var name = MarkdownUtils.escape(character.names['en']);
     var alternativeName = character.otherNames.isNotEmpty
         ? MarkdownUtils.escape('(${character.otherNames.first})')

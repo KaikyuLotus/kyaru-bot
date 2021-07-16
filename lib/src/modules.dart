@@ -3,6 +3,7 @@ export 'modules/apex/apex_module.dart';
 export 'modules/danbooru/danbooru_module.dart';
 export 'modules/database/database_module.dart';
 export 'modules/genshin/genshin_module.dart';
+export 'modules/genshindata/genshindata_module.dart';
 export 'modules/github/github_module.dart';
 export 'modules/insults/insults_module.dart';
 export 'modules/jikan/jikan_module.dart';

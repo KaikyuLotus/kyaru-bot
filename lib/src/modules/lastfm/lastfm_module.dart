@@ -34,7 +34,7 @@ class LastfmModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         user,
-        'Get your profile info',
+        'Get your lastfm profile info',
         'lastfm_user',
         core: true,
       ),
@@ -63,14 +63,14 @@ class LastfmModule implements IModule {
 
   Future user(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
-    var user;
+    String? user;
 
     if (args.isEmpty) {
       user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];
       if (user == null) {
         return _kyaru.reply(
           update,
-          'This command needs a user as first argument.',
+          'This command needs a lastfm user as first argument.',
         );
       }
     }
@@ -128,7 +128,7 @@ class LastfmModule implements IModule {
 
   Future lastTrack(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
-    var user;
+    String? user;
 
     if (args.isEmpty) {
       user = _kyaru.brain.db.getLastfmUser(update.message!.from!.id)?['user'];

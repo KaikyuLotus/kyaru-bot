@@ -4,7 +4,7 @@ class Character {
   final String canonicalName;
   final List otherNames;
   final String description;
-  final String imageUrl;
+  final String? imageUrl;
 
   Character(
     this.id,
@@ -23,7 +23,7 @@ class Character {
       attributes['canonicalName'],
       attributes['otherNames'],
       attributes['description'],
-      attributes['image']['original'],
+      attributes['image']?['original'],
     );
   }
 
