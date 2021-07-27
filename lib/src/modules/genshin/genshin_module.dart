@@ -3,7 +3,11 @@ import 'dart:async';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
+import 'entities/abyss_info.dart';
 import 'entities/genshin_client.dart';
+import 'entities/userinfo.dart';
+import 'entities/wrapped_abyss_info.dart';
+import 'entities/wrapped_user_info.dart';
 
 extension on KyaruDB {
   static const _genshinDataCollection = 'genshin_data';
@@ -21,6 +25,11 @@ extension on KyaruDB {
       filter: {'user_id': userId},
     );
   }
+
+  void dropGenshinUsers() {
+    database[_genshinDataCollection].drop();
+  }
+
 }
 
 class GenshinModule implements IModule {
@@ -48,9 +57,15 @@ class GenshinModule implements IModule {
       ),
       ModuleFunction(
         abyss,
-        'Gets your Abyss info from hoyolab.com',
+        'Gets your hoyolab.com public info',
         'abyss',
         core: true,
+      ),
+      ModuleFunction(
+        delGenshinUsers,
+        'Delete genshin users from db',
+        'del_genshin_users',
+        core: false,
       ),
     ];
   }
@@ -63,12 +78,22 @@ class GenshinModule implements IModule {
     return _url?.isNotEmpty ?? false;
   }
 
+  Future delGenshinUsers(Update update, _) async {
+    _kyaru.brain.db.dropGenshinUsers();
+    await _kyaru.reply(
+      update,
+      'Done.',
+      parseMode: ParseMode.markdown,
+      hidePreview: true,
+    );
+  }
+
+
   Future saveId(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
-    var errorMsg =
-        'This command requires an hoyolab.com user ID as parameter.\n\n'
-        'To get your user ID go [here](https://www.hoyolab.com/genshin/accountCenter/postList?id=0) and check next to your name.';
+    var errorMsg = 'This command requires your in-game user ID as parameter.\n'
+        'Please remember that your info on HoYoLAB must be public.';
 
     if (args.isEmpty) {
       return _kyaru.reply(
@@ -83,33 +108,30 @@ class GenshinModule implements IModule {
     if (id == null) {
       return _kyaru.reply(
         update,
-        'hoyolab.com user id is a number, your parameter wasn\'t.',
+        "in-game id is a number, your parameter wasn't.",
       );
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
     var fullInfo = await _genshinClient.getUser(id);
-    var cache = fullInfo['cache'];
-    if (cache == 0) {
-      cache = 'unknown time, sorry';
-    } else {
-      cache = '$cache seconds';
-    }
-    var info = fullInfo['data'];
-    if (info['ok'] != true) {
-      var errorMessage = '${info['response']}\n'
+
+    if (!fullInfo['ok'] || fullInfo['data']['data']['message'] != 'OK') {
+      var errorMessage = 'Failed to get user.\n'
           '\n'
-          'Please remember that this command has a caching system, '
-          'you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that your '
-          'information on hoyolab.com is public!';
+          'Please be sure that your info on HoYoLAB is public.\n'
+          'Also make sure that your in-game ID is correct.'
+          '\n'
+          'To avoid caching issues, please retry in 20 minutes.';
       return _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
       );
     }
+
+    // Try to parse data
+    UserInfo.fromJson(fullInfo['data']['data']['data']);
 
     _kyaru.brain.db.addGenshinUser(update.message!.from!.id, id);
     return _kyaru.brain.bot.editMessageText(
@@ -119,76 +141,139 @@ class GenshinModule implements IModule {
     );
   }
 
-  Future<Map<String, dynamic>?> getUserInfo(Update update) async {
+  Future warnUseGenshinIdFirst(Update update) {
+    var msg = 'Please use /genshin\\_id command first.\n\n'
+        'genshin\\_id command requires an in-game ID.\n'
+        'Make sure your information on Hoyolab is public!\n\n'
+        'If you had already registered your id in the past:\n'
+        'due to an update, now I work with in-game user id, so all old IDs have been removed.\n'
+        'You can do this command in private, your in-game id won\'t be shown anywhere.\n'
+        'Thanks for understanding.';
+    return _kyaru.reply(
+      update,
+      msg,
+      parseMode: ParseMode.markdown,
+      hidePreview: true,
+    );
+  }
+
+  Future<WrappedUserInfo?> getUserInfo(Update update) async {
     var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
     if (userData == null) {
-      var msg =
-          'You need to register your hoyolab.com ID first.\nTo do so use /genshin\\_id command.\n\n'
-          'genshin\\_id command requires an hoyolab.com user ID as parameter.\n'
-          'To get your user ID go [here](https://www.hoyolab.com/genshin/accountCenter/postList?id=0) and check next to your name.\n'
-          'Make sure your information is public.';
-      await _kyaru.reply(
-        update,
-        msg,
-        parseMode: ParseMode.markdown,
-        hidePreview: true,
-      );
+      await warnUseGenshinIdFirst(update);
       return null;
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
     var fullInfo = await _genshinClient.getUser(userData['id']);
-    var cache = fullInfo['cache'];
-    if (cache == 0) {
-      cache = 'unknown time, sorry';
-    } else {
-      cache = '$cache seconds';
-    }
-    var info = fullInfo['data'];
-    var response = info['response'];
 
-    if (!info['ok']) {
-      var reply = '$response\n\n'
-          'Please remember that this command has a caching system, '
-          'you\'ll be able to retry in $cache.\n'
-          'While you wait, please make sure that your '
-          'information on hoyolab.com is public!';
+    if (!fullInfo['ok']) {
+      var details = fullInfo['error'];
       await _kyaru.brain.bot.editMessageText(
-        reply,
+        'Something broke...\nError details: $details',
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
       );
       return null;
     }
 
-    return {
-      'response': response,
-      'sent': sentMessage,
-    };
+    var cacheTime = fullInfo['data']['cache_time'];
+    var data = fullInfo['data']['data'];
+
+    if (data['message'] != 'OK') {
+      var code = data['retcode'];
+      await _kyaru.brain.bot.editMessageText(
+        'Something broke on Hoyolab...\nError code: $code',
+        chatId: ChatID(sentMessage.chat.id),
+        messageId: sentMessage.messageId,
+      );
+      return null;
+    }
+
+    var userInfo = UserInfo.fromJson(data['data']);
+
+    return WrappedUserInfo(
+      sentMessage: sentMessage,
+      cacheTime: cacheTime,
+      userInfo: userInfo,
+    );
+  }
+
+  Future<WrappedAbyssInfo?> getAbyss(Update update) async {
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    if (userData == null) {
+      await warnUseGenshinIdFirst(update);
+      return null;
+    }
+
+    var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
+    var abyssInfo = await _genshinClient.getAbyss(userData['id']);
+
+    if (!abyssInfo['ok']) {
+      var details = abyssInfo['error'];
+      await _kyaru.brain.bot.editMessageText(
+        'Something broke...\nError details: $details',
+        chatId: ChatID(sentMessage.chat.id),
+        messageId: sentMessage.messageId,
+      );
+      return null;
+    }
+
+    var cacheTime = abyssInfo['data']['cache_time'];
+    var currentPeriodData = abyssInfo['data']['data']['current'];
+    var previousPeriodData = abyssInfo['data']['data']['previous'];
+
+    if (currentPeriodData['message'] != 'OK' || previousPeriodData['message'] != 'OK') {
+      int code;
+      if (currentPeriodData['message'] != 'OK') {
+        code = currentPeriodData['retcode'];
+      } else {
+        code = previousPeriodData['retcode'];
+      }
+      await _kyaru.brain.bot.editMessageText(
+        'Something broke on Hoyolab...\nError code: $code',
+        chatId: ChatID(sentMessage.chat.id),
+        messageId: sentMessage.messageId,
+      );
+      return null;
+    }
+
+    var currentAbyssInfo = AbyssInfo.fromJson(currentPeriodData['data']);
+    var previousAbyssInfo = AbyssInfo.fromJson(previousPeriodData['data']);
+
+    return WrappedAbyssInfo(
+      sentMessage: sentMessage,
+      cacheTime: cacheTime,
+      current: currentAbyssInfo,
+      previous: previousAbyssInfo,
+    );
   }
 
   Future abyss(Update update, _) async {
-    var data = await getUserInfo(update);
-    if (data == null) {
+    var wrappedAbyssInfo = await getAbyss(update);
+    if (wrappedAbyssInfo == null) {
       // User already warned, return
       return;
     }
 
-    assembler(data, phase) {
-      var mostDefeats = data['mostDefeats'];
-      var sss = data['strongestSingleStrike'];
-      var mostDmgTaken = data['mostDamageTaken'];
-      var elemBurstCast = data['unleashedElementalBurst'];
-      var elemSkillsCast = data['elementalSkillsCast'];
-      var stars = data['stars'] ?? '?';
-      var dd = data['deepestDescent'] ?? '?';
-      var battles = data['battles'] ?? '?';
+    wTrue(e) => true;
 
-      if (mostDefeats == null ||
-          sss == null ||
-          mostDmgTaken == null ||
-          elemBurstCast == null ||
-          elemSkillsCast == null) {
+    String? assembler(AbyssInfo data, String phase) {
+      var mostDefeats = data.defeatRank.where(wTrue);
+
+      var sss = data.damageRank.where(wTrue);
+      var mostDmgTaken = data.takeDamageRank.where(wTrue);
+      var elemBurstCast = data.energySkillRank.where(wTrue);
+      var elemSkillsCast = data.normalSkillRank.where(wTrue);
+      var stars = data.totalStar;
+      var dd = data.maxFloor;
+      var battles = data.totalBattleTimes;
+
+      if (mostDefeats.isEmpty ||
+          sss.isEmpty ||
+          mostDmgTaken.isEmpty ||
+          elemBurstCast.isEmpty ||
+          elemSkillsCast.isEmpty) {
         return null;
       }
 
@@ -196,34 +281,32 @@ class GenshinModule implements IModule {
           'Total Stars: *$stars*\n'
           'Deepest Descent: *$dd*\n'
           'Battles: *$battles*\n'
-          'Most Defeats: *${mostDefeats['value']}*'
-          ' (`${characterName(mostDefeats['character'])}`)\n'
-          'Strongest Strike: *${sss['value']}*'
-          ' (`${characterName(sss['character'])}`)\n'
-          'Most Damage Taken: *${mostDmgTaken['value']}*'
-          ' (`${characterName(mostDmgTaken['character'])}`)\n'
-          'Elemental Bursts: *${elemBurstCast['value']}* '
-          '(`${characterName(elemBurstCast['character'])}`)\n'
-          'Elemental Skills: *${elemSkillsCast['value']}*'
-          ' (`${characterName(elemSkillsCast['character'])}`)\n';
+          'Most Defeats: *${mostDefeats.first.value}*'
+          ' (`${characterName(mostDefeats.first.name)}`)\n'
+          'Strongest Strike: *${sss.first.value}*'
+          ' (`${characterName(sss.first.name)}`)\n'
+          'Most Damage Taken: *${mostDmgTaken.first.value}*'
+          ' (`${characterName(mostDmgTaken.first.name)}`)\n'
+          'Elemental Bursts: *${elemBurstCast.first.value}* '
+          '(`${characterName(elemBurstCast.first.name)}`)\n'
+          'Elemental Skills: *${elemSkillsCast.first.value}*'
+          ' (`${characterName(elemSkillsCast.first.name)}`)\n';
     }
 
-    var sentMessage = data['sent'];
-    var abyss = data['response']['abyss'];
-    var current = abyss['current'];
-    var last = abyss['last'];
+    var current = wrappedAbyssInfo.current;
+    var previous = wrappedAbyssInfo.previous;
 
-    var hasCurrent = current['unleashedElementalBurst']['value'] != null;
-    var hasLast = last['unleashedElementalBurst']['value'] != null;
+    var hasCurrent = current.totalBattleTimes > 0;
+    var hasPrevious = previous.totalBattleTimes > 0;
 
     String? currentPart;
     String? lastPart;
 
     if (hasCurrent) {
-      currentPart = assembler(current, 'This');
+      currentPart = assembler(current, 'Current');
     }
-    if (hasLast) {
-      lastPart = assembler(last, 'Previous');
+    if (hasPrevious) {
+      lastPart = assembler(previous, 'Previous');
     }
 
     var reply = 'No abyss information found...';
@@ -239,48 +322,65 @@ class GenshinModule implements IModule {
 
     return _kyaru.brain.bot.editMessageText(
       reply,
-      chatId: ChatID(sentMessage.chat.id),
-      messageId: sentMessage.messageId,
+      chatId: ChatID(wrappedAbyssInfo.sentMessage.chat.id),
+      messageId: wrappedAbyssInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
   }
 
   Future genshin(Update update, _) async {
-    var data = await getUserInfo(update);
-    if (data == null) {
+    var wrappedUserInfo = await getUserInfo(update);
+    if (wrappedUserInfo == null) {
       // User already warned, return
       return;
     }
 
-    var sentMessage = data['sent'];
-    var response = data['response'];
-    var progress = response['progress'];
+    var userInfo = wrappedUserInfo.userInfo;
+
+    var inazumaExploration = userInfo.worldExplorationWithName('Inazuma');
+    var inazumaTreeLevel = inazumaExploration
+        .offeringWithName(
+          "Sacred Sakura's Favor",
+        )
+        .level;
+
+    var dragonspineExploration =
+        userInfo.worldExplorationWithName('Dragonspine');
+    var dragonspineTreeLevel = dragonspineExploration
+        .offeringWithName(
+          'Frostbearing Tree',
+        )
+        .level;
 
     var reply = '*User info*\n'
-        '*${response['daysActive']}* days active\n'
-        '*${response['achievementsUnlocked']}* Achievements Unlocked\n'
-        '*${response['anemoculi']}* Anemoculi\n'
-        '*${response['geoculi']}* Geoculi\n'
-        '*${response['charactersObtained']}* obtained characters\n'
-        '*${response['waypointsUnlocked']}* unlocked Waypoints\n'
-        '*${response['domainsUnlocked']}* unlocked domains\n'
-        'Spiral Abyss *${response['spiralAbyss']}*\n'
+        '*${userInfo.stats.activeDayNumber}* days active\n'
+        '*${userInfo.stats.achievementNumber}* Achievements\n'
+        '*${userInfo.stats.avatarNumber}* Characters\n'
+        '*${userInfo.stats.wayPointNumber}* Waypoints\n'
+        '*${userInfo.stats.domainNumber}* Domains\n'
+        '*${userInfo.stats.electroculusNumber}* Electroculus\n'
+        '*${userInfo.stats.anemoculusNumber}* Anemoculus\n'
+        '*${userInfo.stats.geoculusNumber}* Geoculus\n'
+        'Spiral Abyss *${userInfo.stats.spiralAbyss}*\n'
         '\n'
         '*Chests Opened*\n'
-        '*${response['luxuriousChestsOpened']}* Luxurious\n'
-        '*${response['preciousChestsOpened']}* Precious\n'
-        '*${response['exquisiteChestsOpened']}* Exquisite\n'
-        '*${response['commonChestsOpened']}* Common\n'
+        '*${userInfo.stats.luxuriousChestNumber}* Luxurious\n'
+        '*${userInfo.stats.preciousChestNumber}* Precious\n'
+        '*${userInfo.stats.exquisiteChestNumber}* Exquisite\n'
+        '*${userInfo.stats.commonChestNumber}* Common\n'
         '\n'
         '*Exploration Progress*\n'
-        '*Liyue* ${progress["liyue"]}%\n'
-        '*Dragonspine* ${progress["dragonspine"]}%\n'
-        '*Mondstadt* ${progress["mondstadt"]}%';
+        '*Mondstadt* ${userInfo.worldExplorationWithName("Mondstadt").percentage}%\n'
+        '*Liyue* ${userInfo.worldExplorationWithName("Liyue").percentage}%\n'
+        '*Dragonspine* ${dragonspineExploration.percentage}%\n'
+        '  • *Frostbearing Tree* level $dragonspineTreeLevel\n'
+        '*Inazuma* ${inazumaExploration.percentage}%\n'
+        "  • *Sacred Sakura's Favor* level $inazumaTreeLevel\n";
 
     return _kyaru.brain.bot.editMessageText(
       reply,
-      chatId: ChatID(sentMessage.chat.id),
-      messageId: sentMessage.messageId,
+      chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
+      messageId: wrappedUserInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
   }
