@@ -22,5 +22,4 @@ class GenshinClient {
         .timeout(Duration(seconds: 120));
     return jsonDecode(response.body);
   }
-
 }

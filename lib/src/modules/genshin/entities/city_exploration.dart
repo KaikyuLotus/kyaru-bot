@@ -1,3 +1,1 @@
-class CityExploration {
-
-}
+class CityExploration {}

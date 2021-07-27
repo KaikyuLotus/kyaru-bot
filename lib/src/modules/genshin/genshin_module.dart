@@ -29,7 +29,6 @@ extension on KyaruDB {
   void dropGenshinUsers() {
     database[_genshinDataCollection].drop();
   }
-
 }
 
 class GenshinModule implements IModule {
@@ -88,7 +87,6 @@ class GenshinModule implements IModule {
     );
   }
 
-
   Future saveId(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
 
@@ -146,8 +144,10 @@ class GenshinModule implements IModule {
         'genshin\\_id command requires an in-game ID.\n'
         'Make sure your information on Hoyolab is public!\n\n'
         'If you had already registered your id in the past:\n'
-        'due to an update, now I work with in-game user id, so all old IDs have been removed.\n'
-        'You can do this command in private, your in-game id won\'t be shown anywhere.\n'
+        'due to an update, now I work with in-game user id, '
+        'so all old IDs have been removed.\n'
+        'You can do this command in private, your in-game '
+        'id won\'t be shown anywhere.\n'
         'Thanks for understanding.';
     return _kyaru.reply(
       update,
@@ -223,7 +223,8 @@ class GenshinModule implements IModule {
     var currentPeriodData = abyssInfo['data']['data']['current'];
     var previousPeriodData = abyssInfo['data']['data']['previous'];
 
-    if (currentPeriodData['message'] != 'OK' || previousPeriodData['message'] != 'OK') {
+    if (currentPeriodData['message'] != 'OK' ||
+        previousPeriodData['message'] != 'OK') {
       int code;
       if (currentPeriodData['message'] != 'OK') {
         code = currentPeriodData['retcode'];
@@ -370,7 +371,8 @@ class GenshinModule implements IModule {
         '*${userInfo.stats.commonChestNumber}* Common\n'
         '\n'
         '*Exploration Progress*\n'
-        '*Mondstadt* ${userInfo.worldExplorationWithName("Mondstadt").percentage}%\n'
+        '*Mondstadt* '
+        '${userInfo.worldExplorationWithName("Mondstadt").percentage}%\n'
         '*Liyue* ${userInfo.worldExplorationWithName("Liyue").percentage}%\n'
         '*Dragonspine* ${dragonspineExploration.percentage}%\n'
         '  • *Frostbearing Tree* level $dragonspineTreeLevel\n'

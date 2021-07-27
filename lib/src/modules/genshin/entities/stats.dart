@@ -49,5 +49,4 @@ class Stats {
       electroculusNumber: json['electroculus_number'],
     );
   }
-
 }

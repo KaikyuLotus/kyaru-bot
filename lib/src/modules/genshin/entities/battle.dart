@@ -13,14 +13,13 @@ class Battle {
 
   static Battle fromJson(Map<String, dynamic> json) {
     return Battle(
-        index: json['index'],
-        timestamp: json['timestamp'],
-        avatars: BattleAvatar.listFromJsonArray(json['avatars']),
+      index: json['index'],
+      timestamp: json['timestamp'],
+      avatars: BattleAvatar.listFromJsonArray(json['avatars']),
     );
   }
 
   static List<Battle> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Battle.fromJson(json[index]));
   }
-
 }

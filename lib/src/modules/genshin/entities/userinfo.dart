@@ -31,10 +31,12 @@ class UserInfo {
       role: json['role'],
       avatars: Avatar.listFromJsonArray(json['avatars']),
       stats: Stats.fromJson(json['stats']),
-      cityExplorations: <CityExploration>[], // json['city_explorations']),
-      worldExplorations: WorldExploration.listFromJsonArray(json['world_explorations']),
+      cityExplorations: <CityExploration>[],
+      // json['city_explorations']),
+      worldExplorations: WorldExploration.listFromJsonArray(
+        json['world_explorations'],
+      ),
       homes: Home.listFromJsonArray(json['homes']),
     );
   }
-
 }

@@ -1,9 +1,9 @@
 import 'battle.dart';
 
 class Level {
-  final int index; // 1,
-  final int star; // 3,
-  final int maxStar; // 3,
+  final int index;
+  final int star;
+  final int maxStar;
   final List<Battle> battles;
 
   Level({
@@ -15,15 +15,14 @@ class Level {
 
   static Level fromJson(Map<String, dynamic> json) {
     return Level(
-        index: json['index'],
-        star: json['star'],
-        maxStar: json['max_star'],
-        battles: Battle.listFromJsonArray(json['battles']),
+      index: json['index'],
+      star: json['star'],
+      maxStar: json['max_star'],
+      battles: Battle.listFromJsonArray(json['battles']),
     );
   }
 
   static List<Level> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Level.fromJson(json[index]));
   }
-
 }

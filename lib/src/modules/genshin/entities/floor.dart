@@ -34,5 +34,4 @@ class Floor {
   static List<Floor> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Floor.fromJson(json[index]));
   }
-
 }
