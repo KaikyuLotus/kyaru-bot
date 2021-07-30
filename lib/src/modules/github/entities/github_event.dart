@@ -52,6 +52,8 @@ class GithubEvent {
           what = 'this repository';
         } else if (payload?.refType == 'branch') {
           what = 'branch ${payload?.ref}';
+        } else if (payload?.refType == 'tag') {
+          what = 'a new tag (${payload?.ref})';
         }
         return '${actor.displayLogin} created $what';
 
