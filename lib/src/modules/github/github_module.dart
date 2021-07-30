@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
 import 'entities/db/db_repo.dart';
-import 'entities/exceptions/github_forbidden_exception.dart';
-import 'entities/exceptions/github_not_changed_exception.dart';
-import 'entities/exceptions/github_not_found_exception.dart';
 import 'entities/github_client.dart';
+import 'entities/exceptions/github_not_found_exception.dart';
+import 'entities/exceptions/github_not_changed_exception.dart';
+import 'entities/exceptions/github_forbidden_exception.dart';
 import 'entities/github_events_response.dart';
 
 extension on KyaruDB {
@@ -28,102 +27,14 @@ extension on KyaruDB {
   }
 }
 
-class GithubEventLoop {
-  // Always do db.syncDb() after updating data
-  // Also this may case data loss with main isolate
-  final db = KyaruDB();
-
-  final _log = Logger('GithubIsolate');
-  final SendPort sendPort;
-  late GithubClient githubClient;
-  final etagStore = <String?, String?>{};
-  final readUpdates = <String>[];
-
-  int? rateLimitSeconds;
-
-  GithubEventLoop(this.sendPort) {
-    githubClient = GithubClient(db.settings.githubToken);
-    _log.fine('Bootstrapping Github event isolate');
-    Timer.periodic(const Duration(minutes: 2), reposChecker);
-  }
-
-  Future<void> reposChecker(Timer? timer) async {
-    _log.fine('First check on repos');
-    if (rateLimitSeconds != null) {
-      _log.severe('Found API rate limit, waiting $rateLimitSeconds seconds');
-      await Future.delayed(Duration(seconds: rateLimitSeconds!));
-      rateLimitSeconds = null;
-    }
-    _log.fine('Checking github updates...');
-    db.syncDb();
-    db.getRepos().forEach(analyzeRepo);
-  }
-
-  Future elaborateResponse(
-    DBRepo repo,
-    GithubEventsResponse githubEventsResp,
-  ) async {
-    _log.info('Elaborating events for ${repo.repo}...');
-    var events = githubEventsResp.events!.where(
-      (e) => !readUpdates.contains(e.id),
-    );
-
-    if (events.isEmpty) return;
-
-    if (etagStore.containsKey(repo.repo)) {
-      var message = '';
-      if (events.length == 1) {
-        message = 'New event for repository ${repo.repo}:\n${events.first}';
-      } else {
-        var eventsString = events.map((e) => e.toString()).join('\n- ');
-        message = 'New events for repository ${repo.repo}:\n- $eventsString';
-      }
-      sendPort.send(['sendMessage', repo.chatID, message]);
-    }
-    etagStore[repo.repo] = githubEventsResp.etag;
-    readUpdates.addAll(List<String>.from(events.map((e) => e.id)));
-    _log.info('Elaborating events for ${repo.repo} done');
-  }
-
-  Future analyzeRepo(DBRepo repo) async {
-    try {
-      _log.finer('Analyze ${repo.repo}');
-      var response = await githubClient.events(
-        repo.user,
-        repo.repo,
-        etag: etagStore[repo.repo],
-      );
-      await elaborateResponse(repo, response);
-      _log.info('Left rate limit: ${response.rateLimitRemaining}');
-    } on GithubNotFoundException {
-      _log.info('Repository or user not found');
-      sendPort.send(['notFound', repo.toJson()]);
-    } on GithubNotChangedException catch (e) {
-      _log.info('Nothing changed, left limit: ${e.rateLimitRemaining}');
-    } on GithubForbiddenException catch (e) {
-      var resetDateTime = DateTime.fromMillisecondsSinceEpoch(
-        e.rateLimitReset! * 1000,
-      );
-      var seconds = resetDateTime.difference(DateTime.now()).inSeconds;
-      _log.info(
-        'Stopping updates until ${resetDateTime.toIso8601String()}'
-        ' ($seconds seconds)',
-      );
-      rateLimitSeconds = seconds;
-    } on Exception catch (e, s) {
-      _log.severe('Unknown exception in analyzeRepo: $e\n$s');
-    }
-  }
-
-  static void start(SendPort port) {
-    GithubEventLoop(port);
-  }
-}
-
 class GithubModule implements IModule {
   final _log = Logger('GithubModule');
   final Kyaru _kyaru;
   late GithubClient _githubClient;
+
+  final etagStore = <String, String?>{};
+  final readUpdates = <String, List<String>>{};
+  int? rateLimitSeconds;
 
   late List<ModuleFunction> _moduleFunctions;
 
@@ -145,13 +56,13 @@ class GithubModule implements IModule {
       ),
       ModuleFunction(
         listRepo,
-        'List GitHub repositories in this chat',
+        'List GitHub repositories saved for this chat',
         'gitlist',
         core: true,
-      )
+      ),
     ];
 
-    startEventsIsolate();
+    startWatcher();
   }
 
   @override
@@ -159,42 +70,6 @@ class GithubModule implements IModule {
 
   @override
   bool isEnabled() => true;
-
-  Future onSendMessageEvent(int chatId, String message) {
-    return _kyaru.brain.bot.sendMessage(ChatID(chatId), message);
-  }
-
-  Future onRepoNotFoundEvent(DBRepo repo) {
-    _kyaru.brain.db.removeRepo(repo);
-    return _kyaru.brain.bot.sendMessage(
-      ChatID(repo.chatID!),
-      'Hi, it seems that i can\'t access ${repo.user}/${repo.repo}, '
-      'so I removed it',
-    );
-  }
-
-  void onSocketMessage(dynamic data) async {
-    try {
-      if (data[0] == 'sendMessage') {
-        await onSendMessageEvent(data[1], data[2]);
-      } else if (data[0] == 'notFound') {
-        var repo = DBRepo.fromJson(data[1]);
-        await onRepoNotFoundEvent(repo);
-      }
-    } on Exception catch (e, s) {
-      _log.severe('Error onSocketMessage', e, s);
-    }
-  }
-
-  void startEventsIsolate() {
-    var receivePort = ReceivePort();
-    Isolate.spawn(
-      GithubEventLoop.start,
-      receivePort.sendPort,
-      errorsAreFatal: false,
-    );
-    receivePort.listen(onSocketMessage);
-  }
 
   Future registerRepo(Update update, _) async {
     var args = update.message!.text!.split(' ')..removeAt(0);
@@ -211,11 +86,13 @@ class GithubModule implements IModule {
     var repo = args[1];
     var chatId = update.message!.chat.id;
 
-    var repoList = _kyaru.brain.db.getRepos().where((r) {
-      return r.chatID == chatId && r.user == username && r.repo == repo;
-    }).toList();
+    var isPresent = _kyaru.brain.db.getRepos().any((r) {
+      return r.chatID == chatId &&
+          r.user?.toLowerCase() == username.toLowerCase() &&
+          r.repo?.toLowerCase() == repo.toLowerCase();
+    });
 
-    if (repoList.isNotEmpty) {
+    if (isPresent) {
       return _kyaru.reply(update, 'Repository already added');
     }
 
@@ -260,6 +137,8 @@ class GithubModule implements IModule {
       return _kyaru.reply(update, 'There is no repository with that name');
     }
 
+    etagStore.remove(repo.toString());
+    readUpdates.remove(repo.toString());
     return _kyaru.reply(update, 'Repository $username/$repo removed');
   }
 
@@ -276,8 +155,95 @@ class GithubModule implements IModule {
 
     return _kyaru.reply(
       update,
-      'Repositories in this chat:\n'
-      '${repoList.join('\n')}',
+      'Repositories in this chat:\n${repoList.join('\n')}',
     );
+  }
+
+  Future<void> startWatcher() async {
+    _log.info('Starting GitHub watcher');
+    Timer.periodic(const Duration(minutes: 2), reposChecker);
+  }
+
+  Future<void> reposChecker(Timer? timer) async {
+    _log.finer('Checking repos...');
+    if (rateLimitSeconds != null) {
+      _log.severe('Found API rate limit, waiting $rateLimitSeconds seconds');
+      await Future.delayed(Duration(seconds: rateLimitSeconds!));
+      rateLimitSeconds = null;
+    }
+    _kyaru.brain.db.getRepos().forEach(analyzeRepo);
+  }
+
+  Future analyzeRepo(DBRepo repo) async {
+    _log.finer('Analyzing ${repo.repo}');
+    try {
+      var response = await _githubClient.events(
+        repo.user,
+        repo.repo,
+        etag: etagStore[repo.toString()],
+      );
+      await elaborateResponse(repo, response);
+      _log.finer('Left rate limit: ${response.rateLimitRemaining}');
+    } on GithubNotFoundException {
+      _log.info('Repository or user not found');
+      _kyaru.brain.db.removeRepo(repo);
+      return _kyaru.brain.bot.sendMessage(
+        ChatID(repo.chatID!),
+        'Hi, it seems that i can\'t access ${repo.user}/${repo.repo}, '
+        'so I removed it',
+      );
+    } on GithubNotChangedException catch (e) {
+      _log.finer(
+          'Nothing changed in repo ${repo.repo}, left limit: ${e.rateLimitRemaining}');
+    } on GithubForbiddenException catch (e) {
+      var resetDateTime = DateTime.fromMillisecondsSinceEpoch(
+        e.rateLimitReset! * 1000,
+      );
+      var seconds = resetDateTime.difference(DateTime.now()).inSeconds;
+      _log.fine(
+        'Stopping updates until ${resetDateTime.toIso8601String()}'
+        ' ($seconds seconds)',
+      );
+      rateLimitSeconds = seconds;
+    } on Exception catch (e, s) {
+      _log.severe('Unknown exception in analyzeRepo:', e, s);
+    }
+  }
+
+  Future elaborateResponse(
+    DBRepo repo,
+    GithubEventsResponse githubEventsResp,
+  ) async {
+    var events = githubEventsResp.events!.where(
+      (e) {
+        if (readUpdates.containsKey(repo.toString())) {
+          return !readUpdates[repo.toString()]!.contains(e.id);
+        }
+        return true;
+      },
+    );
+
+    if (events.isEmpty) return;
+
+    _log.finer('Elaborating events for ${repo.repo}...');
+
+    if (etagStore[repo.toString()] != null) {
+      var message = '';
+      if (events.length == 1) {
+        message = 'New event for repository ${repo.repo}:\n${events.first}';
+      } else {
+        var eventsString = events.map((e) => e.toString()).join('\n- ');
+        message = 'New events for repository ${repo.repo}:\n- $eventsString';
+      }
+      _kyaru.brain.bot.sendMessage(ChatID(repo.chatID), message);
+    }
+
+    etagStore[repo.toString()] = githubEventsResp.etag;
+    readUpdates[repo.toString()] == null
+        ? readUpdates[repo.toString()] =
+            List<String>.from(events.map((e) => e.id))
+        : readUpdates[repo.toString()]!
+            .addAll(List<String>.from(events.map((e) => e.id)));
+    _log.finer('Elaborating events for ${repo.repo} done');
   }
 }
