@@ -17,7 +17,6 @@ class WorldExploration {
   Offering get dragonspineTree => offeringWithName(dragonspineTreeName);
   String get dragonspineTreeName => "Frostbearing Tree";
 
-
   WorldExploration({
     required this.id,
     required this.level,

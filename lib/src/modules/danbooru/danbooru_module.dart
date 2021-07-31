@@ -66,7 +66,9 @@ class DanbooruModule implements IModule {
     return randomPostAsync(
       update,
       _,
-      tags: update.message!.text!.split(' ')..removeAt(0)..removeAt(0),
+      tags: update.message!.text!.split(' ')
+        ..removeAt(0)
+        ..removeAt(0),
     );
   }
 
@@ -160,7 +162,7 @@ class DanbooruModule implements IModule {
           ].every((b) => b),
         )
         .toList()
-          ..shuffle();
+      ..shuffle();
 
     var httpFiles = compatiblePostList
         .take(imagesCount)

@@ -454,7 +454,9 @@ class AdminsModule implements IModule {
       );
     }
 
-    var args = update.message!.text!.split(' ')..removeAt(0)..removeAt(0);
+    var args = update.message!.text!.split(' ')
+      ..removeAt(0)
+      ..removeAt(0);
 
     if (args.isEmpty) {
       return _kyaru.reply(
@@ -498,7 +500,9 @@ class AdminsModule implements IModule {
       return _kyaru.reply(update, 'No custom welcome set here yet');
     }
 
-    var args = update.message!.text!.split(' ')..removeAt(0)..removeAt(0);
+    var args = update.message!.text!.split(' ')
+      ..removeAt(0)
+      ..removeAt(0);
 
     if (args.isEmpty) {
       return _kyaru.reply(

@@ -195,7 +195,7 @@ class GenshinModule implements IModule {
     UserInfo? oldUserInfo;
     if (fullInfo['data']['old_data'] != null) {
       if (fullInfo['data']['old_data']['message'] == 'OK') {
-          oldUserInfo = UserInfo.fromJson(fullInfo['data']['old_data']['data']);
+        oldUserInfo = UserInfo.fromJson(fullInfo['data']['old_data']['data']);
       }
     }
 
