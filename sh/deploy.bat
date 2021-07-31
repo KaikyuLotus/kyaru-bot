@@ -1,1 +1,0 @@
-scp -r lib kaikyu@kai.kaikyu.monster:/home/kaikyu/kyaru
