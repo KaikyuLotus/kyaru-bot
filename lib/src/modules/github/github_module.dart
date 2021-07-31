@@ -40,7 +40,6 @@ class GithubModule implements IModule {
 
   GithubModule(this._kyaru) {
     _githubClient = GithubClient(_kyaru.brain.db.settings.githubToken);
-    _log.info('Github module started at ${DateTime.now().toIso8601String()}');
     _moduleFunctions = [
       ModuleFunction(
         registerRepo,
@@ -160,6 +159,8 @@ class GithubModule implements IModule {
   }
 
   Future<void> startWatcher() async {
+    _log.finer('First repository check');
+    reposChecker(null);
     _log.info('Starting GitHub watcher');
     Timer.periodic(const Duration(minutes: 2), reposChecker);
   }
