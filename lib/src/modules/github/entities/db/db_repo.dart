@@ -23,4 +23,9 @@ class DBRepo {
   Map<String, dynamic> toJson() {
     return {'chat_id': chatID, 'repo': repo, 'user': user};
   }
+
+  @override
+  String toString() {
+    return '$chatID$repo$user';
+  }
 }
