@@ -5,10 +5,12 @@ class WrappedUserInfo {
   final Message sentMessage;
   final double cacheTime;
   final UserInfo userInfo;
+  final UserInfo? oldUserInfo;
 
   WrappedUserInfo({
     required this.sentMessage,
     required this.cacheTime,
     required this.userInfo,
+    required this.oldUserInfo,
   });
 }

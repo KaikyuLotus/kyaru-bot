@@ -11,6 +11,13 @@ class WorldExploration {
 
   double get percentage => explorationPercentage / 10;
 
+  Offering get inazumaTree => offeringWithName(inazumaTreeName);
+  String get inazumaTreeName => "Sacred Sakura's Favor";
+
+  Offering get dragonspineTree => offeringWithName(dragonspineTreeName);
+  String get dragonspineTreeName => "Frostbearing Tree";
+
+
   WorldExploration({
     required this.id,
     required this.level,

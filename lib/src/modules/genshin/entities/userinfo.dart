@@ -13,6 +13,11 @@ class UserInfo {
   final List<WorldExploration> worldExplorations;
   final List<Home> homes;
 
+  WorldExploration get mondstadt => worldExplorationWithName('Mondstadt');
+  WorldExploration get liyue => worldExplorationWithName('Liyue');
+  WorldExploration get dragonspine => worldExplorationWithName('Dragonspine');
+  WorldExploration get inazuma => worldExplorationWithName('Inazuma');
+
   UserInfo({
     required this.role,
     required this.avatars,

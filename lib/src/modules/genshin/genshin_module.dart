@@ -192,10 +192,18 @@ class GenshinModule implements IModule {
 
     var userInfo = UserInfo.fromJson(data['data']);
 
+    UserInfo? oldUserInfo;
+    if (fullInfo['data']['old_data'] != null) {
+      if (fullInfo['data']['old_data']['message'] == 'OK') {
+          oldUserInfo = UserInfo.fromJson(fullInfo['data']['old_data']['data']);
+      }
+    }
+
     return WrappedUserInfo(
       sentMessage: sentMessage,
       cacheTime: cacheTime,
       userInfo: userInfo,
+      oldUserInfo: oldUserInfo,
     );
   }
 
@@ -337,47 +345,87 @@ class GenshinModule implements IModule {
     }
 
     var userInfo = wrappedUserInfo.userInfo;
+    var oldUserInfo = wrappedUserInfo.oldUserInfo;
 
-    var inazumaExploration = userInfo.worldExplorationWithName('Inazuma');
-    var inazumaTreeLevel = inazumaExploration
-        .offeringWithName(
-          "Sacred Sakura's Favor",
-        )
-        .level;
+    var curr = userInfo.stats;
+    var old = oldUserInfo?.stats;
 
-    var dragonspineExploration =
-        userInfo.worldExplorationWithName('Dragonspine');
-    var dragonspineTreeLevel = dragonspineExploration
-        .offeringWithName(
-          'Frostbearing Tree',
-        )
-        .level;
+    var liyuePerc = userInfo.liyue.percentage;
+    var mondstadtPerc = userInfo.mondstadt.percentage;
 
-    var reply = '*User info*\n'
-        '*${userInfo.stats.activeDayNumber}* days active\n'
-        '*${userInfo.stats.achievementNumber}* Achievements\n'
-        '*${userInfo.stats.avatarNumber}* Characters\n'
-        '*${userInfo.stats.wayPointNumber}* Waypoints\n'
-        '*${userInfo.stats.domainNumber}* Domains\n'
-        '*${userInfo.stats.electroculusNumber}* Electroculus\n'
-        '*${userInfo.stats.anemoculusNumber}* Anemoculus\n'
-        '*${userInfo.stats.geoculusNumber}* Geoculus\n'
-        'Spiral Abyss *${userInfo.stats.spiralAbyss}*\n'
-        '\n'
-        '*Chests Opened*\n'
-        '*${userInfo.stats.luxuriousChestNumber}* Luxurious\n'
-        '*${userInfo.stats.preciousChestNumber}* Precious\n'
-        '*${userInfo.stats.exquisiteChestNumber}* Exquisite\n'
-        '*${userInfo.stats.commonChestNumber}* Common\n'
-        '\n'
-        '*Exploration Progress*\n'
-        '*Mondstadt* '
-        '${userInfo.worldExplorationWithName("Mondstadt").percentage}%\n'
-        '*Liyue* ${userInfo.worldExplorationWithName("Liyue").percentage}%\n'
-        '*Dragonspine* ${dragonspineExploration.percentage}%\n'
-        '  • *Frostbearing Tree* level $dragonspineTreeLevel\n'
-        '*Inazuma* ${inazumaExploration.percentage}%\n'
-        "  • *Sacred Sakura's Favor* level $inazumaTreeLevel\n";
+    var inazumaPerc = userInfo.inazuma.percentage;
+    var inazumaTreeLvl = userInfo.inazuma.inazumaTree.level;
+
+    var dragonspinePerc = userInfo.dragonspine.percentage;
+    var dragonspineTreeLvl = userInfo.dragonspine.dragonspineTree.level;
+
+    var liyuePercOld = oldUserInfo?.liyue.percentage;
+    var mondstadtPercOld = oldUserInfo?.mondstadt.percentage;
+
+    var inazumaPercOld = oldUserInfo?.inazuma.percentage;
+    var inazumaTreeLvlOld = oldUserInfo?.inazuma.inazumaTree.level;
+
+    var dragonspinePercOld = oldUserInfo?.dragonspine.percentage;
+    var dragonspineTreeLvlOld = oldUserInfo?.dragonspine.dragonspineTree.level;
+
+    String imp(String name, int current, int? old) {
+      if (old == null) return '*$current* $name';
+      if (current == old) return '*$current* $name';
+      return '*$current* (+${current - old}) $name';
+    }
+
+    String imp2(String name, int current, int? old) {
+      if (old == null) return '$name *$current*';
+      if (current == old) return '$name *$current*';
+      return '$name *$current* (+${current - old})';
+    }
+
+    String impCityPerc(String name, num current, num? old) {
+      if (old == null) return '$name *$current*%';
+      if (current == old) return '$name *$current*%';
+      return '$name *$current*% (+${current - old}%)';
+    }
+
+    String change(String current, String? old) {
+      if (old == null) return '*$current*';
+      if (current == old) return '*$current*';
+      return '*$old* -> *$current*';
+    }
+
+    var reply = [
+      '• *Info* •',
+      imp('Active Days', curr.activeDayNumber, old?.activeDayNumber),
+      imp('Achievements', curr.achievementNumber, old?.achievementNumber),
+      imp('Characters', curr.avatarNumber, old?.avatarNumber),
+      imp('Waypoints', curr.wayPointNumber, old?.wayPointNumber),
+      imp('Domains', curr.domainNumber, old?.domainNumber),
+      imp('Electroculus', curr.electroculusNumber, old?.electroculusNumber),
+      imp('Anemoculus', curr.anemoculusNumber, old?.anemoculusNumber),
+      imp('Geoculus', curr.geoculusNumber, old?.geoculusNumber),
+      'Spiral Abyss ${change(curr.spiralAbyss, old?.spiralAbyss)}',
+      '',
+      '• *Chests* •',
+      imp('Luxurious', curr.luxuriousChestNumber, old?.luxuriousChestNumber),
+      imp('Precious', curr.preciousChestNumber, old?.preciousChestNumber),
+      imp('Exquisite', curr.exquisiteChestNumber, old?.exquisiteChestNumber),
+      imp('Common', curr.commonChestNumber, old?.commonChestNumber),
+      '',
+      '• *Exploration* •',
+      impCityPerc('Mondstadt', mondstadtPerc, mondstadtPercOld),
+      impCityPerc('Liyue', liyuePerc, liyuePercOld),
+      impCityPerc('Dragonspine', dragonspinePerc, dragonspinePercOld),
+      imp2(
+        '  *Frostbearing Tree* level',
+        dragonspineTreeLvl,
+        dragonspineTreeLvlOld,
+      ),
+      impCityPerc('Inazuma', inazumaPerc, inazumaPercOld),
+      imp2(
+        "  *Sacred Sakura's Favor* level ",
+        inazumaTreeLvl,
+        inazumaTreeLvlOld,
+      ),
+    ].join('\n');
 
     return _kyaru.brain.bot.editMessageText(
       reply,
