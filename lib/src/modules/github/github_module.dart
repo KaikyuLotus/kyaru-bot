@@ -230,10 +230,12 @@ class GithubModule implements IModule {
     if (etagStore[repo.toString()] != null) {
       var message = '';
       if (events.length == 1) {
-        message = 'New event for repository ${repo.repo}:\n${events.first}';
+        message = 'New event for repository ${repo.user}/${repo.repo}:'
+            '\n${events.first}';
       } else {
         var eventsString = events.map((e) => e.toString()).join('\n- ');
-        message = 'New events for repository ${repo.repo}:\n- $eventsString';
+        message = 'New events for repository ${repo.user}/${repo.repo}:'
+            '\n- $eventsString';
       }
       _kyaru.brain.bot.sendMessage(ChatID(repo.chatID), message);
     }
