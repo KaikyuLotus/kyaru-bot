@@ -2,16 +2,16 @@ import 'package:jiffy/jiffy.dart';
 
 import 'actor.dart';
 import 'github_event_type.dart';
-import 'payload.dart';
+import 'payload/payloads.dart';
 import 'repo.dart';
 
 class GithubEvent {
-  String? id;
+  String id;
   GithubEventType type;
   Actor actor;
   Repo repo;
   Payload? payload;
-  bool? public;
+  bool public;
   DateTime createdAt;
 
   GithubEvent(
@@ -20,19 +20,20 @@ class GithubEvent {
     this.actor,
     this.repo,
     this.payload,
-    this.createdAt, {
     this.public,
-  });
+    this.createdAt,
+  );
 
   static GithubEvent fromJson(Map<String, dynamic> json) {
+    var type = GithubEventType.forValue(json['type']);
     return GithubEvent(
       json['id'],
-      GithubEventType.forValue(json['type']),
+      type,
       Actor.fromJson(json['actor']),
       Repo.fromJson(json['repo']),
-      Payload.fromJson(json['payload']),
+      payloadType(type, json['payload']),
+      json['public'],
       Jiffy(json['created_at']).dateTime,
-      public: json['public'],
     );
   }
 
@@ -43,68 +44,81 @@ class GithubEvent {
     );
   }
 
+  static Payload? payloadType(
+    GithubEventType type,
+    Map<String, dynamic> payload,
+  ) {
+    var types = {
+      GithubEventType.createEvent: CreatePayload.fromJson,
+      GithubEventType.deleteEvent: DeletePayload.fromJson,
+      GithubEventType.pullRequestEvent: PullRequestPayload.fromJson,
+      GithubEventType.pushEvent: PushPayload.fromJson,
+      GithubEventType.releaseEvent: ReleasePayload.fromJson,
+      GithubEventType.watchEvent: WatchPayload.fromJson,
+    };
+    if (types.containsKey(type)) {
+      return types[type]!(payload);
+    }
+    return null;
+  }
+
   @override
   String toString() {
     switch (type) {
       case GithubEventType.createEvent:
-        var what = 'something';
-        if (payload?.refType == 'repository') {
-          what = 'this repository';
-        } else if (payload?.refType == 'branch') {
-          what = 'branch ${payload?.ref}';
-        } else if (payload?.refType == 'tag') {
-          what = 'a new tag (${payload?.ref})';
-        }
-        return '${actor.displayLogin} created $what';
+        var createPl = payload as CreatePayload;
+        var what = {
+          'repository': 'this repository',
+          'branch': 'branch ${createPl.ref}',
+          'tag': 'a new tag (${createPl.ref})',
+        };
+        return '${actor.displayLogin} created '
+            '${what[createPl.refType] ?? 'something'}';
 
       case GithubEventType.pushEvent:
-        var newSha7 = payload?.head!.substring(0, 7);
-        var branch = payload?.ref!.split('/').last;
-        var message = payload?.commits!.last.message;
+        var pushPl = payload as PushPayload;
+        var newSha7 = pushPl.head.substring(0, 7);
+        var branch = pushPl.ref.split('/').last;
+        var message = pushPl.commits.last.message;
         return '${actor.displayLogin} made a commit ($newSha7) '
             'to ${repo.name} on branch $branch:\n$message';
 
       case GithubEventType.watchEvent:
-        return '${actor.displayLogin} ${payload?.action}'
+        return '${actor.displayLogin} ${(payload as WatchPayload).action}'
             ' watching the repository';
 
       case GithubEventType.forkEvent:
         return '${actor.displayLogin} forked ${repo.name}';
 
       case GithubEventType.pullRequestEvent:
-        if (payload?.action == 'opened' || payload?.action == 'closed') {
-          return '${actor.displayLogin} ${payload?.action} '
-              'PR#${payload?.number}';
+        var prPl = payload as PullRequestPayload;
+        if (prPl.action == 'opened' || prPl.action == 'closed') {
+          var commits = '${prPl.commits} commits';
+          var files = '${prPl.changedFiles} changed files';
+          if (prPl.commits == 1) {
+            commits = '${prPl.commits} commit';
+          }
+          if (prPl.commits == 1) {
+            files = '${prPl.changedFiles} changed file';
+          }
+          return '${actor.displayLogin} ${prPl.action} '
+              'PR#${prPl.number} with $commits and $files '
+              '(${prPl.additions} additions, ${prPl.deletions} deletions)';
         } else {
-          return '${actor.displayLogin} made an action: ${payload?.action} '
-              'on PR#${payload?.number}';
+          return '${actor.displayLogin} made an action: ${prPl.action} '
+              'on PR#${prPl.number}';
         }
 
       case GithubEventType.releaseEvent:
-        var release = payload!.release!;
-        var releaseType = release.prerelease! ? 'prerelease' : 'release';
-        var body = '';
-        var assetsMessage = '';
-        if (release.body!.isNotEmpty) {
-          body = '\n\n${release.body}';
-        }
-
-        if (release.assets!.isNotEmpty) {
-          var assets = release.assets!.map(
-              (a) => '- ${a.name} ${(a.size! / 1048576).toStringAsFixed(2)}MB');
-          assetsMessage = '\n\nAssets\n${assets.join('\n')}';
-        }
-
+        var releasePl = payload as ReleasePayload;
+        var releaseType = releasePl.prerelease ? 'prerelease' : 'release';
         return '${actor.displayLogin} created a new $releaseType '
-            '(${release.name})$body$assetsMessage';
-
-      case GithubEventType.pullRequestReviewEvent:
-        return '${actor.displayLogin} (${payload!.review!.authorAssociation}) '
-            '${payload!.review!.state} PR#${payload!.review!.prNumber}';
+            '(${releasePl.name})';
 
       case GithubEventType.deleteEvent:
-        return '${actor.displayLogin} deleted ${payload!.refType} '
-            '${payload!.ref} on ${repo.name}';
+        var deletePl = payload as DeletePayload;
+        return '${actor.displayLogin} deleted ${deletePl.refType} '
+            '${deletePl.ref} on ${repo.name}';
 
       default:
         return 'Unknown action on ${repo.name}';
