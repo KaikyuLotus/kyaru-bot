@@ -104,7 +104,7 @@ class GithubEvent {
             files = '${prPl.changedFiles} changed file';
           }
           return '${actor.displayLogin} ${prPl.action} '
-              'PR#${prPl.number} with $commits and $files '
+              'PR#${prPl.number} (${prPl.title}) with $commits and $files '
               '(${prPl.additions} additions, ${prPl.deletions} deletions)';
         } else {
           return '${actor.displayLogin} made an action: ${prPl.action} '
