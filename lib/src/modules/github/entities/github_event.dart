@@ -51,6 +51,8 @@ class GithubEvent {
     var types = {
       GithubEventType.createEvent: CreatePayload.fromJson,
       GithubEventType.deleteEvent: DeletePayload.fromJson,
+      GithubEventType.issueCommentEvent: IssueCommentPayload.fromJson,
+      GithubEventType.issuesEvent: IssuePayload.fromJson,
       GithubEventType.pullRequestEvent: PullRequestPayload.fromJson,
       GithubEventType.pushEvent: PushPayload.fromJson,
       GithubEventType.releaseEvent: ReleasePayload.fromJson,
@@ -119,6 +121,16 @@ class GithubEvent {
         var deletePl = payload as DeletePayload;
         return '${actor.displayLogin} deleted ${deletePl.refType} '
             '${deletePl.ref} on ${repo.name}';
+
+      case GithubEventType.issuesEvent:
+        var issuePl = payload as IssuePayload;
+        return '${actor.displayLogin} ${issuePl.action} '
+            'issue #${issuePl.number} (${issuePl.title})';
+
+      case GithubEventType.issueCommentEvent:
+        var issueCommentPl = payload as IssueCommentPayload;
+        return '${actor.displayLogin} commented on '
+            'issue #${issueCommentPl.number} (${issueCommentPl.title})';
 
       default:
         return 'Unknown action on ${repo.name}';
