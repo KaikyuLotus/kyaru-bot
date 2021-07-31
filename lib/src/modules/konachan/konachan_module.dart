@@ -58,7 +58,9 @@ class KonachanModule implements IModule {
     randomPost(
       update,
       _,
-      tags: update.message!.text!.split(' ')..removeAt(0)..removeAt(0),
+      tags: update.message!.text!.split(' ')
+        ..removeAt(0)
+        ..removeAt(0),
     );
   }
 
