@@ -111,6 +111,10 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
   await Directory('resources/caches/element').create();
 
   for (var avatar in data.avatars) {
+    if (row == maxRows) {
+      throw Exception('Insufficient rows');
+    }
+
     var name = avatar.name;
     var constellation = avatar.activedConstellationNum;
     var level = avatar.level;
@@ -199,9 +203,6 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
     if (col == maxCols) {
       col = 0;
       row++;
-      if (row == maxRows) {
-        throw Exception('Insufficient rows');
-      }
     }
   }
 
