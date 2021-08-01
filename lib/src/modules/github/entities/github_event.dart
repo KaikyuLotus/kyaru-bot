@@ -82,7 +82,11 @@ class GithubEvent {
         var newSha7 = pushPl.head.substring(0, 7);
         var branch = pushPl.ref.split('/').last;
         var message = pushPl.commits.last.message;
-        return '${actor.displayLogin} made a commit ($newSha7) '
+        var commit = 'a commit';
+        if (pushPl.commits.length != 1) {
+          commit = '${pushPl.commits.length} commits, the last one ';
+        }
+        return '${actor.displayLogin} made $commit ($newSha7) '
             'to ${repo.name} on branch $branch:\n$message';
 
       case GithubEventType.watchEvent:
