@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 import 'entities/abyss_info.dart';
 import 'entities/genshin_client.dart';
+import 'entities/image_generator.dart';
 import 'entities/userinfo.dart';
 import 'entities/wrapped_abyss_info.dart';
 import 'entities/wrapped_user_info.dart';
@@ -65,6 +67,12 @@ class GenshinModule implements IModule {
         'Delete genshin users from db',
         'del_genshin_users',
         core: false,
+      ),
+      ModuleFunction(
+        characters,
+        'Gets your characters from HoYoLAB',
+        'genshin_chars',
+        core: true,
       ),
     ];
   }
@@ -432,6 +440,40 @@ class GenshinModule implements IModule {
       chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
       messageId: wrappedUserInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
+    );
+  }
+
+  Future characters(Update update, _) async {
+    var wrappedUserInfo = await getUserInfo(update);
+    if (wrappedUserInfo == null) {
+      // User already warned, return
+      return;
+    }
+
+    await _kyaru.brain.bot.editMessageText(
+      'Generating...',
+      chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
+      messageId: wrappedUserInfo.sentMessage.messageId,
+    );
+
+    var image = await generateAvatarsImage(wrappedUserInfo.userInfo);
+    if (image == null) {
+      return _kyaru.brain.bot.editMessageText(
+        'Could not generate image... Sorry.',
+        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
+        messageId: wrappedUserInfo.sentMessage.messageId,
+      );
+    }
+
+    await _kyaru.brain.bot.deleteMessage(
+      ChatID(wrappedUserInfo.sentMessage.chat.id),
+      wrappedUserInfo.sentMessage.messageId,
+    );
+
+    await _kyaru.brain.bot.sendPhoto(
+      ChatID(wrappedUserInfo.sentMessage.chat.id),
+      HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
+      replyToMessageId: update.message?.messageId,
     );
   }
 

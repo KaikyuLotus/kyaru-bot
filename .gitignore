@@ -13,3 +13,4 @@ doc/api/
 .idea
 kyaru-bot.iml
 /kyaru.exe
+resources/caches
