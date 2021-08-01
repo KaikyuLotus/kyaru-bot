@@ -23,7 +23,7 @@ jobs:
       - name: Set up Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: '2.14.0-301.0.dev'
+          sdk: beta
 
       - name: Install Python 3.7
         uses: actions/setup-python@v2
