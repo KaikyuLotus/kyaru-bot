@@ -38,6 +38,12 @@ class GenshinDataModule implements IModule {
         'genshin_talents',
         core: true,
       ),
+      ModuleFunction(
+        artifactSet,
+        'Gets informations about an artifact set',
+        'genshin_artifact',
+        core: true,
+      ),
     ];
   }
 
@@ -178,31 +184,35 @@ class GenshinDataModule implements IModule {
 
     var name = args.join(' ');
 
-    var result = await _genshinDataClient.getTalents(name);
-    String message;
-    if (talent == -1) {
-      message = result
-          .map((t) => '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n')
-          .join();
-    } else {
-      var t = result[talent];
-      var reg = RegExp(r'\{(\w*):(\w*)\}');
-      var labels = t.labels
-              ?.map((l) => l.replaceAllMapped(reg, (match) {
-                    var type = match.group(2)!;
-                    var value = t.parameters?[match.group(1)][0];
-                    return talentValue(type, value);
-                  }))
-              .join('\n') ??
-          '';
-      message = '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n'
-          '$labels';
+    try {
+      var result = await _genshinDataClient.getTalents(name);
+      String message;
+      if (talent == -1) {
+        message = result
+            .map((t) => '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n')
+            .join();
+      } else {
+        var t = result[talent];
+        var reg = RegExp(r'\{(\w*):(\w*)\}');
+        var labels = t.labels
+                ?.map((l) => l.replaceAllMapped(reg, (match) {
+                      var type = match.group(2)!;
+                      var value = t.parameters?[match.group(1)][0];
+                      return talentValue(type, value);
+                    }))
+                .join('\n') ??
+            '';
+        message = '*${t.name}*\n${t.info.replaceAll('**', '*')}\n\n'
+            '$labels';
+      }
+      return _kyaru.reply(
+        update,
+        message,
+        parseMode: ParseMode.markdown,
+      );
+    } on GenshinDataException {
+      return _kyaru.reply(update, 'Character not found');
     }
-    return _kyaru.reply(
-      update,
-      message,
-      parseMode: ParseMode.markdown,
-    );
   }
 
   String talentValue(String type, num value) {
@@ -211,5 +221,32 @@ class GenshinDataModule implements IModule {
       'P': '${(value * 100).toStringAsFixed(0)}%',
     };
     return map[type] ?? '$value';
+  }
+
+  Future artifactSet(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command needs an artifact set name as first argument.',
+      );
+    }
+
+    var name = args.join(' ');
+    try {
+      var result = await _genshinDataClient.getArtifactSet(name);
+      var artifacts = '';
+      for (var artifact in result.set) {
+        artifacts += '${artifact.relictype}: ${artifact.name}\n';
+      }
+      return _kyaru.reply(
+          update,
+          '${result.name}\n\n'
+          '2-Piece set: ${result.twoP}\n4-Piece set: ${result.fourP}\n\n'
+          '$artifacts');
+    } on GenshinDataException {
+      return _kyaru.reply(update, 'Artifact set not found');
+    }
   }
 }
