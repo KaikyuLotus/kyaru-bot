@@ -11,14 +11,14 @@ class GenshinClient {
 
   Future<Map<String, dynamic>> getUser(int uid) async {
     var response = await _client
-        .get(Uri.http(baseUrl, '/user', {'uid': '$uid'}))
+        .get(Uri.http(baseUrl, '/user', {'game_id': '$uid'}))
         .timeout(Duration(seconds: 120));
     return jsonDecode(response.body);
   }
 
   Future<Map<String, dynamic>> getAbyss(int uid) async {
     var response = await _client
-        .get(Uri.http(baseUrl, '/abyss', {'uid': '$uid'}))
+        .get(Uri.http(baseUrl, '/abyss', {'game_id': '$uid'}))
         .timeout(Duration(seconds: 120));
     return jsonDecode(response.body);
   }
