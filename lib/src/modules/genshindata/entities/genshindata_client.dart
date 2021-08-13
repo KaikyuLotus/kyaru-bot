@@ -11,6 +11,9 @@ class GenshinDataException implements Exception {
   final String message;
 
   GenshinDataException(this.message);
+
+  @override
+  String toString() => 'GenshinDataException: $message';
 }
 
 class GenshinDataClient {

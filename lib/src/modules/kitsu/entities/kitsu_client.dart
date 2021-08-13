@@ -9,6 +9,9 @@ class KitsuApiException implements Exception {
   final String message;
 
   KitsuApiException(this.message);
+
+  @override
+  String toString() => 'KitsuApiException: $message';
 }
 
 class KitsuClient {

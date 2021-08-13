@@ -8,6 +8,9 @@ class NotFound implements Exception {
   final String message;
 
   NotFound(this.message);
+
+  @override
+  String toString() => 'NotFound: $message';
 }
 
 class QuotesClient {

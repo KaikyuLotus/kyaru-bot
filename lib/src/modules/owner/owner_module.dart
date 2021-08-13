@@ -39,6 +39,11 @@ class OwnerModule implements IModule {
         'start',
         core: true,
       ),
+      ModuleFunction(
+        broadcast,
+        'Sends the quoted message to the specified type of chats',
+        'broadcast',
+      ),
     ];
   }
 
@@ -185,6 +190,56 @@ class OwnerModule implements IModule {
       helpMessage,
       parseMode: ParseMode.markdown,
       hidePreview: true,
+    );
+  }
+
+  Future broadcast(Update update, _) async {
+    var args = update.message?.text?.split(' ')?..removeAt(0);
+    if (args == null || args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        '/broadcast requires an argument which'
+        ' can be either "users" or "groups"',
+      );
+    }
+
+    var type = args.first.toLowerCase();
+    if (!['users', 'groups'].contains(type)) {
+      return _kyaru.reply(
+        update,
+        'The argument can be either "users" or "groups"',
+      );
+    }
+
+    if (update.message?.replyToMessage == null) {
+      return _kyaru.reply(
+        update,
+        'Please quote the message to be delivered to the $type.',
+      );
+    }
+
+    var waitPerMsg = 1000 ~/ 25;
+    var errors = 0;
+    var sent = 0;
+    var chatId = ChatID(update.message!.chat.id);
+    var messageId = update.message!.replyToMessage!.messageId;
+
+    bool filterByType(c) => c.isPrivate == (type == 'users');
+    for (var chat in _kyaru.brain.db.getChats().where(filterByType)) {
+      try {
+        await _kyaru.brain.bot.copyMessage(ChatID(chat.id), chatId, messageId);
+        sent++;
+      } on Exception catch (e, s) {
+        errors++;
+        _log.severe('Could not send message to chat ${chat.id}: $e\n$s');
+      }
+      await Future.delayed(Duration(milliseconds: waitPerMsg));
+    }
+
+    return _kyaru.reply(
+      update,
+      'Message broadcasted to $sent chats,'
+      ' there where $errors errors.',
     );
   }
 }

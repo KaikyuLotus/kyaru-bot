@@ -306,23 +306,23 @@ class AdminsModule implements IModule {
     }
 
     var customCommand = CustomCommand(
-      command,
-      commandType,
+      command: command,
+      commandType: commandType,
       text: customText,
       fileId: customFileId,
       quoteQuoted: quote,
     );
 
     var customInstruction = Instruction(
-      update.message!.chat.id,
-      InstructionType.command,
-      InstructionEventType.none,
-      customCommand,
-      'executeCustomCommand',
-      null,
-      quote,
-      false,
-      false,
+      chatId: update.message!.chat.id,
+      instructionType: InstructionType.command,
+      instructionEventType: InstructionEventType.none,
+      command: customCommand,
+      function: 'executeCustomCommand',
+      regex: null,
+      requireQuote: quote,
+      ownerOnly: false,
+      volatile: false,
     );
 
     _kyaru.brain.db.addCustomInstruction(customInstruction);
@@ -573,22 +573,22 @@ class AdminsModule implements IModule {
     );
 
     var customCommand = CustomCommand(
-      null,
-      commandType,
+      command: null,
+      commandType: commandType,
       text: null,
       fileId: customFileId,
     );
 
     var customInstruction = Instruction(
-      update.message!.chat.id,
-      InstructionType.event,
-      InstructionEventType.userJoined,
-      customCommand,
-      'executeCustomCommand',
-      null,
-      false,
-      false,
-      false,
+      chatId: update.message!.chat.id,
+      instructionType: InstructionType.event,
+      instructionEventType: InstructionEventType.userJoined,
+      command: customCommand,
+      function: 'executeCustomCommand',
+      regex: null,
+      ownerOnly: false,
+      requireQuote: false,
+      volatile: false,
     );
 
     _kyaru.brain.db.addCustomInstruction(customInstruction);

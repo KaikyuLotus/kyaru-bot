@@ -4,31 +4,63 @@ import 'package:uuid/uuid.dart';
 import '../../kyaru.dart';
 import 'enums/enums.dart';
 
+class InstructionAlias {
+  final InstructionType instructionType;
+  final CustomCommand? command;
+  final String? regex;
+
+  InstructionAlias({
+    required this.instructionType,
+    this.command,
+    this.regex,
+  });
+
+  static InstructionAlias fromJson(Map<String, dynamic> json) {
+    return InstructionAlias(
+      instructionType: InstructionType.forValue(json['type']),
+      command: callIfNotNull(CustomCommand.fromJson, json['command']),
+      regex: json['regex'],
+    );
+  }
+
+  static List<InstructionAlias> listFromJsonArray(List<dynamic> arr) {
+    return List.generate(arr.length, (i) => InstructionAlias.fromJson(arr[i]));
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': instructionType.value,
+      'command': command?.toJson(),
+      'regex': regex,
+    };
+  }
+}
+
 class Instruction {
   String? uuid;
   final int? chatId;
   final InstructionType instructionType;
   final InstructionEventType? instructionEventType;
   final CustomCommand? command;
+  final List<InstructionAlias> aliases;
   final String? function;
   final String? regex;
   final bool requireQuote;
   final bool ownerOnly;
   final bool volatile;
 
-  Instruction(
+  Instruction({
     this.chatId,
-    this.instructionType,
+    required this.instructionType,
     this.instructionEventType,
     this.command,
     this.function,
     this.regex,
-    // Private boolean parameters
-    // ignore: avoid_positional_boolean_parameters
-    this.requireQuote,
-    this.ownerOnly,
-    this.volatile,
-  ) : uuid = Uuid().v4();
+    this.aliases = const [],
+    required this.requireQuote,
+    required this.ownerOnly,
+    required this.volatile,
+  }) : uuid = Uuid().v4();
 
   Instruction._(
     this.uuid,
@@ -41,6 +73,7 @@ class Instruction {
     this.requireQuote,
     this.ownerOnly,
     this.volatile,
+    this.aliases,
   );
 
   bool checkRequirements(Update update, Settings? settings) {
@@ -65,6 +98,7 @@ class Instruction {
       json['require_quote'] ?? false,
       json['owner_only'] ?? false,
       json['volatile'] ?? false,
+      InstructionAlias.listFromJsonArray(json['aliases'] ?? []),
     );
   }
 
@@ -80,6 +114,7 @@ class Instruction {
       'require_quote': requireQuote,
       'owner_only': ownerOnly,
       'volatile': volatile,
+      'aliases': aliases.map((e) => e.toJson()).toList(),
     };
   }
 }

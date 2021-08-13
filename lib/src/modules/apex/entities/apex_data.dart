@@ -7,6 +7,9 @@ class ApexException implements Exception {
   final String error;
 
   ApexException(this.error);
+
+  @override
+  String toString() => 'ApexException: $error';
 }
 
 class ApexData {

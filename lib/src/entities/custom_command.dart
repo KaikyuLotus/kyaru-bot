@@ -8,9 +8,9 @@ class CustomCommand {
   bool quoteQuoted;
   CommandType commandType;
 
-  CustomCommand(
+  CustomCommand({
     this.command,
-    this.commandType, {
+    required this.commandType,
     this.quote = false,
     this.quoteQuoted = false,
     this.fileId,
@@ -19,8 +19,8 @@ class CustomCommand {
 
   static CustomCommand fromJson(Map<String, dynamic> json) {
     return CustomCommand(
-      json['command'],
-      CommandType.forValue(json['command_type']),
+      command: json['command'],
+      commandType: CommandType.forValue(json['command_type']),
       quote: json['quote'] ?? false,
       quoteQuoted: json['quote_quoted'] ?? false,
       fileId: json['file_id'],

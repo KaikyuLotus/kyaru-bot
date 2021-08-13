@@ -23,6 +23,8 @@ class Kyaru {
     brain = KyaruBrain(database: db, bot: bot);
     brain.bot.onUpdate(_updatesHandler);
     brain.bot.errorHandler = onError;
+    brain.bot.onCommand('add_owner_cmd', addOwnerCommand);
+    brain.bot.onCommand('alias', addCommandAlias);
   }
 
   Future onStartFailed(Bot bot, Object e, StackTrace st) async {
@@ -213,5 +215,137 @@ class Kyaru {
       ),
       parseMode: parseMode,
     );
+  }
+
+  Future addOwnerCommand(Bot bot, Update update) async {
+    if (update.message?.chat == null) return;
+    if (update.message?.from?.id != brain.db.settings.ownerId.chatId) return;
+
+    var args = update.message?.text?.split(' ')?..removeAt(0);
+
+    if (args == null || args.isEmpty) {
+      return reply(
+        update,
+        'Please specify a custom command as first argument',
+      );
+    }
+
+    var command = args.first;
+
+    // TODO is ugly
+    var ownerOnly = true;
+    if (command != args.last) {
+      var bString = args.last.toLowerCase();
+      if (!['true', 'false'].contains(bString)) {
+        return reply(update, 'Invalid boolean value');
+      }
+      ownerOnly = bString == 'true';
+    }
+
+    var commands = brain.modules
+        .map((c) => c.moduleFunctions.map((f) => f.name).toList())
+        .reduce((v, e) => v + e);
+
+    if (!commands.contains(command)) {
+      return reply(
+        update,
+        "I couldn't find any function matching '$command' "
+        "registered in any module",
+      );
+    }
+
+    var customInstruction = Instruction(
+      ownerOnly: ownerOnly,
+      instructionType: InstructionType.command,
+      requireQuote: false,
+      volatile: false,
+      chatId: 0,
+      command: CustomCommand(
+        commandType: CommandType.unknown,
+        command: command,
+      ),
+      function: command,
+      instructionEventType: InstructionEventType.none,
+      regex: null,
+    );
+
+    brain.db.addCustomInstruction(customInstruction);
+    return reply(update, 'Done, master.');
+  }
+
+  Future addCommandAlias(Bot bot, Update update) async {
+    if (update.message?.chat == null) return;
+    if (update.message?.from?.id != brain.db.settings.ownerId.chatId) return;
+
+    var args = update.message?.text?.split(' ')?..removeAt(0);
+
+    if (args == null || args.isEmpty) {
+      return reply(update, 'Usage: /alias command, type, alias');
+    }
+
+    var params = args.join(' ').split(',').map((e) => e.trim());
+    if (params.length != 3) {
+      return reply(update, 'Usage: /alias command, type, alias');
+    }
+
+    var command = params.elementAt(0);
+    var typeString = params.elementAt(1).toUpperCase();
+    var aliasString = params.elementAt(2);
+
+    if (!['REGEX', 'COMMAND'].contains(typeString)) {
+      return reply(
+        update,
+        "Type $typeString cannot be an alias or does not exist",
+      );
+    }
+
+    var type = InstructionType.forValue(typeString);
+
+    if (command == aliasString) {
+      return reply(update, "Can't add an alias equal to the command itself");
+    }
+
+    var instructions = brain.db.getAllInstructions(command);
+    var matchingInstructions =
+        instructions.where((e) => e.command?.command == command);
+    if (matchingInstructions.isEmpty) {
+      return reply(update, 'Command "$command" not found...');
+    }
+    var instruction = matchingInstructions.first;
+
+    for (var alias in instruction.aliases) {
+      if (alias.instructionType == type) {
+        if ((alias.instructionType == InstructionType.regex &&
+                alias.regex == aliasString) ||
+            alias.command?.command == aliasString) {
+          return reply(update, 'That alias is already present');
+        }
+      }
+    }
+
+    var newAlias = InstructionAlias(
+      instructionType: type,
+      regex: type == InstructionType.regex ? aliasString : null,
+      command: type == InstructionType.command
+          ? CustomCommand(
+              commandType: CommandType.unknown,
+              command: aliasString,
+            )
+          : null,
+    );
+
+    instruction.aliases.add(newAlias);
+    if (brain.db.updateInstruction(instruction)) {
+      return reply(
+        update,
+        'Created an alias of type $typeString '
+        'for command $command: "$aliasString"',
+      );
+    } else {
+      return reply(
+        update,
+        'Failed to save the alias...',
+      );
+    }
   }
 }

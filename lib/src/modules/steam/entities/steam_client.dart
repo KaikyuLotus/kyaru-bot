@@ -9,6 +9,9 @@ class SteamException implements Exception {
   final String message;
 
   SteamException(this.message);
+
+  @override
+  String toString() => 'SteamException: $message';
 }
 
 class SteamClient {

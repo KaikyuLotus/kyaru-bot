@@ -9,6 +9,9 @@ class JikanApiException implements Exception {
   final String message;
 
   JikanApiException(this.message);
+
+  @override
+  String toString() => 'JikanApiException: $message';
 }
 
 class JikanClient {

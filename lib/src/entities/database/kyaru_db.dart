@@ -33,6 +33,18 @@ class KyaruDB {
     database[_instructionsCollection].insert(instruction.toJson());
   }
 
+  List<Instruction> getAllInstructions(String command) {
+    return database[_instructionsCollection].findAs(Instruction.fromJson);
+  }
+
+  bool updateInstruction(Instruction instruction) {
+    return database[_instructionsCollection].update(
+      {'uuid': instruction.uuid},
+      instruction.toJson(),
+      false,
+    );
+  }
+
   bool removeChatData(int chatId) {
     return database[_chatDataCollection].delete({'id': chatId});
   }
@@ -68,17 +80,17 @@ class KyaruDB {
   }
 
   List<Instruction> getInstructions(
-    InstructionType type,
+    InstructionType? type,
     int chatId, {
     InstructionEventType? eventType,
   }) {
-    var filter = {'type': type.value, 'chat_id': chatId};
-    if (eventType != null) {
-      filter['event_type'] = eventType.value;
-    }
     return database[_instructionsCollection].findAs(
       Instruction.fromJson,
-      filter: filter,
+      filter: {
+        if (type != null) 'type': type.value,
+        if (eventType != null) 'event_type': eventType.value,
+        'chat_id': chatId,
+      },
     );
   }
 }

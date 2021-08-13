@@ -8,6 +8,9 @@ class KonachanException implements Exception {
   final String message;
 
   KonachanException(this.message);
+
+  @override
+  String toString() => 'KonachanException: $message';
 }
 
 class KonachanClient {

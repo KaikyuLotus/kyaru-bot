@@ -137,7 +137,7 @@ class KyaruBrain {
   }
 
   List<Instruction> getInstructions(
-    InstructionType instructionType,
+    InstructionType? instructionType,
     int chatId, {
     InstructionEventType? eventType,
   }) {
@@ -148,15 +148,29 @@ class KyaruBrain {
   }
 
   Future<bool> execRegexInstructions(Update update, int chatId) async {
-    final regexInstructions = getInstructions(InstructionType.regex, chatId);
+    final regexInstructions = getInstructions(null, chatId);
 
     final text = update.message!.text;
 
     final validInstructions = regexInstructions.where(
       (i) {
+        var requirementsOk = i.checkRequirements(update, db.settings);
+        if (!requirementsOk) return false;
+
+        bool isRegex(a) => a.instructionType == InstructionType.regex;
+        for (var alias in i.aliases.where(isRegex)) {
+          if (alias.regex == '') continue; // Aliases cannot be empty
+          if (RegExp(
+            alias.regex!,
+            caseSensitive: false,
+          ).hasMatch(text!)) return true;
+        }
+        if (!isRegex(i)) return false;
         return i.regex! == '' ||
-            (RegExp(i.regex!).firstMatch(text!) != null &&
-                i.checkRequirements(update, db.settings));
+            RegExp(
+              i.regex!,
+              caseSensitive: false,
+            ).hasMatch(text!);
       },
     ).toList();
 
@@ -175,15 +189,22 @@ class KyaruBrain {
     BotCommandParser botCommand,
     int chatId,
   ) async {
-    final commandInstructions = getInstructions(
-      InstructionType.command,
-      chatId,
-    );
+    final commandInstructions = getInstructions(null, chatId);
     final validInstructions = commandInstructions.where(
       (i) {
+        if (!i.checkRequirements(update, db.settings)) return false;
+
+        bool isCommandAlias(a) => a.instructionType == InstructionType.command;
+        for (var alias in i.aliases.where(isCommandAlias)) {
+          var matches = botCommand.matchesCommand(
+            alias.command!.command!,
+          );
+          if (matches) return true;
+        }
+
         return i.command != null &&
-            botCommand.matchesCommand(i.command!.command!) &&
-            i.checkRequirements(update, db.settings);
+            i.command!.command != null &&
+            botCommand.matchesCommand(i.command!.command!);
       },
     ).toList();
 

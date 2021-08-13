@@ -8,6 +8,9 @@ class DanbooruException implements Exception {
   final String message;
 
   DanbooruException(this.message);
+
+  @override
+  String toString() => 'DanbooruException: $message';
 }
 
 class DanbooruClient {

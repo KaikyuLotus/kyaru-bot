@@ -9,6 +9,9 @@ class LastfmException implements Exception {
   final String message;
 
   LastfmException(this.message);
+
+  @override
+  String toString() => 'LastfmException: $message';
 }
 
 class LastfmClient {

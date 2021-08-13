@@ -10,6 +10,9 @@ class VideogameException implements Exception {
   final String message;
 
   VideogameException(this.message);
+
+  @override
+  String toString() => 'VideogameException: $message';
 }
 
 class VideogameClient {

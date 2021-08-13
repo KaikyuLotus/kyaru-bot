@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
@@ -171,9 +172,18 @@ class GenshinModule implements IModule {
       await warnUseGenshinIdFirst(update);
       return null;
     }
-
+    Map<String, dynamic> fullInfo;
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-    var fullInfo = await _genshinClient.getUser(userData['id']);
+    try {
+      fullInfo = await _genshinClient.getUser(userData['id']);
+    } on SocketException {
+      await _kyaru.brain.bot.editMessageText(
+        "I can't reach Genshin data server, please try later...",
+        chatId: ChatID(sentMessage.chat.id),
+        messageId: sentMessage.messageId,
+      );
+      return null;
+    }
 
     if (!fullInfo['ok']) {
       var details = fullInfo['error'];
@@ -223,7 +233,18 @@ class GenshinModule implements IModule {
     }
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-    var abyssInfo = await _genshinClient.getAbyss(userData['id']);
+
+    Map<String, dynamic> abyssInfo;
+    try {
+      abyssInfo = await _genshinClient.getAbyss(userData['id']);
+    } on SocketException {
+      await _kyaru.brain.bot.editMessageText(
+        "I can't reach Genshin data server, please try later...",
+        chatId: ChatID(sentMessage.chat.id),
+        messageId: sentMessage.messageId,
+      );
+      return null;
+    }
 
     if (!abyssInfo['ok']) {
       var details = abyssInfo['error'];

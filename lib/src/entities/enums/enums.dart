@@ -28,8 +28,12 @@ class InstructionType extends _Enum<String> {
 
   const InstructionType._(String value) : super(value);
 
-  static InstructionType forValue(String value) =>
-      InstructionType.values[value]!;
+  static InstructionType forValue(String value) {
+    if (!values.containsKey(value.toUpperCase())) {
+      throw Exception('InstructionType $value does not exist');
+    }
+    return InstructionType.values[value.toUpperCase()]!;
+  }
 }
 
 class InstructionEventType extends _Enum<String> {
@@ -74,5 +78,6 @@ class CommandType extends _Enum<String> {
 
   const CommandType._(String value) : super(value);
 
-  static CommandType forValue(String value) => CommandType.values[value]!;
+  static CommandType forValue(String value) =>
+      CommandType.values[value.toUpperCase()]!;
 }
