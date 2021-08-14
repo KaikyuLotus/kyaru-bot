@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 
+import 'artifact_set.dart';
 import 'character.dart';
 import 'constellations.dart';
 import 'talent.dart';
@@ -83,6 +84,19 @@ class GenshinDataClient {
         },
       ),
       Talent.listFromJsonArray,
+    );
+  }
+
+  Future<ArtifactSet> getArtifactSet(String artifact) async {
+    return _get(
+      Uri.http(
+        _url,
+        '/artifact',
+        {
+          'artifact': artifact,
+        },
+      ),
+      ArtifactSet.fromJson,
     );
   }
 }
