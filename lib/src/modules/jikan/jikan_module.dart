@@ -84,7 +84,12 @@ class JikanModule implements IModule {
         '$desc';
 
     var keyboard = InlineKeyboardMarkup([
-      [InlineKeyboardButton.url('Open on MAL', anime.url)]
+      [
+        InlineKeyboardButton.url(
+          'Open on MAL',
+          Uri.parse(anime.url).toString(),
+        )
+      ]
     ]);
 
     return _kyaru.reply(
@@ -132,11 +137,17 @@ class JikanModule implements IModule {
         : '';
 
     var anime = character.anime
-        .map((a) => MarkdownUtils.generateUrl(a.name!, a.url!))
+        .map((a) => MarkdownUtils.generateUrl(
+              a.name!,
+              Uri.parse(a.url!).toString(),
+            ))
         .join('\n');
 
     var manga = character.manga
-        .map((m) => MarkdownUtils.generateUrl(m.name!, m.url!))
+        .map((m) => MarkdownUtils.generateUrl(
+              m.name!,
+              Uri.parse(m.url!).toString(),
+            ))
         .join('\n');
 
     var reply = '$hiddenLink*$name $alternativeName*\n\n'
@@ -144,7 +155,12 @@ class JikanModule implements IModule {
         '${manga.isNotEmpty ? '*Manga List:* \n$manga\n\n' : ''}';
 
     var keyboard = InlineKeyboardMarkup([
-      [InlineKeyboardButton.url('Open on MAL', character.url)]
+      [
+        InlineKeyboardButton.url(
+          'Open on MAL',
+          Uri.parse(character.url).toString(),
+        )
+      ]
     ]);
 
     return _kyaru.reply(
