@@ -67,7 +67,10 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
   var paddingH = 12;
   var paddingW = 12;
   var elementH = avatarWidth ~/ 5;
-  var maxCols = 4;
+  var friendshipH = avatarWidth ~/ 7;
+  var constellationH = 12;
+  var constellationPadding = 5;
+  var maxCols = 5;
 
   var row = 0;
   var col = 0;
@@ -85,15 +88,29 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
   var bg5Star = imglib.decodePng(
     await File('resources/images/bg5star.png').readAsBytes(),
   );
+  var bgFriendship = imglib.decodePng(
+    await File('resources/images/Item_Companionship_EXP.png').readAsBytes(),
+  );
+  var bgExp = imglib.decodePng(
+    await File('resources/images/Item_Character_EXP.png').readAsBytes(),
+  );
+  var ascensionIcn = imglib.decodePng(
+    await File('resources/images/ascension.png').readAsBytes(),
+  );
 
-  if (bg4Star == null || bg5Star == null) {
-    print('Could not load a bg');
+  if (bg4Star == null ||
+      bg5Star == null ||
+      bgFriendship == null ||
+      bgExp == null ||
+      ascensionIcn == null) {
+    print('Could not load an image from images folder');
     return null;
   }
 
   var canvas = imglib.Image(
     (avatarWidth + paddingW) * maxCols,
     (avatarHeight + paddingH) * maxRows,
+    channels: imglib.Channels.rgb,
   );
 
   canvas.fill(bgColor);
@@ -118,6 +135,7 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
     var name = avatar.name;
     var constellation = avatar.activedConstellationNum;
     var level = avatar.level;
+    var friendship = avatar.fetter;
     var element = avatar.element;
     var imageUrl = avatar.image;
     var imageFileName = imageUrl.split('/').last;
@@ -188,16 +206,86 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
       dstH: elementH,
       dstW: elementH,
     );
+    if (friendship > 0) {
+      imglib.fillRect(
+        canvas,
+        x + avatarWidth - friendshipH * 2,
+        y + avatarHeight - footerHeight - friendshipH - 1,
+        x + avatarWidth,
+        y + avatarHeight - footerHeight - 1,
+        footerColor,
+      );
+
+      imglib.drawImage(
+        canvas,
+        bgFriendship,
+        dstX: x + avatarWidth - friendshipH,
+        dstY: y + avatarHeight - footerHeight - friendshipH,
+        dstH: friendshipH,
+        dstW: friendshipH,
+      );
+
+      drawStringCentered(
+        canvas,
+        imglib.arial_24,
+        '$friendship',
+        width: friendshipH,
+        height: friendshipH,
+        offsetX: x + avatarWidth - friendshipH * 2,
+        offsetY: y + avatarHeight - footerHeight - friendshipH,
+      );
+    }
+
+    imglib.fillRect(
+      canvas,
+      x + friendshipH * 2,
+      y + avatarHeight - footerHeight - friendshipH - 1,
+      x,
+      y + avatarHeight - footerHeight - 1,
+      footerColor,
+    );
+
+    imglib.drawImage(
+      canvas,
+      bgExp,
+      dstX: x,
+      dstY: y + avatarHeight - footerHeight - friendshipH,
+      dstH: friendshipH,
+      dstW: friendshipH,
+    );
 
     drawStringCentered(
       canvas,
       imglib.arial_24,
-      '$name C$constellation lv $level',
+      '$level',
+      width: friendshipH,
+      height: friendshipH,
+      offsetX: x + friendshipH,
+      offsetY: y + avatarHeight - footerHeight - friendshipH,
+    );
+
+    drawStringCentered(
+      canvas,
+      imglib.arial_24,
+      name,
       width: avatarWidth,
       height: footerHeight,
       offsetX: x,
       offsetY: y + avatarHeight - footerHeight,
     );
+
+    for (var i = 0; i < 6; i++) {
+      imglib.fillCircle(
+        canvas,
+        x + constellationH ~/ 2 + constellationPadding,
+        y +
+            constellationH ~/ 2 +
+            (constellationPadding * (i + 1)) +
+            (constellationH * i),
+        constellationH ~/ 2,
+        i >= constellation ? 0x33000000 : 0xDDFFFFFF,
+      );
+    }
 
     col++;
     if (col == maxCols) {
