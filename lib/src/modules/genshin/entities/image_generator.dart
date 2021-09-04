@@ -129,6 +129,7 @@ Future<int> renderItems(
   imglib.Image canvas,
   DetailedAvatar character,
 ) async {
+  await Directory('resources/caches/weapons').create(recursive: true);
   var weaponImage = await getCachedImage(
     character.weapon.icon,
     'resources/caches/weapons',
@@ -251,9 +252,6 @@ Future<int> renderItems(
     4: imglib.Color.fromRgb(138, 43, 226),
     5: imglib.Color.fromRgb(255, 215, 0),
   };
-
-  print(character.weapon.name);
-  print(character.weapon.rarity);
 
   drawItem(
     0,
