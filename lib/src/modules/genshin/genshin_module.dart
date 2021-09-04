@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -82,6 +83,11 @@ class GenshinModule implements IModule {
         'Gets one of yours characters from HoYoLAB',
         'genshin_char',
         core: true,
+      ),
+      ModuleFunction(
+        stats,
+        'You know',
+        'genshin_stats',
       ),
     ];
   }
@@ -313,7 +319,6 @@ class GenshinModule implements IModule {
     }
 
     var characterName = args.join(' ').toLowerCase();
-    print(characterName);
 
     var wrappedUserInfo = await getUserInfo(update);
     if (wrappedUserInfo == null) {
@@ -443,6 +448,12 @@ class GenshinModule implements IModule {
       messageId: wrappedAbyssInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
+  }
+
+  Future stats(Update update, _) async {
+    var stats = await _genshinClient.getApiStats();
+    var statsString = JsonEncoder.withIndent('  ').convert(stats['data']);
+    _kyaru.reply(update, statsString);
   }
 
   Future genshin(Update update, _) async {

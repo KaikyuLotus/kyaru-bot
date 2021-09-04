@@ -35,6 +35,13 @@ class GenshinClient {
     return jsonDecode(response.body);
   }
 
+  Future<Map<String, dynamic>> getApiStats() async {
+    var response = await _client
+        .get(Uri.http(baseUrl, '/stats'))
+        .timeout(Duration(seconds: 120));
+    return jsonDecode(response.body);
+  }
+
   // TODO my API still does not support multiple characters request yet
   Future<UserCharacters> getCharacters(int uid, List<int> characterIds) async {
     var response = await _client

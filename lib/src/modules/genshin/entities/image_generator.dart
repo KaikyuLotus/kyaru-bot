@@ -15,6 +15,8 @@ var maxIcons = 6;
 var globalPaddingLeft = 30;
 var globalPaddingTop = 30;
 
+var client = Client();
+
 var elementColors = <String, int>{
   'Pyro': imglib.Color.fromRgb(254, 169, 111),
   'Hydro': imglib.Color.fromRgb(55, 200, 254),
@@ -24,6 +26,24 @@ var elementColors = <String, int>{
   'Cryo': imglib.Color.fromRgb(201, 255, 252),
   'Geo': imglib.Color.fromRgb(245, 215, 98),
 };
+
+class NetworkCachingException implements Exception {
+  final String error;
+
+  NetworkCachingException(this.error);
+
+  @override
+  String toString() => 'NetworkCachingException: $error';
+}
+
+class CorruptImageException implements Exception {
+  final String error;
+
+  CorruptImageException(this.error);
+
+  @override
+  String toString() => 'CorruptImageException: $error';
+}
 
 class Size {
   final int width;
@@ -89,21 +109,43 @@ imglib.Image drawStringCentered(
   );
 }
 
-Future<imglib.Image?> getCachedImage(String url, String folder) async {
-  var client = Client();
-  try {
-    await Directory(folder).create(recursive: true);
-    var imageFileName = url.split('/').last;
-    var cacheFile = File('$folder/$imageFileName');
-    if (!await cacheFile.exists()) {
-      var imgResp = await client.get(Uri.parse(url));
-      await cacheFile.writeAsBytes(imgResp.bodyBytes);
-      return imglib.decodePng(imgResp.bodyBytes);
+Future<imglib.Image> getCachedImage(
+  String url,
+  String folder, {
+  int retry = 0,
+  int maxRetry = 3,
+}) async {
+  await Directory(folder).create(recursive: true);
+  var imageFileName = url.split('/').last;
+  var cacheFile = File('$folder/$imageFileName');
+
+  imglib.Image? image;
+
+  if (await cacheFile.exists()) {
+    image = imglib.decodePng(await cacheFile.readAsBytes());
+  } else {
+    var imgResp = await client.get(Uri.parse(url));
+    if (imgResp.statusCode != 200) {
+      if (retry == maxRetry) {
+        throw NetworkCachingException(
+          'Hoyolab is being stupid: failed to download $imageFileName\n'
+          'Please retry in some minutes',
+        );
+      }
+      return getCachedImage(url, folder, retry: retry + 1);
     }
-    return imglib.decodePng(await cacheFile.readAsBytes());
-  } finally {
-    client.close();
+    await cacheFile.writeAsBytes(imgResp.bodyBytes);
+    image = imglib.decodePng(imgResp.bodyBytes);
   }
+
+  if (image == null) {
+    cacheFile.delete();
+    throw CorruptImageException(
+      'Image $imageFileName was corrupted.\n'
+      'Please retry in some minutes',
+    );
+  }
+  return image;
 }
 
 Future<void> renderCharImage(
@@ -117,7 +159,7 @@ Future<void> renderCharImage(
 
   imglib.drawImage(
     canvas,
-    charImage!,
+    charImage,
     dstX: canvas.width - charImage.width,
     dstY: 0,
     dstW: charImage.width,
@@ -255,7 +297,7 @@ Future<int> renderItems(
 
   drawItem(
     0,
-    weaponImage!,
+    weaponImage,
     colorMap[character.weapon.rarity] ?? 0x000000,
     character.weapon.name,
     line1: character.weapon.line1,
@@ -267,11 +309,9 @@ Future<int> renderItems(
       artifact.icon,
       'resources/caches/artifacts',
     );
-    print(artifact.name);
-    print(artifact.rarity);
     drawItem(
       index + 1,
-      image!,
+      image,
       colorMap[artifact.rarity] ?? 0x000000,
       artifact.name,
       line1: artifact.description,
@@ -300,7 +340,7 @@ Future<void> renderConsts(
     );
 
     // Spacing considers 3 consts per row
-    var spacingH = (cardWidth - img!.width * 3) ~/ 2;
+    var spacingH = (cardWidth - img.width * 3) ~/ 2;
     spacingH -= iconsMargin;
 
     if (spacingH < 0) {
@@ -352,10 +392,9 @@ Future<List<int>?> generateCharacterImage(DetailedAvatar character) async {
   var canvasWidth = 1024;
   var canvasHeight = 1108;
 
-  var canvas = imglib.Image(
+  var canvas = imglib.Image.rgb(
     canvasWidth,
     canvasHeight,
-    channels: imglib.Channels.rgb,
   );
 
   canvas.fill(bgColor);
@@ -420,10 +459,9 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
     return null;
   }
 
-  var canvas = imglib.Image(
+  var canvas = imglib.Image.rgb(
     (avatarWidth + paddingW) * maxCols,
     (avatarHeight + paddingH) * maxRows,
-    channels: imglib.Channels.rgb,
   );
 
   canvas.fill(bgColor);

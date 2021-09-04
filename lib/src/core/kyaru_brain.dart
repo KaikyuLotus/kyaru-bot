@@ -47,8 +47,12 @@ class KyaruBrain {
       _log.severe('Error executing function ${moduleFunction.name}', e, s);
       await bot.sendMessage(
         db.settings.ownerId,
-        'Command ${moduleFunction.name} crashed: $e',
+        'Command ${moduleFunction.name} crashed: $e\n$s',
       );
+
+      if (update.message != null) {
+        await bot.sendMessage(ChatID(update.message!.chat.id), '$e');
+      }
     }
   }
 
