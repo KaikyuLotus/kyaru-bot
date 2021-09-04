@@ -6,8 +6,10 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
 import 'entities/abyss_info.dart';
+import 'entities/detailed_avatar.dart';
 import 'entities/genshin_client.dart';
 import 'entities/image_generator.dart';
+import 'entities/user_characters.dart';
 import 'entities/userinfo.dart';
 import 'entities/wrapped_abyss_info.dart';
 import 'entities/wrapped_user_info.dart';
@@ -73,6 +75,12 @@ class GenshinModule implements IModule {
         characters,
         'Gets your characters from HoYoLAB',
         'genshin_chars',
+        core: true,
+      ),
+      ModuleFunction(
+        character,
+        'Gets one of yours characters from HoYoLAB',
+        'genshin_char',
         core: true,
       ),
     ];
@@ -200,8 +208,9 @@ class GenshinModule implements IModule {
 
     if (data['message'] != 'OK') {
       var code = data['retcode'];
+      var message = data['message'];
       await _kyaru.brain.bot.editMessageText(
-        'Something broke on Hoyolab...\nError code: $code',
+        'Something broke on Hoyolab...\nError code: $code\nMessage: "$message"',
         chatId: ChatID(sentMessage.chat.id),
         messageId: sentMessage.messageId,
       );
@@ -284,6 +293,76 @@ class GenshinModule implements IModule {
       cacheTime: cacheTime,
       current: currentAbyssInfo,
       previous: previousAbyssInfo,
+    );
+  }
+
+  Future character(Update update, _) async {
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    if (userData == null) {
+      await warnUseGenshinIdFirst(update);
+      return null;
+    }
+
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command requires a character name as argument:\n'
+        '/genshin_char Hu Tao',
+      );
+    }
+
+    var characterName = args.join(' ').toLowerCase();
+    print(characterName);
+
+    var wrappedUserInfo = await getUserInfo(update);
+    if (wrappedUserInfo == null) {
+      // User already warned, return
+      return;
+    }
+    var avatars = wrappedUserInfo.userInfo.avatars.map((a) => a.id).toList();
+
+    UserCharacters userCharacters = await _genshinClient.getCharacters(
+      userData['id'],
+      avatars,
+    );
+
+    DetailedAvatar? avatar;
+
+    for (var character in userCharacters.avatars) {
+      if (character.name.toLowerCase() == characterName) {
+        avatar = character;
+        break;
+      }
+    }
+
+    if (avatar == null) {
+      return _kyaru.brain.bot.editMessageText(
+        "It seems like you don't have that character...",
+        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
+        messageId: wrappedUserInfo.sentMessage.messageId,
+      );
+    }
+
+    var image = await generateCharacterImage(avatar);
+
+    if (image == null) {
+      return _kyaru.brain.bot.editMessageText(
+        "Image generation failed...",
+        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
+        messageId: wrappedUserInfo.sentMessage.messageId,
+      );
+    }
+
+    await _kyaru.brain.bot.deleteMessage(
+      ChatID(wrappedUserInfo.sentMessage.chat.id),
+      wrappedUserInfo.sentMessage.messageId,
+    );
+
+    await _kyaru.brain.bot.sendPhoto(
+      ChatID(wrappedUserInfo.sentMessage.chat.id),
+      HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
+      replyToMessageId: update.message?.messageId,
     );
   }
 
@@ -412,7 +491,7 @@ class GenshinModule implements IModule {
     String impCityPerc(String name, num current, num? old) {
       if (old == null) return '$name *$current*%';
       if (current == old) return '$name *$current*%';
-      return '$name *$current*% (+${current - old}%)';
+      return '$name *$current*% (+${(current - old).toStringAsFixed(2)}%)';
     }
 
     String change(String current, String? old) {
