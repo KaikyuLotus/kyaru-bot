@@ -13,7 +13,7 @@ var iconSize = 120;
 var iconDist = 10;
 var maxIcons = 6;
 var globalPaddingLeft = 30;
-var globalPaddingTop = 30;
+var globalPaddingTop = 20;
 
 var client = Client();
 
@@ -157,11 +157,13 @@ Future<void> renderCharImage(
     'resources/caches/chars',
   );
 
+  var charLeftMargin = 100;
+
   imglib.drawImage(
     canvas,
     charImage,
-    dstX: canvas.width - charImage.width,
-    dstY: 0,
+    dstX: canvas.width - charImage.width + charLeftMargin,
+    dstY: canvas.height - charImage.height,
     dstW: charImage.width,
     dstH: charImage.height,
   );
@@ -184,9 +186,11 @@ Future<int> renderItems(
 
   var iconTitlePaddingLeft = 10;
   var iconTitlePaddingRight = 10;
-  var stringPadding = 10;
+  var stringPadding = 20;
+  var rarityLineThickness = 3;
+  var minimumItemCardWidth = (canvas.width ~/ 2) - iconSize - globalPaddingLeft;
 
-  var nameSizes = <int>[];
+  var nameSizes = <int>[minimumItemCardWidth];
   for (var artifact in character.artifacts) {
     nameSizes.add(getStringSize(imglib.arial_24, artifact.name).width);
   }
@@ -277,14 +281,29 @@ Future<int> renderItems(
       );
     }
 
-    imglib.drawRect(
+    var y = (iconSize + iconDist) * index +
+        globalPaddingTop +
+        iconSize -
+        rarityLineThickness ~/ 2;
+
+    imglib.drawLine(
+      canvas,
+      globalPaddingLeft,
+      y,
+      globalPaddingLeft + iconSize,
+      y,
+      itemBorderColor,
+      thickness: rarityLineThickness,
+    );
+
+    /*imglib.drawRect(
       canvas,
       globalPaddingLeft,
       (iconSize + iconDist) * index + globalPaddingTop,
       globalPaddingLeft + iconSize,
       iconSize * (index + 1) + (iconDist) * index + globalPaddingTop,
       itemBorderColor,
-    );
+    );*/
   }
 
   var colorMap = <int, int>{
@@ -326,11 +345,13 @@ Future<void> renderConsts(
   DetailedAvatar character,
   int cardWidth,
 ) async {
-  var constDistV = 35;
-  var constBarHeight = 10;
+  var constDistV = 20;
+  var constBarHeight = 8;
   var iconsMargin = 10;
+  var constPaddingTop = 20;
   var startX = globalPaddingLeft + iconsMargin;
-  var startY = (iconSize + iconDist) * maxIcons + globalPaddingTop;
+  var startY =
+      (iconSize + iconDist) * maxIcons + globalPaddingTop + constPaddingTop;
   var index = 0;
   var row = 0;
   for (var constellation in character.constellations) {
@@ -387,10 +408,91 @@ Future<void> renderConsts(
   // imglib.drawString(canvas, imglib.arial_24, startX, startY, 'Qui?');
 }
 
+Future<void> renderGraphics(
+  imglib.Image canvas,
+  DetailedAvatar character,
+  int leftColumnWidth,
+) async {
+  var leftDecorationWidth = 10;
+  var nameLineHeight = 20;
+  var leftColMargin = 60;
+  var rightMargin = 0;
+  var bottomMargin = nameLineHeight + 50;
+
+  var elementColor = elementColors[character.element]!;
+  var name = character.name.replaceAll(' ', '\n  ');
+
+  imglib.fillRect(
+    canvas,
+    0,
+    0,
+    leftDecorationWidth,
+    canvas.height,
+    elementColors[character.element]!,
+  );
+
+  var lineX = leftColumnWidth + leftColMargin + globalPaddingLeft;
+  var lineY = canvas.height - bottomMargin;
+
+  imglib.fillRect(
+    canvas,
+    lineX,
+    lineY,
+    canvas.width - rightMargin,
+    canvas.height - bottomMargin + nameLineHeight,
+    elementColor,
+  );
+
+  var textTopMargin = 10;
+  var nameLeftMargin = 10;
+  var isTwoLine = character.name.contains(' ');
+  var lineWidth = canvas.width - rightMargin - lineX;
+  var nameStringHeight = 50;
+  var nameY = lineY - nameStringHeight - textTopMargin;
+  var actualNameY = isTwoLine ? nameY - nameStringHeight : nameY;
+
+  imglib.fillRect(
+    canvas,
+    lineX,
+    actualNameY,
+    lineX + lineWidth,
+    actualNameY +
+        (isTwoLine ? nameStringHeight * 2 : nameStringHeight) +
+        textTopMargin,
+    0x66000000,
+  );
+
+  if (isTwoLine) {
+    var parts = character.name.split(' ');
+    imglib.drawString(
+      canvas,
+      imglib.arial_48,
+      lineX + nameLeftMargin,
+      actualNameY + textTopMargin,
+      parts[0],
+    );
+    imglib.drawString(
+      canvas,
+      imglib.arial_48,
+      lineX + nameLeftMargin,
+      nameY + textTopMargin,
+      parts[1],
+    );
+  } else {
+    imglib.drawString(
+      canvas,
+      imglib.arial_48,
+      lineX + nameLeftMargin,
+      nameY + nameLeftMargin,
+      name,
+    );
+  }
+}
+
 Future<List<int>?> generateCharacterImage(DetailedAvatar character) async {
   var bgColor = imglib.Color.fromRgb(39, 39, 39);
-  var canvasWidth = 1024;
-  var canvasHeight = 1108;
+  var canvasWidth = 900;
+  var canvasHeight = 1108; // 1108
 
   var canvas = imglib.Image.rgb(
     canvasWidth,
@@ -404,6 +506,8 @@ Future<List<int>?> generateCharacterImage(DetailedAvatar character) async {
   var cardWidth = await renderItems(canvas, character);
 
   await renderConsts(canvas, character, cardWidth);
+
+  await renderGraphics(canvas, character, cardWidth);
 
   return Uint8List.fromList(imglib.encodePng(canvas));
 }
@@ -649,6 +753,7 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
 
 // Used for local testing
 Future<void> main() async {
+  var firstOnly = true;
   var client = GenshinClient('localhost:8457');
   var user = await client.getUser(700103901);
 
@@ -656,14 +761,25 @@ Future<void> main() async {
   var ids = userInfo.avatars.map((a) => a.id).toList();
   var userCharacters = await client.getCharacters(700103901, ids);
   print(userCharacters.avatars.map((a) => a.name).join(","));
-  var avatar = userCharacters.avatars[9];
-  print(avatar.element);
-  var bytes = await generateCharacterImage(avatar);
-  if (bytes == null) {
-    print('Generation failed');
+
+  Future generateAndSave(String name, DetailedAvatar avatar) async {
+    var bytes = await generateCharacterImage(avatar);
+    if (bytes == null) {
+      print('Generation failed');
+      return;
+    }
+    await File(name).writeAsBytes(bytes);
+  }
+
+  if (firstOnly) {
+    await generateAndSave('output.jpg', userCharacters.avatars[6]);
+    client.close();
     return;
   }
-  await File('output.jpg').writeAsBytes(bytes);
+
+  for (var avatar in userCharacters.avatars) {
+    await generateAndSave('outputs/output-${avatar.id}.jpg', avatar);
+  }
 
   client.close();
 }
