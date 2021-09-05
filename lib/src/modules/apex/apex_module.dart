@@ -64,7 +64,7 @@ class ApexModule implements IModule {
         return _kyaru.reply(update, 'Player not found.');
       }
       await _kyaru.reply(update, 'Unknown error while retrieving user.');
-      return _kyaru.noticeOwner(update, 'Apex command error: ${e.error}');
+      return _kyaru.noticeOwner('Apex command error: ${e.error}');
     }
 
     if ([data.global, data.realtime, data.legends].contains(null)) {

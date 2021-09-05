@@ -89,7 +89,7 @@ class LoLModule implements IModule {
 
     if (usedChampion == null || mainChamp == null) {
       await _kyaru.reply(update, "It seems i can't get a champion used.");
-      return _kyaru.noticeOwner(update, 'Master, update LoL characters!');
+      return _kyaru.noticeOwner('Master, update LoL characters!');
     }
 
     var durationMinutes = matchInfo.gameDuration ~/ 60;

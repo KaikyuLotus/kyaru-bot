@@ -85,8 +85,10 @@ class LastfmModule implements IModule {
       if (lastfmUser.country != null) {
         country = MarkdownUtils.escape('(${lastfmUser.country})')!;
       }
-      var scrobbles = MarkdownUtils.escape(
-          recentTracks.map((t) => '• ${t.artist} - ${t.title}').join('\n'));
+      var scrobbles = MarkdownUtils.escape(recentTracks
+          .where((t) => !t.nowPlaying)
+          .map((t) => '• ${t.artist} - ${t.title}')
+          .join('\n'));
       var message = '$imageUrl*$userName* $country\n\n'
           'Playcount: ${lastfmUser.playcount}\n\n'
           'Last 5 scrobbles:\n$scrobbles';
