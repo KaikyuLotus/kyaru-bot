@@ -544,6 +544,9 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
   var bg5Star = imglib.decodePng(
     await File('resources/images/bg5star.png').readAsBytes(),
   );
+  var bg105Star = imglib.decodePng(
+    await File('resources/images/bg105star.png').readAsBytes(),
+  );
   var bgFriendship = imglib.decodePng(
     await File('resources/images/Item_Companionship_EXP.png').readAsBytes(),
   );
@@ -556,12 +559,19 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
 
   if (bg4Star == null ||
       bg5Star == null ||
+      bg105Star == null ||
       bgFriendship == null ||
       bgExp == null ||
       ascensionIcn == null) {
     print('Could not load an image from images folder');
     return null;
   }
+
+  var charBgMap = <int, imglib.Image>{
+    4: bg4Star,
+    5: bg5Star,
+    105: bg105Star,
+  };
 
   var canvas = imglib.Image.rgb(
     (avatarWidth + paddingW) * maxCols,
@@ -627,7 +637,7 @@ Future<List<int>?> generateAvatarsImage(UserInfo data) async {
 
     imglib.drawImage(
       canvas,
-      avatar.rarity == 5 ? bg5Star : bg4Star,
+      charBgMap[avatar.rarity] ?? bg4Star,
       dstX: x,
       dstY: y,
       dstW: avatarWidth,
