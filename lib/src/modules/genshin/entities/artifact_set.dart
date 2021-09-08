@@ -25,4 +25,12 @@ class ArtifactSet {
       (index) => ArtifactSet.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'affixes': affixes.map((a) => a.toJson()).toList(),
+    };
+  }
 }

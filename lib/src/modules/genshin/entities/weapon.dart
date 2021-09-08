@@ -47,4 +47,19 @@ class Weapon {
       (index) => Weapon.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'type': type,
+      'rarity': rarity,
+      'level': level,
+      'promote_level': promoteLevel,
+      'type_name': typeName,
+      'desc': desc,
+      'affix_level': affixLevel,
+    };
+  }
 }

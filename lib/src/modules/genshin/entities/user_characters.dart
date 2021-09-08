@@ -12,4 +12,10 @@ class UserCharacters {
       avatars: DetailedAvatar.listFromJsonArray(json['avatars']),
     );
   }
+
+  Map toJson() {
+    return {
+      'avatars': avatars.map((a) => a.toJson()).toList(),
+    };
+  }
 }

@@ -295,15 +295,6 @@ Future<int> renderItems(
       itemBorderColor,
       thickness: rarityLineThickness,
     );
-
-    /*imglib.drawRect(
-      canvas,
-      globalPaddingLeft,
-      (iconSize + iconDist) * index + globalPaddingTop,
-      globalPaddingLeft + iconSize,
-      iconSize * (index + 1) + (iconDist) * index + globalPaddingTop,
-      itemBorderColor,
-    );*/
   }
 
   var colorMap = <int, int>{

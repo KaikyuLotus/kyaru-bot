@@ -42,7 +42,6 @@ class GenshinClient {
     return jsonDecode(response.body);
   }
 
-  // TODO my API still does not support multiple characters request yet
   Future<UserCharacters> getCharacters(int uid, List<int> characterIds) async {
     var response = await _client
         .get(Uri.http(baseUrl, '/character', {
@@ -50,6 +49,7 @@ class GenshinClient {
           'ids': json.encode(characterIds),
         }))
         .timeout(Duration(seconds: 120));
+
     var baseResponse = jsonDecode(response.body);
     var ok = baseResponse['ok'] as bool;
     if (!ok) {

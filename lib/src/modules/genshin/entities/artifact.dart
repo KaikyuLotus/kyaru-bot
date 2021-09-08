@@ -39,4 +39,16 @@ class Artifact {
       (index) => Artifact.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'pos': pos,
+      'rarity': rarity,
+      'level': level,
+      'set': set.toJson(),
+    };
+  }
 }

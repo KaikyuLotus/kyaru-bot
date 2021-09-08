@@ -32,4 +32,15 @@ class Constellation {
       (index) => Constellation.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'effect': effect,
+      'is_actived': isActived,
+      'pos': pos,
+    };
+  }
 }

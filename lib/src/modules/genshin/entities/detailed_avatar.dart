@@ -57,4 +57,21 @@ class DetailedAvatar extends Avatar {
       (index) => DetailedAvatar.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'image': image,
+      'name': name,
+      'element': element,
+      'fetter': fetter,
+      'level': level,
+      'rarity': rarity,
+      'actived_constellation_num': activedConstellationNum,
+      'weapon': weapon.toJson(),
+      'reliquaries': artifacts.map((a) => a.toJson()).toList(),
+      'constellations': constellations.map((c) => c.toJson()).toList(),
+      'costumes': skins.map((s) => s.toJson()).toList(),
+    };
+  }
 }

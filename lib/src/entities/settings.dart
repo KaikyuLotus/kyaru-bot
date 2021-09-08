@@ -9,6 +9,7 @@ class Settings {
   String? steamToken;
   String? videogameToken;
   String? genshinUrl;
+  String? genshinRendererUrl;
   String? genshinDataUrl;
   String? githubToken;
   ChatID ownerId;
@@ -23,6 +24,7 @@ class Settings {
     this.videogameToken,
     this.genshinUrl,
     this.genshinDataUrl,
+    this.genshinRendererUrl,
     this.githubToken,
     this.ownerId,
   );
@@ -38,6 +40,7 @@ class Settings {
       json['videogame_token'],
       json['genshin_url'],
       json['genshin_data_url'],
+      json['genshin_renderer_url'],
       json['github_token'],
       ChatID(json['owner_id']),
     );
@@ -54,6 +57,7 @@ class Settings {
       'videogame_token': videogameToken,
       'genshin_url': genshinUrl,
       'genshin_data_url': genshinDataUrl,
+      'genshin_renderer_url': genshinRendererUrl,
       'github_token': githubToken,
       'owner_id': ownerId.chatId,
     };

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:kyaru_bot/src/modules/genshin/entities/renderer_client.dart';
 
 import '../../../kyaru.dart';
 import 'entities/abyss_info.dart';
@@ -40,13 +41,20 @@ extension on KyaruDB {
 class GenshinModule implements IModule {
   final Kyaru _kyaru;
   late GenshinClient _genshinClient;
+  late RendererClient _rendererClient;
+
   String? _url;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
     _url = _kyaru.brain.db.settings.genshinUrl;
+
     _genshinClient = GenshinClient(_url ?? '');
+    _rendererClient = RendererClient(
+      _kyaru.brain.db.settings.genshinRendererUrl ?? '',
+    );
+
     _moduleFunctions = [
       ModuleFunction(
         saveId,
@@ -88,6 +96,11 @@ class GenshinModule implements IModule {
         stats,
         'You know',
         'genshin_stats',
+      ),
+      ModuleFunction(
+        getRendererImage,
+        'You know',
+        'genshin_render',
       ),
     ];
   }
@@ -177,6 +190,27 @@ class GenshinModule implements IModule {
       msg,
       parseMode: ParseMode.markdown,
       hidePreview: true,
+    );
+  }
+
+  Future getRendererImage(Update update, _) async {
+    var wrappedUserInfo = await getUserInfo(update);
+    if (wrappedUserInfo == null) return;
+
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    var avatars = wrappedUserInfo.userInfo.avatars.map((a) => a.id).toList();
+    UserCharacters userCharacters = await _genshinClient.getCharacters(
+      userData!['id'],
+      avatars,
+    );
+    var bytes = await _rendererClient.getCharacter(userCharacters);
+    await _kyaru.brain.bot.deleteMessage(
+      ChatID(wrappedUserInfo.sentMessage.chat.id),
+      wrappedUserInfo.sentMessage.messageId,
+    );
+    await _kyaru.brain.bot.sendPhoto(
+      ChatID(update.message!.chat.id),
+      HttpFile.fromBytes('image.jpg', bytes),
     );
   }
 

@@ -20,4 +20,11 @@ class ArtifactAffix {
       (index) => ArtifactAffix.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'activation_number': activationNumber,
+      'effect': effect,
+    };
+  }
 }

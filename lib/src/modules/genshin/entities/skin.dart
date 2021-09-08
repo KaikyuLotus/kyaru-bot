@@ -23,4 +23,12 @@ class Skin {
       (index) => Skin.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+    };
+  }
 }
