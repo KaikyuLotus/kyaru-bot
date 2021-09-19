@@ -20,7 +20,7 @@ extension on KyaruDB {
   }
 
   bool removeCity(int chatId) {
-    return database[_weatherCollection].delete({'chat_id': chatId});
+    return database[_weatherCollection].delete(filter: {'chat_id': chatId});
   }
 }
 

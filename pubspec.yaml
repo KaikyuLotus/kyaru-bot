@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   dart_telegram_bot: ^0.6.0
-  dart_mongo_lite: ^0.1.1
+  dart_mongo_lite: ^0.2.0-beta.2
   http: ^0.13.1
   uuid: ^3.0.3
   image: ^3.0.2

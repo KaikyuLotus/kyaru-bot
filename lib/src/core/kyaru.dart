@@ -217,6 +217,21 @@ class Kyaru {
     );
   }
 
+  Future deleteMessage(Update update, Message message) {
+    return brain.bot.deleteMessage(
+      ChatID(update.message!.chat.id),
+      message.messageId,
+    );
+  }
+
+  Future editMessage(Update update, Message message, String text) {
+    return brain.bot.editMessageText(
+      text,
+      chatId: ChatID(update.message!.chat.id),
+      messageId: message.messageId,
+    );
+  }
+
   Future addOwnerCommand(Bot bot, Update update) async {
     if (update.message?.chat == null) return;
     if (update.message?.from?.id != brain.db.settings.ownerId.chatId) return;

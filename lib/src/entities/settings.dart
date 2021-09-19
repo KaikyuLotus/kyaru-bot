@@ -1,48 +1,73 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 class Settings {
-  String token;
-  String? lolToken;
-  String? apexToken;
-  String? lastfmToken;
-  String? weatherToken;
-  String? steamToken;
-  String? videogameToken;
-  String? genshinUrl;
-  String? genshinRendererUrl;
-  String? genshinDataUrl;
-  String? githubToken;
-  ChatID ownerId;
+  final String token;
+  final ChatID ownerId;
+  final String? lolToken;
+  final String? apexToken;
+  final String? lastfmToken;
+  final String? weatherToken;
+  final String? steamToken;
+  final String? videogameToken;
+  final String? genshinRendererUrl;
+  final String? genshinDataUrl;
+  final String? githubToken;
 
-  Settings(
-    this.token,
+  Settings({
+    required this.token,
+    required this.ownerId,
     this.lolToken,
     this.apexToken,
     this.lastfmToken,
     this.weatherToken,
     this.steamToken,
     this.videogameToken,
-    this.genshinUrl,
     this.genshinDataUrl,
     this.genshinRendererUrl,
     this.githubToken,
-    this.ownerId,
-  );
+  });
 
   static Settings fromJson(Map<String, dynamic> json) {
     return Settings(
-      json['token'],
-      json['lol_token'],
-      json['apex_token'],
-      json['lastfm_token'],
-      json['weather_token'],
-      json['steam_token'],
-      json['videogame_token'],
-      json['genshin_url'],
-      json['genshin_data_url'],
-      json['genshin_renderer_url'],
-      json['github_token'],
-      ChatID(json['owner_id']),
+      token: json['token'],
+      lolToken: json['lol_token'],
+      apexToken: json['apex_token'],
+      lastfmToken: json['lastfm_token'],
+      weatherToken: json['weather_token'],
+      steamToken: json['steam_token'],
+      videogameToken: json['videogame_token'],
+      genshinDataUrl: json['genshin_data_url'],
+      genshinRendererUrl: json['genshin_renderer_url'],
+      githubToken: json['github_token'],
+      ownerId: ChatID(json['owner_id']),
+    );
+  }
+
+  Settings copyWith({
+    String? token,
+    ChatID? ownerId,
+    String? lolToken,
+    String? apexToken,
+    String? lastfmToken,
+    String? weatherToken,
+    String? steamToken,
+    String? videogameToken,
+    String? genshinDataUrl,
+    String? genshinRendererUrl,
+    String? githubToken,
+  }) {
+    return Settings(
+      token: token ?? this.token,
+      lolToken: lolToken ?? this.lolToken,
+      apexToken: apexToken ?? this.apexToken,
+      lastfmToken: lastfmToken ?? this.lastfmToken,
+      weatherToken: weatherToken ?? this.weatherToken,
+      steamToken: steamToken ?? this.steamToken,
+      videogameToken: videogameToken ?? this.videogameToken,
+      genshinDataUrl: genshinDataUrl ?? this.genshinDataUrl,
+      genshinRendererUrl: genshinRendererUrl ?? this.genshinRendererUrl,
+      githubToken: githubToken ?? this.githubToken,
+      ownerId: ownerId ?? this.ownerId,
     );
   }
 
@@ -55,7 +80,6 @@ class Settings {
       'weather_token': weatherToken,
       'steam_token': steamToken,
       'videogame_token': videogameToken,
-      'genshin_url': genshinUrl,
       'genshin_data_url': genshinDataUrl,
       'genshin_renderer_url': genshinRendererUrl,
       'github_token': githubToken,

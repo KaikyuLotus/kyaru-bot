@@ -15,10 +15,17 @@ class KyaruDB {
     return database[_settingsCollection].findOneAs(Settings.fromJson)!;
   }
 
+  set settings(Settings settings) {
+    database[_settingsCollection].update(
+      {'token': settings.token},
+      settings.toJson(),
+    );
+  }
+
   void syncDb() => database.sync();
 
   void deleteCustomInstruction(Instruction instruction) {
-    database[_instructionsCollection].delete({
+    database[_instructionsCollection].delete(filter: {
       'uuid': instruction.uuid,
       'chat_id': instruction.chatId,
       'type': instruction.instructionType.value,
@@ -41,19 +48,19 @@ class KyaruDB {
     return database[_instructionsCollection].update(
       {'uuid': instruction.uuid},
       instruction.toJson(),
-      false,
-    );
+      upsert: false,
+    ).isNotEmpty;
   }
 
   bool removeChatData(int chatId) {
-    return database[_chatDataCollection].delete({'id': chatId});
+    return database[_chatDataCollection].delete(filter: {'id': chatId});
   }
 
   void updateChatData(ChatData chatData) {
     database[_chatDataCollection].update(
       {'id': chatData.id},
       chatData.toJson(),
-      true,
+      upsert: true,
     );
   }
 

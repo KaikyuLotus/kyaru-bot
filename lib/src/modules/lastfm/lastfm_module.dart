@@ -10,7 +10,7 @@ extension on KyaruDB {
     database[_lastfmDataCollection].update(
       {'user_id': userId},
       {'user': user, 'user_id': userId},
-      true,
+      upsert: true,
     );
   }
 

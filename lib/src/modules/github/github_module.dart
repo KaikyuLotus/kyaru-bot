@@ -23,7 +23,7 @@ extension on KyaruDB {
   }
 
   bool removeRepo(DBRepo repo) {
-    return database[_repositoryCollection].delete(repo.toJson());
+    return database[_repositoryCollection].delete(filter: repo.toJson());
   }
 }
 

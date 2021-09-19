@@ -1,20 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
-import 'package:kyaru_bot/src/modules/genshin/entities/renderer_client.dart';
+import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
-import 'entities/abyss_info.dart';
-import 'entities/detailed_avatar.dart';
-import 'entities/genshin_client.dart';
-import 'entities/image_generator.dart';
-import 'entities/user_characters.dart';
-import 'entities/userinfo.dart';
-import 'entities/wrapped_abyss_info.dart';
-import 'entities/wrapped_user_info.dart';
+import 'components/credentials_distributor.dart';
+import 'components/hoyolab_client.dart';
+import 'components/renderer_client.dart';
+import 'entities/genshin_entities.dart';
 
 extension on KyaruDB {
   static const _genshinDataCollection = 'genshin_data';
@@ -23,7 +18,7 @@ extension on KyaruDB {
     database[_genshinDataCollection].update(
       {'user_id': userId},
       {'id': id, 'user_id': userId},
-      true,
+      upsert: true,
     );
   }
 
@@ -39,21 +34,21 @@ extension on KyaruDB {
 }
 
 class GenshinModule implements IModule {
-  final Kyaru _kyaru;
-  late GenshinClient _genshinClient;
-  late RendererClient _rendererClient;
+  final _log = Logger('GenshinModule');
 
-  String? _url;
+  final Kyaru _kyaru;
+  late HoyolabClient _hoyolabClient;
+  late RendererClient _rendererClient;
+  late CredentialsDistributor _credDistrib;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
-    _url = _kyaru.brain.db.settings.genshinUrl;
-
-    _genshinClient = GenshinClient(_url ?? '');
+    _hoyolabClient = HoyolabClient();
     _rendererClient = RendererClient(
       _kyaru.brain.db.settings.genshinRendererUrl ?? '',
     );
+    _credDistrib = CredentialsDistributor.withDatabase(_kyaru.brain.db);
 
     _moduleFunctions = [
       ModuleFunction(
@@ -93,14 +88,14 @@ class GenshinModule implements IModule {
         core: true,
       ),
       ModuleFunction(
-        stats,
-        'You know',
-        'genshin_stats',
+        addCredentials,
+        'Owner only command that adds Hoyolab credentials',
+        'add_genshin_cred',
       ),
       ModuleFunction(
-        getRendererImage,
-        'You know',
-        'genshin_render',
+        setRendererUrl,
+        'Owner only command that sets genshin renderer url',
+        'set_renderer_url',
       ),
     ];
   }
@@ -110,7 +105,110 @@ class GenshinModule implements IModule {
 
   @override
   bool isEnabled() {
-    return _url?.isNotEmpty ?? false;
+    return true;
+  }
+
+  // Admin only
+  Future addCredentials(Update update, _) async {
+    final parts = update.message!.text!.split('\n');
+    parts.removeAt(0);
+    if (parts.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'Please send new credentials like this:\n'
+        '/add_genshin_cred\n'
+        'token: TOKEN\n'
+        'uid: UID\n'
+        'cn: true/false',
+      );
+    }
+    if (parts.length < 3) {
+      return _kyaru.reply(
+        update,
+        "I didn't find all the required parts",
+      );
+    }
+    Map<String, String> map;
+    try {
+      map = <String, String>{
+        for (var pair in parts.map((e) => e.split(':')))
+          pair[0].trim(): pair[1].trim()
+      };
+    } on RangeError {
+      return _kyaru.reply(
+        update,
+        "Your input contains malformed value pair...",
+      );
+    }
+
+    final requiredKeys = ['token', 'uid', 'cn'];
+    for (final key in requiredKeys) {
+      if (!map.containsKey(key)) {
+        return _kyaru.reply(
+          update,
+          "I didn't find '$key' please check your message",
+        );
+      }
+    }
+
+    final token = map['token']!;
+
+    final uid = int.tryParse(map['uid'] ?? '');
+    if (uid == null) {
+      return _kyaru.reply(
+        update,
+        "uid is not a valid ID, it's not an integer",
+      );
+    }
+
+    final cnStr = map['cn']?.toLowerCase();
+    if (!['true', 'false'].contains(cnStr)) {
+      return _kyaru.reply(
+        update,
+        "cn is not a valid bool, it's either not 'true' and 'false'",
+      );
+    }
+    final cn = cnStr == 'true';
+    final cred = HoyolabCredentials(
+      token: token,
+      uid: uid,
+      isCn: cn,
+    );
+
+    if (_credDistrib.exists(token: token)) {
+      return _kyaru.reply(
+        update,
+        "This token is already present!",
+      );
+    }
+
+    _credDistrib.addCredentials(cred);
+
+    return _kyaru.reply(
+      update,
+      "Added credentials:\n${JsonEncoder.withIndent('  ').convert(cred)}",
+    );
+  }
+
+  Future setRendererUrl(Update update, _) async {
+    final parts = update.message!.text!.split(' ')..removeAt(0);
+    if (parts.isEmpty) {
+      return _kyaru.reply(update, 'This command requires an url as parameter');
+    }
+
+    final oldUri = _rendererClient.baseUrl;
+    try {
+      _rendererClient.baseUrl = parts.first;
+      await _rendererClient.health();
+      _kyaru.brain.db.settings = _kyaru.brain.db.settings.copyWith(
+        genshinRendererUrl: parts.first,
+      );
+      _kyaru.reply(update, 'Done!');
+    } catch (e, s) {
+      _rendererClient.baseUrl = oldUri;
+      _kyaru.reply(update, 'There was an error: $e');
+      _log.severe('Error while trying to change genshin renderer url', e, s);
+    }
   }
 
   Future delGenshinUsers(Update update, _) async {
@@ -148,9 +246,13 @@ class GenshinModule implements IModule {
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
-    var fullInfo = await _genshinClient.getUser(id);
+    var credentials = _credDistrib.forUser(id);
+    var fullInfo = await _hoyolabClient.getUserData(
+      gameId: id,
+      credentials: credentials,
+    );
 
-    if (!fullInfo['ok'] || fullInfo['data']['data']['message'] != 'OK') {
+    if (fullInfo.current.retcode != 0) {
       var errorMessage = 'Failed to get user.\n'
           '\n'
           'Please be sure that your info on HoYoLAB is public.\n'
@@ -163,9 +265,6 @@ class GenshinModule implements IModule {
         messageId: sentMessage.messageId,
       );
     }
-
-    // Try to parse data
-    UserInfo.fromJson(fullInfo['data']['data']['data']);
 
     _kyaru.brain.db.addGenshinUser(update.message!.from!.id, id);
     return _kyaru.brain.bot.editMessageText(
@@ -193,226 +292,24 @@ class GenshinModule implements IModule {
     );
   }
 
-  Future getRendererImage(Update update, _) async {
-    var wrappedUserInfo = await getUserInfo(update);
-    if (wrappedUserInfo == null) return;
-
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
-    var avatars = wrappedUserInfo.userInfo.avatars.map((a) => a.id).toList();
-    UserCharacters userCharacters = await _genshinClient.getCharacters(
-      userData!['id'],
-      avatars,
-    );
-    var bytes = await _rendererClient.getCharacter(userCharacters);
-    await _kyaru.brain.bot.deleteMessage(
-      ChatID(wrappedUserInfo.sentMessage.chat.id),
-      wrappedUserInfo.sentMessage.messageId,
-    );
-    await _kyaru.brain.bot.sendPhoto(
-      ChatID(update.message!.chat.id),
-      HttpFile.fromBytes('image.jpg', bytes),
-    );
-  }
-
-  Future<WrappedUserInfo?> getUserInfo(Update update) async {
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
-    if (userData == null) {
-      await warnUseGenshinIdFirst(update);
-      return null;
-    }
-    Map<String, dynamic> fullInfo;
-    var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-    try {
-      fullInfo = await _genshinClient.getUser(userData['id']);
-    } on SocketException {
-      await _kyaru.brain.bot.editMessageText(
-        "I can't reach Genshin data server, please try later...",
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    if (!fullInfo['ok']) {
-      var details = fullInfo['error'];
-      await _kyaru.brain.bot.editMessageText(
-        'Something broke...\nError details: $details',
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    var cacheTime = fullInfo['data']['cache_time'];
-    var data = fullInfo['data']['data'];
-
-    if (data['message'] != 'OK') {
-      var code = data['retcode'];
-      var message = data['message'];
-      await _kyaru.brain.bot.editMessageText(
-        'Something broke on Hoyolab...\nError code: $code\nMessage: "$message"',
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    var userInfo = UserInfo.fromJson(data['data']);
-
-    UserInfo? oldUserInfo;
-    if (fullInfo['data']['old_data'] != null) {
-      if (fullInfo['data']['old_data']['message'] == 'OK') {
-        oldUserInfo = UserInfo.fromJson(fullInfo['data']['old_data']['data']);
-      }
-    }
-
-    return WrappedUserInfo(
-      sentMessage: sentMessage,
-      cacheTime: cacheTime,
-      userInfo: userInfo,
-      oldUserInfo: oldUserInfo,
-    );
-  }
-
-  Future<WrappedAbyssInfo?> getAbyss(Update update) async {
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
-    if (userData == null) {
-      await warnUseGenshinIdFirst(update);
-      return null;
-    }
-
-    var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
-
-    Map<String, dynamic> abyssInfo;
-    try {
-      abyssInfo = await _genshinClient.getAbyss(userData['id']);
-    } on SocketException {
-      await _kyaru.brain.bot.editMessageText(
-        "I can't reach Genshin data server, please try later...",
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    if (!abyssInfo['ok']) {
-      var details = abyssInfo['error'];
-      await _kyaru.brain.bot.editMessageText(
-        'Something broke...\nError details: $details',
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    var cacheTime = abyssInfo['data']['cache_time'];
-    var currentPeriodData = abyssInfo['data']['data']['current'];
-    var previousPeriodData = abyssInfo['data']['data']['previous'];
-
-    if (currentPeriodData['message'] != 'OK' ||
-        previousPeriodData['message'] != 'OK') {
-      int code;
-      if (currentPeriodData['message'] != 'OK') {
-        code = currentPeriodData['retcode'];
-      } else {
-        code = previousPeriodData['retcode'];
-      }
-      await _kyaru.brain.bot.editMessageText(
-        'Something broke on Hoyolab...\nError code: $code',
-        chatId: ChatID(sentMessage.chat.id),
-        messageId: sentMessage.messageId,
-      );
-      return null;
-    }
-
-    var currentAbyssInfo = AbyssInfo.fromJson(currentPeriodData['data']);
-    var previousAbyssInfo = AbyssInfo.fromJson(previousPeriodData['data']);
-
-    return WrappedAbyssInfo(
-      sentMessage: sentMessage,
-      cacheTime: cacheTime,
-      current: currentAbyssInfo,
-      previous: previousAbyssInfo,
-    );
-  }
-
-  Future character(Update update, _) async {
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
-    if (userData == null) {
-      await warnUseGenshinIdFirst(update);
-      return null;
-    }
-
-    var args = update.message!.text!.split(' ')..removeAt(0);
-    if (args.isEmpty) {
-      return _kyaru.reply(
-        update,
-        'This command requires a character name as argument:\n'
-        '/genshin_char Hu Tao',
-      );
-    }
-
-    var characterName = args.join(' ').toLowerCase();
-
-    var wrappedUserInfo = await getUserInfo(update);
-    if (wrappedUserInfo == null) {
-      // User already warned, return
-      return;
-    }
-    var avatars = wrappedUserInfo.userInfo.avatars.map((a) => a.id).toList();
-
-    UserCharacters userCharacters = await _genshinClient.getCharacters(
-      userData['id'],
-      avatars,
-    );
-
-    DetailedAvatar? avatar;
-
-    for (var character in userCharacters.avatars) {
-      if (character.name.toLowerCase() == characterName) {
-        avatar = character;
-        break;
-      }
-    }
-
-    if (avatar == null) {
-      return _kyaru.brain.bot.editMessageText(
-        "It seems like you don't have that character...",
-        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
-        messageId: wrappedUserInfo.sentMessage.messageId,
-      );
-    }
-
-    var image = await generateCharacterImage(avatar);
-
-    if (image == null) {
-      return _kyaru.brain.bot.editMessageText(
-        "Image generation failed...",
-        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
-        messageId: wrappedUserInfo.sentMessage.messageId,
-      );
-    }
-
-    await _kyaru.brain.bot.deleteMessage(
-      ChatID(wrappedUserInfo.sentMessage.chat.id),
-      wrappedUserInfo.sentMessage.messageId,
-    );
-
-    await _kyaru.brain.bot.sendPhoto(
-      ChatID(wrappedUserInfo.sentMessage.chat.id),
-      HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
-      replyToMessageId: update.message?.messageId,
-    );
-  }
-
   Future abyss(Update update, _) async {
-    var wrappedAbyssInfo = await getAbyss(update);
-    if (wrappedAbyssInfo == null) {
-      // User already warned, return
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    if (userData == null) {
+      await warnUseGenshinIdFirst(update);
       return;
     }
 
     wTrue(e) => true;
+
+    String characterName(String character) {
+      var characters = {
+        'Ambor': 'Amber',
+        'Feiyan': 'Yanfei',
+        'Noel': 'Noelle',
+        'Qin': 'Jean',
+      };
+      return characters[character] ?? character;
+    }
 
     String? assembler(AbyssInfo data, String phase) {
       var mostDefeats = data.defeatRank.where(wTrue);
@@ -449,8 +346,23 @@ class GenshinModule implements IModule {
           ' (`${characterName(elemSkillsCast.first.name)}`)\n';
     }
 
-    var current = wrappedAbyssInfo.current;
-    var previous = wrappedAbyssInfo.previous;
+    final gameId = userData['id'];
+    final credentials = _credDistrib.forUser(gameId);
+    var abyssCachedData = await _hoyolabClient.getSpiralAbyss(
+      gameId: gameId,
+      credentials: credentials,
+    );
+
+    if (abyssCachedData.currentPeriod.current.retcode != 0 ||
+        abyssCachedData.previousPeriod.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your abyss data, retry later.",
+      );
+    }
+
+    var current = abyssCachedData.currentPeriod.current.data!;
+    var previous = abyssCachedData.previousPeriod.current.data!;
 
     var hasCurrent = current.totalBattleTimes > 0;
     var hasPrevious = previous.totalBattleTimes > 0;
@@ -476,29 +388,36 @@ class GenshinModule implements IModule {
       }
     }
 
-    return _kyaru.brain.bot.editMessageText(
+    return _kyaru.reply(
+      update,
       reply,
-      chatId: ChatID(wrappedAbyssInfo.sentMessage.chat.id),
-      messageId: wrappedAbyssInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
   }
 
-  Future stats(Update update, _) async {
-    var stats = await _genshinClient.getApiStats();
-    var statsString = JsonEncoder.withIndent('  ').convert(stats['data']);
-    _kyaru.reply(update, statsString);
-  }
-
   Future genshin(Update update, _) async {
-    var wrappedUserInfo = await getUserInfo(update);
-    if (wrappedUserInfo == null) {
-      // User already warned, return
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    if (userData == null) {
+      await warnUseGenshinIdFirst(update);
       return;
     }
 
-    var userInfo = wrappedUserInfo.userInfo;
-    var oldUserInfo = wrappedUserInfo.oldUserInfo;
+    final gameId = userData['id'];
+    final credentials = _credDistrib.forUser(gameId);
+    var userCachedData = await _hoyolabClient.getUserData(
+      gameId: gameId,
+      credentials: credentials,
+    );
+
+    if (userCachedData.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your user data, retry later.",
+      );
+    }
+
+    var userInfo = userCachedData.current.data!;
+    var oldUserInfo = userCachedData.previous?.data;
 
     var curr = userInfo.stats;
     var old = oldUserInfo?.stats;
@@ -580,55 +499,137 @@ class GenshinModule implements IModule {
       ),
     ].join('\n');
 
-    return _kyaru.brain.bot.editMessageText(
+    return _kyaru.reply(
+      update,
       reply,
-      chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
-      messageId: wrappedUserInfo.sentMessage.messageId,
       parseMode: ParseMode.markdown,
     );
   }
 
-  Future characters(Update update, _) async {
-    var wrappedUserInfo = await getUserInfo(update);
-    if (wrappedUserInfo == null) {
-      // User already warned, return
-      return;
-    }
-
-    await _kyaru.brain.bot.editMessageText(
-      'Generating...',
-      chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
-      messageId: wrappedUserInfo.sentMessage.messageId,
-    );
-
-    var image = await generateAvatarsImage(wrappedUserInfo.userInfo);
-    if (image == null) {
-      return _kyaru.brain.bot.editMessageText(
-        'Could not generate image... Sorry.',
-        chatId: ChatID(wrappedUserInfo.sentMessage.chat.id),
-        messageId: wrappedUserInfo.sentMessage.messageId,
+  Future character(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command requires a character name as argument:\n'
+        '/genshin_char Hu Tao',
       );
     }
 
-    await _kyaru.brain.bot.deleteMessage(
-      ChatID(wrappedUserInfo.sentMessage.chat.id),
-      wrappedUserInfo.sentMessage.messageId,
-    );
+    var characterName = args.join(' ').toLowerCase();
 
-    await _kyaru.brain.bot.sendPhoto(
-      ChatID(wrappedUserInfo.sentMessage.chat.id),
-      HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
-      replyToMessageId: update.message?.messageId,
-    );
+    final sentMsg = await _kyaru.reply(update, 'Please wait...');
+    String? msg = 'Something went wrong...';
+    try {
+      var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+      if (userData == null) {
+        await warnUseGenshinIdFirst(update);
+        return;
+      }
+      final gameId = userData['id'];
+      final credentials = _credDistrib.forUser(gameId);
+      var userDataCache = await _hoyolabClient.getUserData(
+        gameId: gameId,
+        credentials: credentials,
+      );
+
+      if (userDataCache.current.retcode != 0) {
+        msg = "I couldn't retrieve your user data, retry later.\n"
+            "Code: ${userDataCache.current.retcode}";
+        return;
+      }
+
+      final ids = userDataCache.current.data!.avatars.map((a) => a.id).toList();
+      final charactersCache = await _hoyolabClient.getCharacters(
+        gameId: gameId,
+        credentials: credentials,
+        characterIdsJson: ids,
+      );
+
+      DetailedAvatar? avatar;
+
+      if (charactersCache.current.retcode != 0) {
+        msg = "I couldn't retrieve your characters, retry later.\n"
+            "Code: ${charactersCache.current.retcode}";
+        return;
+      }
+
+      for (var character in charactersCache.current.data!.avatars) {
+        if (character.name.toLowerCase() == characterName) {
+          avatar = character;
+          break;
+        }
+      }
+
+      if (avatar == null) {
+        msg = "It seems like you don't have that character...";
+        return;
+      }
+
+      var bytes = await _rendererClient.getCharacter(
+        avatar,
+        pixelRatio: 1.5,
+      );
+      await _kyaru.replyPhoto(
+        update,
+        HttpFile.fromBytes('character.png', bytes),
+      );
+      msg = null;
+    } catch (e) {
+      msg = null;
+      rethrow;
+    } finally {
+      if (msg == null) {
+        await _kyaru.deleteMessage(update, sentMsg);
+      } else {
+        await _kyaru.editMessage(update, sentMsg, msg);
+      }
+    }
   }
 
-  String characterName(String character) {
-    var characters = {
-      'Ambor': 'Amber',
-      'Feiyan': 'Yanfei',
-      'Noel': 'Noelle',
-      'Qin': 'Jean',
-    };
-    return characters[character] ?? character;
+  Future characters(Update update, _) async {
+    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    if (userData == null) {
+      await warnUseGenshinIdFirst(update);
+      return;
+    }
+
+    final sentMsg = await _kyaru.reply(update, 'Please wait...');
+    String? msg = 'Something went wrong...';
+    try {
+      final gameId = userData['id'];
+      final credentials = _credDistrib.forUser(gameId);
+      var userCachedData = await _hoyolabClient.getUserData(
+        gameId: gameId,
+        credentials: credentials,
+      );
+
+      if (userCachedData.current.retcode != 0) {
+        msg = "I couldn't retrieve your user data, retry later.\n"
+            "Code: ${userCachedData.current.retcode}";
+        return;
+      }
+
+      var image = await _rendererClient.getCharacters(
+        userCachedData.current.data!,
+        pixelRatio: 1.2,
+      );
+
+      await _kyaru.replyPhoto(
+        update,
+        HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
+        quote: true,
+      );
+      msg = null;
+    } catch (e) {
+      msg = null;
+      rethrow;
+    } finally {
+      if (msg == null) {
+        await _kyaru.deleteMessage(update, sentMsg);
+      } else {
+        await _kyaru.editMessage(update, sentMsg, msg);
+      }
+    }
   }
 }
