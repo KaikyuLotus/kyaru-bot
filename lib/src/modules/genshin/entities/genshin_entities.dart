@@ -1049,9 +1049,16 @@ class CachedAPIResponse<T> {
     T Function(Map<String, dynamic>) converter,
   ) {
     return CachedAPIResponse(
-      current: APIResponse._fromJson(cachedResult.current, converter: converter),
-      previous:
-          cachedResult.previous != null ? APIResponse._fromJson(cachedResult.previous!, converter: converter) : null,
+      current: APIResponse._fromJson(
+        cachedResult.current,
+        converter: converter,
+      ),
+      previous: cachedResult.previous != null
+          ? APIResponse._fromJson(
+              cachedResult.previous!,
+              converter: converter,
+            )
+          : null,
     );
   }
 
