@@ -55,6 +55,26 @@ class AbyssInfo {
       isUnlock: json['is_unlock'],
     );
   }
+
+  Map toJson() {
+    return {
+      'schedule_id': scheduleId,
+      'start_time': startTime,
+      'end_time': endTime,
+      'total_battle_times': totalBattleTimes,
+      'total_win_times': totalWinTimes,
+      'max_floor': maxFloor,
+      'reveal_rank': revealRank,
+      'defeat_rank': defeatRank,
+      'damage_rank': damageRank,
+      'take_damage_rank': takeDamageRank,
+      'normal_skill_rank': normalSkillRank,
+      'energy_skill_rank': energySkillRank,
+      'floors': floors,
+      'total_star': totalStar,
+      'is_unlock': isUnlock,
+    };
+  }
 }
 
 class FullAbyssInfo {
@@ -112,7 +132,7 @@ class Artifact {
       'pos': pos,
       'rarity': rarity,
       'level': level,
-      'set': set.toJson(),
+      'set': set,
     };
   }
 }
@@ -178,7 +198,7 @@ class ArtifactSet {
     return {
       'id': id,
       'name': name,
-      'affixes': affixes.map((a) => a.toJson()).toList(),
+      'affixes': affixes,
     };
   }
 }
@@ -266,6 +286,15 @@ class BattleAvatar {
       (index) => BattleAvatar.fromJson(json[index]),
     );
   }
+
+  Map toJson() {
+    return {
+      'id': rarity,
+      'icon': rarity,
+      'level': rarity,
+      'rarity': rarity,
+    };
+  }
 }
 
 class Battle {
@@ -289,6 +318,14 @@ class Battle {
 
   static List<Battle> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Battle.fromJson(json[index]));
+  }
+
+  Map toJson() {
+    return {
+      'index': index,
+      'timestamp': timestamp,
+      'avatars': avatars,
+    };
   }
 }
 
@@ -350,6 +387,7 @@ class DetailedAvatar extends Avatar {
     );
   }
 
+  @override
   Map toJson() {
     return {
       'id': id,
@@ -360,10 +398,10 @@ class DetailedAvatar extends Avatar {
       'level': level,
       'rarity': rarity,
       'actived_constellation_num': activedConstellationNum,
-      'weapon': weapon.toJson(),
-      'reliquaries': artifacts.map((a) => a.toJson()).toList(),
-      'constellations': constellations.map((c) => c.toJson()).toList(),
-      'costumes': skins.map((s) => s.toJson()).toList(),
+      'weapon': weapon,
+      'reliquaries': artifacts,
+      'constellations': constellations,
+      'costumes': skins,
     };
   }
 }
@@ -416,12 +454,12 @@ class Constellation {
 }
 
 class Floor {
-  final int index; // 9,
-  final String icon; // "",
-  final bool isUnlock; // true,
-  final String settleTime; // "0",
-  final int star; // 9,
-  final int maxStar; // 9,
+  final int index;
+  final String icon;
+  final bool isUnlock;
+  final String settleTime;
+  final int star;
+  final int maxStar;
   final List<Level> levels;
 
   Floor({
@@ -432,7 +470,7 @@ class Floor {
     required this.star,
     required this.maxStar,
     required this.levels,
-  }); // [
+  });
 
   static Floor fromJson(Map<String, dynamic> json) {
     return Floor(
@@ -448,6 +486,18 @@ class Floor {
 
   static List<Floor> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Floor.fromJson(json[index]));
+  }
+
+  Map toJson() {
+    return {
+      'index': index,
+      'icon': icon,
+      'is_unlock': isUnlock,
+      'settle_time': settleTime,
+      'star': star,
+      'max_star': maxStar,
+      'levels': levels,
+    };
   }
 }
 
@@ -528,6 +578,15 @@ class Level {
   static List<Level> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Level.fromJson(json[index]));
   }
+
+  Map toJson() {
+    return {
+      'index': index,
+      'star': star,
+      'max_star': maxStar,
+      'battles': battles,
+    };
+  }
 }
 
 class Offering {
@@ -592,6 +651,15 @@ class Rank {
 
   static List<Rank> listFromJsonArray(List<dynamic> json) {
     return List.generate(json.length, (index) => Rank.fromJson(json[index]));
+  }
+
+  Map toJson() {
+    return {
+      'avatar_id': avatarId,
+      'avatar_icon': avatarIcon,
+      'value': value,
+      'rarity': rarity,
+    };
   }
 }
 
@@ -719,7 +787,7 @@ class UserCharacters {
 
   Map toJson() {
     return {
-      'avatars': avatars.map((a) => a.toJson()).toList(),
+      'avatars': avatars,
     };
   }
 }
@@ -981,11 +1049,9 @@ class CachedAPIResponse<T> {
     T Function(Map<String, dynamic>) converter,
   ) {
     return CachedAPIResponse(
-      current:
-          APIResponse._fromJson(cachedResult.current, converter: converter),
-      previous: cachedResult.previous != null
-          ? APIResponse._fromJson(cachedResult.previous!, converter: converter)
-          : null,
+      current: APIResponse._fromJson(cachedResult.current, converter: converter),
+      previous:
+          cachedResult.previous != null ? APIResponse._fromJson(cachedResult.previous!, converter: converter) : null,
     );
   }
 
