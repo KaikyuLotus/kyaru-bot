@@ -104,7 +104,7 @@ class CacheSystem {
     } catch (e) {
       _cache[key] = CacheEntry(
         insertTime: DateTime.now(),
-        value: e,
+        value: '$e',
         isException: true,
       );
       rethrow;
