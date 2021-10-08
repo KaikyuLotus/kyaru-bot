@@ -424,7 +424,6 @@ class GenshinModule implements IModule {
     var curr = userInfo.stats;
     var old = oldUserInfo?.stats;
 
-    print(json.encode(userInfo));
     var liyuePerc = userInfo.liyue.percentage;
     var mondstadtPerc = userInfo.mondstadt.percentage;
 
