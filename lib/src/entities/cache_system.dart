@@ -86,7 +86,9 @@ class CacheSystem {
       Map<String, dynamic>? previous;
       if (_cache.containsKey(key)) {
         if (_cache[key]!.insertTime.add(timeout).isBefore(DateTime.now())) {
-          previous = _cache.remove(key)!.value;
+          if (!_cache[key]!.isException) {
+            previous = _cache.remove(key)!.value;
+          }
         } else {
           var entry = _cache[key]!;
           if (entry.isException) {
@@ -104,7 +106,7 @@ class CacheSystem {
     } catch (e) {
       _cache[key] = CacheEntry(
         insertTime: DateTime.now(),
-        value: '$e',
+        value: <String, dynamic>{'Exception': '$e'},
         isException: true,
       );
       rethrow;

@@ -15,10 +15,12 @@ extension on KyaruDB {
     return database[collection].findAs(HoyolabCredentials.fromJson);
   }
 
-  HoyolabCredentials lessUsedCredentials() {
+  HoyolabCredentials lessUsedCredentials({bool cn = false}) {
     final creds = database[collection] //
         .findAs(HoyolabCredentials.fromJson) //
-      ..sort((a, b) => a.gameIds.length.compareTo(b.gameIds.length));
+        .where((c) => c.isCn == cn)
+        .toList();
+    creds.sort((a, b) => a.gameIds.length.compareTo(b.gameIds.length));
     return creds.first;
   }
 
@@ -93,13 +95,15 @@ class CredentialsDistributor {
     return db.credentialsWithToken(token) != null;
   }
 
+  bool isChineseServer(String server) => server.startsWith(RegExp(r'(cn|1|5)'));
+
   HoyolabCredentials forUser(int gameId) {
     final credentials = db.credentialsForUser(gameId);
     if (credentials != null) {
       return credentials;
     }
 
-    final lessUsedCred = db.lessUsedCredentials();
+    final lessUsedCred = db.lessUsedCredentials(cn: isChineseServer('$gameId'));
     lessUsedCred.gameIds.add(gameId);
     db.updateCredentials(lessUsedCred);
     return lessUsedCred;

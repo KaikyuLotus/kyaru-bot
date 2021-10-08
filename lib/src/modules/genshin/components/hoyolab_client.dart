@@ -70,6 +70,16 @@ const _settingsCn = ServerSettings(
   },
 );
 
+class HoyolabAPIException implements Exception {
+  final String message;
+  final int statusCode;
+
+  HoyolabAPIException(this.message, this.statusCode);
+
+  @override
+  String toString() => 'HoyolabAPIException ($statusCode): $message';
+}
+
 class HoyolabClient {
   final _log = Logger('HoyolabClient');
   final _client = Client();
@@ -165,6 +175,12 @@ class HoyolabClient {
 
         _log.info('Sending request to ${settings.host} endp: $endpointString');
         final response = await _client.send(request).timeout(_timeout);
+        if (response.statusCode != 200) {
+          throw HoyolabAPIException(
+            await response.stream.bytesToString(),
+            response.statusCode,
+          );
+        }
         final jsonString = await response.stream.bytesToString();
         return json.decode(jsonString);
       },

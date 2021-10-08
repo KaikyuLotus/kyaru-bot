@@ -121,7 +121,7 @@ class OwnerModule implements IModule {
           parseMode: ParseMode.markdown,
         );
       }
-    } on Exception catch (e, s) {
+    } catch (e, s) {
       _log.severe('Failed to notify new group', e, s);
 
       var chatTitle = MarkdownUtils.escape(
@@ -143,8 +143,13 @@ class OwnerModule implements IModule {
     );
     var startMessage = 'Hi $firstName,\n\n'
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
-        'If you want to know how I work or who made me use the /help command\n\n'
-        '\nMade with ❤️ by [Kaikyu](https://t.me/kaikyu)';
+        'If you want to know how I work or who made me use the /help command\n'
+        'You can find my code [here](https://github.com/KaikyuLotus/kyaru-bot/tree/develop), make sure to leave a star!.\n'
+        '\n'
+        '\nMade with ❤️ by [Kaikyu](https://t.me/kaikyu)\n'
+        'Please consider a donation:\n'
+        '[Ko-fi](https://ko-fi.com/kaikyulotus)\n'
+        'ETH address: ```0xaF3E8F09cB2d202e9284D6CcfF093D95A29Cef1F```';
     await _kyaru.reply(
       update,
       startMessage,
@@ -162,13 +167,9 @@ class OwnerModule implements IModule {
         "I'm Kyaru, an utility bot made mainly for groups.\n\n"
         "I'm still in a early beta phase, so I may have lots of errors"
         " and unexpected behaviours, you can report them to @KaikyuLotus.\n\n"
-        'Follow my development on my [Trello](https://trello.com/b/BJgZ2PBs/kyaru-roadmap) board\n\n'
-        'Take a look at @KyaruLinks and join @KyaruNews to keep you'
-        ' updated on new commands and bug fixes!\n\n'
-        "Currently I'm closed source, but all my libraries are open source:\n"
-        '[Dart Telegram Bot (Telegram API Wrapper)](https://github.com/KaikyuDev/dart-telegram-bot)\n'
-        '[Dart Mongo Lite (file-based MongoDB)](https://github.com/KaikyuDev/dart_mongo_lite)\n\n'
-        "Here's my command list:\n\n"
+        'Join @KyaruNews to stay tuned with updates on new commands and bug fixes!\n\n'
+        "You can find my code [here](https://github.com/KaikyuLotus/kyaru-bot/tree/develop).\n\n"
+        "Here's my command list:\n"
         '/lol PlayerUsername\n*Returns some LoL stats*\n\n'
         '/lol PlayerUsername Number\n*Returns some LoL stats with the Nth match stats*\n\n'
         '/danbooru\n*Sends a random image from Danbooru*\n\n'
@@ -229,7 +230,7 @@ class OwnerModule implements IModule {
       try {
         await _kyaru.brain.bot.copyMessage(ChatID(chat.id), chatId, messageId);
         sent++;
-      } on Exception catch (e, s) {
+      } catch (e, s) {
         errors++;
         _log.severe('Could not send message to chat ${chat.id}: $e\n$s');
       }

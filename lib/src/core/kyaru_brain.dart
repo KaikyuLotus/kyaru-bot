@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_telegram_bot/dart_telegram_bot.dart';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:logging/logging.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../kyaru.dart';
 
@@ -43,15 +44,38 @@ class KyaruBrain {
     try {
       await moduleFunction.function(update, null);
       _log.finer('Function ${moduleFunction.name} executed');
-    } on Exception catch (e, s) {
-      _log.severe('Error executing function ${moduleFunction.name}', e, s);
+    } catch (e, s) {
+      if (e is APIException) {
+        if (e.description.contains('replied message not found')) {
+          // User deleted own message, ignore it
+          return;
+        }
+        if (e.description.contains('Too Many Requests')) {
+          // User is probably spamming, ignore it
+          return;
+        }
+      }
+
+      final errorId = Uuid().v4();
+      _log.severe(
+        'Error executing function ${moduleFunction.name}, error id $errorId',
+        e,
+        s,
+      );
       await bot.sendMessage(
         db.settings.ownerId,
-        'Command ${moduleFunction.name} crashed: $e\n$s',
+        'Command ${moduleFunction.name} crashed\n$errorId\n\n$e\n\n$s',
       );
 
       if (update.message != null) {
-        await bot.sendMessage(ChatID(update.message!.chat.id), '$e');
+        await bot.sendMessage(
+          ChatID(update.message!.chat.id),
+          'Sorry, an error has occurred...\n'
+          'My owner has been already informed.\n'
+          'Thanks for your patience.\n\n'
+          '```$errorId```',
+          parseMode: ParseMode.markdown,
+        );
       }
     }
   }

@@ -75,7 +75,7 @@ class RendererClient {
   Future<Uint8List> health() async {
     var response = await _client
         .post(Uri.http(baseUrl, '/health'), body: '{}')
-        .timeout(Duration(seconds: 120));
+        .timeout(Duration(seconds: 3));
     response.raiseForStatus();
     return response.bodyBytes;
   }

@@ -53,7 +53,7 @@ class Kyaru {
       if (update.message?.text == null || update.message?.from == null) return;
 
       await brain.readMessage(update);
-    } on Exception catch (e, s) {
+    } catch (e, s) {
       _log.shout('My life is a failure', e, s);
       await onError(brain.bot, update, e, s);
     }
@@ -71,18 +71,17 @@ class Kyaru {
             : null;
   }
 
-  Future noticeOwnerError(Update update, Object e, StackTrace s) async {
-    return noticeOwner(update, '$e\n$s');
+  Future noticeOwnerError(Object e, StackTrace s) async {
+    return noticeOwner('$e\n$s');
   }
 
-  Future noticeOwner(Update update, String message) async {
+  Future noticeOwner(String message) async {
     await brain.bot.sendMessage(brain.db.settings.ownerId, message);
   }
 
-  Future onError(Bot bot, Update updateNull, Object e, StackTrace s) async {
+  Future onError(Bot bot, Update update, Object e, StackTrace s) async {
     _log.severe('Kyaru machine broke', e, s);
-    var update = updateNull;
-    await noticeOwnerError(update, e, s);
+    await noticeOwnerError(e, s);
     _log.severe('Update ID was: ${update.updateId}');
     return reply(
       update,

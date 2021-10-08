@@ -55,7 +55,7 @@ class DatabaseModule implements IModule {
           _kyaru.brain.db.removeChatData(chat.id);
           removed++;
         }
-      } on Exception catch (e, s) {
+      } catch (e, s) {
         errors++;
         _log.severe('Could not send message to chat ${chat.id}: $e\n$s');
       }

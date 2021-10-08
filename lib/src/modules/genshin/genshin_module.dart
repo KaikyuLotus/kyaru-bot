@@ -292,6 +292,18 @@ class GenshinModule implements IModule {
     );
   }
 
+  static String characterName(String character) {
+    var characters = {
+      'Ambor': 'Amber',
+      'Feiyan': 'Yanfei',
+      'Noel': 'Noelle',
+      'Qin': 'Jean',
+      'PlayerGirl': 'Lumine',
+      'PlayerBoy': 'Aether',
+    };
+    return characters[character] ?? character;
+  }
+
   Future abyss(Update update, _) async {
     var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
     if (userData == null) {
@@ -300,16 +312,6 @@ class GenshinModule implements IModule {
     }
 
     wTrue(e) => true;
-
-    String characterName(String character) {
-      var characters = {
-        'Ambor': 'Amber',
-        'Feiyan': 'Yanfei',
-        'Noel': 'Noelle',
-        'Qin': 'Jean',
-      };
-      return characters[character] ?? character;
-    }
 
     String? assembler(AbyssInfo data, String phase) {
       var mostDefeats = data.defeatRank.where(wTrue);
@@ -422,23 +424,24 @@ class GenshinModule implements IModule {
     var curr = userInfo.stats;
     var old = oldUserInfo?.stats;
 
+    print(json.encode(userInfo));
     var liyuePerc = userInfo.liyue.percentage;
     var mondstadtPerc = userInfo.mondstadt.percentage;
 
     var inazumaPerc = userInfo.inazuma.percentage;
-    var inazumaTreeLvl = userInfo.inazuma.inazumaTree.level;
+    var inazumaTreeLvl = userInfo.inazumaTree.level;
 
     var dragonspinePerc = userInfo.dragonspine.percentage;
-    var dragonspineTreeLvl = userInfo.dragonspine.dragonspineTree.level;
+    var dragonspineTreeLvl = userInfo.dragonspineTree.level;
 
     var liyuePercOld = oldUserInfo?.liyue.percentage;
     var mondstadtPercOld = oldUserInfo?.mondstadt.percentage;
 
     var inazumaPercOld = oldUserInfo?.inazuma.percentage;
-    var inazumaTreeLvlOld = oldUserInfo?.inazuma.inazumaTree.level;
+    var inazumaTreeLvlOld = oldUserInfo?.inazumaTree.level;
 
     var dragonspinePercOld = oldUserInfo?.dragonspine.percentage;
-    var dragonspineTreeLvlOld = oldUserInfo?.dragonspine.dragonspineTree.level;
+    var dragonspineTreeLvlOld = oldUserInfo?.dragonspineTree.level;
 
     String imp(String name, int current, int? old) {
       if (old == null) return '*$current* $name';

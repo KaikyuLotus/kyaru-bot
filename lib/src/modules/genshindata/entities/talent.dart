@@ -23,7 +23,6 @@ class Talent {
   static List<Talent> listFromJsonArray(Map<String, dynamic> jsonArray) {
     var talents = <Talent>[];
     jsonArray.remove('name');
-    // TODO: Costs
     jsonArray.remove('costs');
     jsonArray.remove('images');
     jsonArray.forEach((_, value) {

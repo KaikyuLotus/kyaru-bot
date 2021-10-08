@@ -206,7 +206,7 @@ class GithubModule implements IModule {
         ' ($seconds seconds)',
       );
       rateLimitSeconds = seconds;
-    } on Exception catch (e, s) {
+    } catch (e, s) {
       _log.severe('Unknown exception in analyzeRepo:', e, s);
     }
   }

@@ -1,4 +1,5 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
+import 'package:kyaru_bot/kyaru.dart';
 import 'package:kyaru_bot/src/entities/cache_system.dart';
 
 class AbyssInfo {
@@ -225,10 +226,15 @@ class Avatar {
   });
 
   static Avatar fromJson(Map<String, dynamic> json) {
+    var name = json['name'] as String;
+    var image = json['image'] as String;
+    if (name.isEmpty) {
+      name = GenshinModule.characterName(image.split('_').last.split('.')[0]);
+    }
     return Avatar(
       id: json['id'],
-      image: json['image'],
-      name: json['name'],
+      image: image,
+      name: name,
       element: json['element'],
       fetter: json['fetter'],
       level: json['level'],
@@ -800,13 +806,21 @@ class UserInfo {
   final List<WorldExploration> worldExplorations;
   final List<Home> homes;
 
-  WorldExploration get mondstadt => worldExplorationWithName('Mondstadt');
+  WorldExploration get mondstadt => worldExplorationWithID(1);
 
-  WorldExploration get liyue => worldExplorationWithName('Liyue');
+  WorldExploration get liyue => worldExplorationWithID(2);
 
-  WorldExploration get dragonspine => worldExplorationWithName('Dragonspine');
+  WorldExploration get dragonspine => worldExplorationWithID(3);
 
-  WorldExploration get inazuma => worldExplorationWithName('Inazuma');
+  WorldExploration get inazuma => worldExplorationWithID(4);
+
+  Offering get inazumaTree => inazuma.offerings.first;
+
+  String get inazumaTreeName => "Sacred Sakura's Favor";
+
+  Offering get dragonspineTree => dragonspine.offerings.first;
+
+  String get dragonspineTreeName => "Frostbearing Tree";
 
   UserInfo({
     required this.role,
@@ -817,8 +831,8 @@ class UserInfo {
     required this.homes,
   });
 
-  WorldExploration worldExplorationWithName(String name) {
-    return worldExplorations.firstWhere((e) => e.name == name);
+  WorldExploration worldExplorationWithID(int id) {
+    return worldExplorations.firstWhere((e) => e.id == id);
   }
 
   static UserInfo fromJson(Map<String, dynamic> json) {
@@ -858,14 +872,6 @@ class WorldExploration {
 
   double get percentage => explorationPercentage / 10;
 
-  Offering get inazumaTree => offeringWithName(inazumaTreeName);
-
-  String get inazumaTreeName => "Sacred Sakura's Favor";
-
-  Offering get dragonspineTree => offeringWithName(dragonspineTreeName);
-
-  String get dragonspineTreeName => "Frostbearing Tree";
-
   WorldExploration({
     required this.id,
     required this.level,
@@ -875,10 +881,6 @@ class WorldExploration {
     required this.type,
     required this.offerings,
   });
-
-  Offering offeringWithName(String name) {
-    return offerings.firstWhere((e) => e.name == name);
-  }
 
   static WorldExploration fromJson(Map<String, dynamic> json) {
     return WorldExploration(

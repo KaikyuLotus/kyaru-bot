@@ -69,7 +69,7 @@ class SteamModule implements IModule {
         'Main group: $clan',
         parseMode: ParseMode.markdownV2,
       );
-    } on Exception {
+    } catch (_) {
       return _kyaru.reply(update, 'User not found.');
     }
   }
@@ -99,7 +99,7 @@ class SteamModule implements IModule {
         'Members in game: ${group.membersInGame}\n',
         parseMode: ParseMode.markdownV2,
       );
-    } on Exception {
+    } catch (_) {
       return _kyaru.reply(update, 'Group not found.');
     }
   }

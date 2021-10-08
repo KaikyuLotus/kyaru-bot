@@ -101,7 +101,7 @@ class WeatherModule implements IModule {
           'and the sunset is at ${sunset.hour}:${sunset.minute}.';
 
       return message;
-    } on Exception {
+    } catch (_) {
       return 'City not found.';
     }
   }
@@ -154,7 +154,7 @@ class WeatherModule implements IModule {
         update,
         'City added.',
       );
-    } on Exception {
+    } catch (_) {
       return _kyaru.reply(
         update,
         'City not found.',
