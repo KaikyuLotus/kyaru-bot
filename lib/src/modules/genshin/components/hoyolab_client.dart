@@ -33,7 +33,7 @@ class ServerSettings {
   });
 }
 
-const _timeout = Duration(seconds: 10);
+const _timeout = Duration(seconds: 20);
 
 const _servers = <int, String>{
   1: 'cn_gf01',
