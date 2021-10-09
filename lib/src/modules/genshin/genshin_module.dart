@@ -253,12 +253,13 @@ class GenshinModule implements IModule {
     );
 
     if (fullInfo.current.retcode != 0) {
-      var errorMessage = 'Failed to get user.\n'
+      var errorMessage =
+          'Failed to get user (error ${fullInfo.current.retcode}).\n'
           '\n'
-          'Please be sure that your info on HoYoLAB is public.\n'
-          'Also make sure that your in-game ID is correct.'
-          '\n'
-          'To avoid caching issues, please retry in 20 minutes.';
+          'Error Details:\n'
+          '${fullInfo.current.message}'
+          '\n\n'
+          'To avoid caching issues, please retry in 60 minutes.';
       return _kyaru.brain.bot.editMessageText(
         errorMessage,
         chatId: ChatID(sentMessage.chat.id),
@@ -414,7 +415,9 @@ class GenshinModule implements IModule {
     if (userCachedData.current.retcode != 0) {
       return _kyaru.reply(
         update,
-        "I couldn't retrieve your user data, retry later.",
+        "I couldn't retrieve your user data, retry later.\n"
+        "Code: ${userCachedData.current.retcode}"
+        "Details: ${userCachedData.current.message}",
       );
     }
 
@@ -537,7 +540,8 @@ class GenshinModule implements IModule {
 
       if (userDataCache.current.retcode != 0) {
         msg = "I couldn't retrieve your user data, retry later.\n"
-            "Code: ${userDataCache.current.retcode}";
+            "Code: ${userDataCache.current.retcode}\n"
+            "Details: ${userDataCache.current.message}";
         return;
       }
 
@@ -608,7 +612,8 @@ class GenshinModule implements IModule {
 
       if (userCachedData.current.retcode != 0) {
         msg = "I couldn't retrieve your user data, retry later.\n"
-            "Code: ${userCachedData.current.retcode}";
+            "Code: ${userCachedData.current.retcode}\n"
+            "Details: ${userCachedData.current.message}";
         return;
       }
 

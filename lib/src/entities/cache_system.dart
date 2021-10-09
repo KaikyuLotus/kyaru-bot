@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:path/path.dart';
 
 class CachedResult {
@@ -18,19 +19,16 @@ class CachedResult {
 
 class CacheEntry {
   final DateTime insertTime;
-  final dynamic value;
   final bool isException;
 
   CacheEntry({
     required this.insertTime,
-    required this.value,
     this.isException = false,
   });
 
   static CacheEntry fromJson(Map<String, dynamic> json) {
     return CacheEntry(
       insertTime: DateTime.fromMillisecondsSinceEpoch(json['insert_time']),
-      value: json['value'],
       isException: json['is_exception'],
     );
   }
@@ -38,7 +36,6 @@ class CacheEntry {
   Map toJson() {
     return {
       'insert_time': insertTime.millisecondsSinceEpoch,
-      'value': value,
       'is_exception': isException,
     };
   }
@@ -51,9 +48,11 @@ class CacheSystem {
 
   final Duration timeout;
 
+  final b64Codec = utf8.fuse(base64);
+
   late final Map<String, CacheEntry> _cache;
 
-  File get _file => File(join(cacheDir, '$systemKey.kyarc'));
+  File get _coreFile => File(join(cacheDir, systemKey, '.kyarc'));
 
   CacheSystem({
     required this.systemKey,
@@ -63,19 +62,37 @@ class CacheSystem {
   }
 
   Map<String, CacheEntry> _loadFileCache() {
-    Directory(cacheDir).createSync(recursive: true);
-    if (!_file.existsSync()) {
-      _file.writeAsStringSync('{}');
+    Directory(join(cacheDir, systemKey)).createSync(recursive: true);
+    if (!_coreFile.existsSync()) {
+      _coreFile.writeAsStringSync('{}');
     }
     return Map<String, CacheEntry>.from(
       json
-          .decode(_file.readAsStringSync())
+          .decode(_coreFile.readAsStringSync())
           .map((key, value) => MapEntry(key, CacheEntry.fromJson(value))),
     );
   }
 
   Future _updateCacheFile() async {
-    _file.writeAsStringSync(json.encode(_cache));
+    _coreFile.writeAsStringSync(json.encode(_cache));
+  }
+
+  File keyToFile(String key) {
+    return File(join(cacheDir, systemKey, b64Codec.encode(key)));
+  }
+
+  Future<Map<String, dynamic>?> readCacheFile(String key) async {
+    final file = keyToFile(key);
+    if (await file.exists()) {
+      return json.decode(await file.readAsString());
+    }
+    return null;
+  }
+
+  // content must support .toJson
+  Future<File> writeCacheFile(String key, dynamic content) {
+    final file = keyToFile(key);
+    return file.writeAsString(json.encode(content));
   }
 
   Future<CachedResult> cacheOutput<T>({
@@ -86,27 +103,32 @@ class CacheSystem {
       Map<String, dynamic>? previous;
       if (_cache.containsKey(key)) {
         if (_cache[key]!.insertTime.add(timeout).isBefore(DateTime.now())) {
+          _cache.remove(key);
           if (!_cache[key]!.isException) {
-            previous = _cache.remove(key)!.value;
+            previous = await readCacheFile(key);
           }
         } else {
           var entry = _cache[key]!;
-          if (entry.isException) {
-            throw entry.value;
+          final content = await readCacheFile(key);
+          if (content != null) {
+            if (entry.isException) {
+              throw Exception(json.encode(content));
+            }
+            return CachedResult(
+              current: content,
+              previous: null,
+            );
           }
-          return CachedResult(current: entry.value, previous: null);
+          // File has been deleted probably manually, re-call the function
         }
       }
       final output = await function();
-      _cache[key] = CacheEntry(
-        insertTime: DateTime.now(),
-        value: output,
-      );
+      await writeCacheFile(key, output);
+      _cache[key] = CacheEntry(insertTime: DateTime.now());
       return CachedResult(current: output, previous: previous);
     } catch (e) {
       _cache[key] = CacheEntry(
         insertTime: DateTime.now(),
-        value: <String, dynamic>{'Exception': '$e'},
         isException: true,
       );
       rethrow;
