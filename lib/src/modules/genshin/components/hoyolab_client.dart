@@ -33,7 +33,7 @@ class ServerSettings {
   });
 }
 
-const _timeout = Duration(seconds: 20);
+const _timeout = Duration(seconds: 10);
 
 const _servers = <int, String>{
   1: 'cn_gf01',
@@ -123,6 +123,22 @@ class HoyolabClient {
 
   bool isChineseServer(String server) => server.startsWith(RegExp(r'(cn|1|5)'));
 
+  Future<StreamedResponse> _requestWithRetry(
+    Request request, {
+    int retries = 3,
+    int retry = 1,
+  }) async {
+    try {
+      return await _client.send(request).timeout(_timeout);
+    } catch (_) {
+      if (retry == retries) {
+        rethrow;
+      }
+      await Future.delayed(const Duration(seconds: 1));
+      return _requestWithRetry(request, retry: retry + 1);
+    }
+  }
+
   Future<CachedResult> _request({
     required EndpointName endpoint,
     required int gameId,
@@ -174,7 +190,7 @@ class HoyolabClient {
         );
 
         _log.info('Sending request to ${settings.host} endp: $endpointString');
-        final response = await _client.send(request).timeout(_timeout);
+        final response = await _requestWithRetry(request);
         if (response.statusCode != 200) {
           throw HoyolabAPIException(
             await response.stream.bytesToString(),

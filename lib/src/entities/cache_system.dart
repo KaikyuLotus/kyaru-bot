@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:uuid/uuid.dart';
 
 class CachedResult {
   final Map<String, dynamic> current;
@@ -20,15 +21,18 @@ class CachedResult {
 class CacheEntry {
   final DateTime insertTime;
   final bool isException;
+  final String uuid;
 
   CacheEntry({
     required this.insertTime,
     this.isException = false,
-  });
+    String? previousUuid,
+  }) : uuid = previousUuid ?? Uuid().v4();
 
   static CacheEntry fromJson(Map<String, dynamic> json) {
     return CacheEntry(
       insertTime: DateTime.fromMillisecondsSinceEpoch(json['insert_time']),
+      previousUuid: json['uuid'],
       isException: json['is_exception'],
     );
   }
@@ -37,6 +41,7 @@ class CacheEntry {
     return {
       'insert_time': insertTime.millisecondsSinceEpoch,
       'is_exception': isException,
+      'uuid': uuid,
     };
   }
 }
@@ -47,8 +52,6 @@ class CacheSystem {
   final String systemKey;
 
   final Duration timeout;
-
-  final b64Codec = utf8.fuse(base64);
 
   late final Map<String, CacheEntry> _cache;
 
@@ -78,7 +81,7 @@ class CacheSystem {
   }
 
   File keyToFile(String key) {
-    return File(join(cacheDir, systemKey, b64Codec.encode(key)));
+    return File(join(cacheDir, systemKey, key));
   }
 
   Future<Map<String, dynamic>?> readCacheFile(String key) async {
@@ -99,17 +102,21 @@ class CacheSystem {
     required String key,
     required Future<Map<String, dynamic>> Function() function,
   }) async {
+    String? previousUuid;
+    bool cacheChanged = false;
     try {
       Map<String, dynamic>? previous;
       if (_cache.containsKey(key)) {
         if (_cache[key]!.insertTime.add(timeout).isBefore(DateTime.now())) {
-          _cache.remove(key);
+          final cacheEntry = _cache.remove(key);
+          cacheChanged = true;
+          previousUuid = cacheEntry!.uuid;
           if (!_cache[key]!.isException) {
             previous = await readCacheFile(key);
           }
         } else {
           var entry = _cache[key]!;
-          final content = await readCacheFile(key);
+          final content = await readCacheFile(entry.uuid);
           if (content != null) {
             if (entry.isException) {
               throw Exception(json.encode(content));
@@ -123,17 +130,24 @@ class CacheSystem {
         }
       }
       final output = await function();
-      await writeCacheFile(key, output);
-      _cache[key] = CacheEntry(insertTime: DateTime.now());
+      _cache[key] = CacheEntry(
+        insertTime: DateTime.now(),
+        previousUuid: previousUuid,
+      );
+      cacheChanged = true;
+      await writeCacheFile(_cache[key]!.uuid, output);
       return CachedResult(current: output, previous: previous);
     } catch (e) {
       _cache[key] = CacheEntry(
         insertTime: DateTime.now(),
         isException: true,
+        previousUuid: previousUuid,
       );
       rethrow;
     } finally {
-      _updateCacheFile();
+      if (cacheChanged) {
+        _updateCacheFile();
+      }
     }
   }
 }
