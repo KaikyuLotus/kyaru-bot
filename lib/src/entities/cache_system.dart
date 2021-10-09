@@ -111,7 +111,7 @@ class CacheSystem {
           final cacheEntry = _cache.remove(key);
           cacheChanged = true;
           previousUuid = cacheEntry!.uuid;
-          if (!_cache[key]!.isException) {
+          if (!cacheEntry.isException) {
             previous = await readCacheFile(key);
           }
         } else {
