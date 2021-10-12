@@ -60,7 +60,7 @@ class ApexModule implements IModule {
     try {
       data = await _apexClient.bridge(username);
     } on ApexException catch (e) {
-      if (e.error.contains('Player not found.')) {
+      if (e.error.contains('Player ') && e.error.contains(' not found')) {
         return _kyaru.reply(update, 'Player not found.');
       }
       await _kyaru.reply(update, 'Unknown error while retrieving user.');

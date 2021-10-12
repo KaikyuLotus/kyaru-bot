@@ -244,6 +244,15 @@ class GenshinModule implements IModule {
       );
     }
 
+    final server = _hoyolabClient.tryRecognizeServer(id);
+    if (server == null) {
+      return _kyaru.reply(
+        update,
+        "That doesn't look like an in-game ID",
+        quote: true,
+      );
+    }
+
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
     var credentials = _credDistrib.forUser(id);
@@ -294,13 +303,18 @@ class GenshinModule implements IModule {
   }
 
   static String characterName(String character) {
-    var characters = {
+    const characters = {
       'Ambor': 'Amber',
       'Feiyan': 'Yanfei',
       'Noel': 'Noelle',
       'Qin': 'Jean',
       'PlayerGirl': 'Lumine',
       'PlayerBoy': 'Aether',
+      'Hutao': 'Hu Tao',
+      'Shogun': 'Raiden Shogun',
+      'Ayaka': 'Kamisato Ayaka',
+      'Kokomi': 'Sangonomiya Kokomi',
+      'Sara': 'Kujou Sara',
     };
     return characters[character] ?? character;
   }

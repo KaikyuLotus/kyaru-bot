@@ -67,9 +67,10 @@ class KonachanModule implements IModule {
   Future randomPost(
     Update update,
     _, {
-    List<String> tags = const [],
+    List<String>? tags,
   }) async {
-    tags.map((t) => t.toLowerCase());
+    final _tags = tags ?? [];
+    _tags.map((t) => t.toLowerCase());
     var cid = ChatID(update.message!.chat.id);
 
     if (slowDownChats.containsKey(update.message!.chat.id)) {
@@ -82,16 +83,16 @@ class KonachanModule implements IModule {
     }
 
     var imagesCount = 1;
-    if (tags.isNotEmpty) {
-      var firstTagNum = int.tryParse(tags.first);
+    if (_tags.isNotEmpty) {
+      var firstTagNum = int.tryParse(_tags.first);
       if (firstTagNum != null) {
-        tags.removeAt(0);
+        _tags.removeAt(0);
         imagesCount = firstTagNum;
       }
     }
 
-    var hasRating = tags.any((e) => e.contains('rating:'));
-    if (tags.length > 6 || (tags.length == 6 && !hasRating)) {
+    var hasRating = _tags.any((e) => e.contains('rating:'));
+    if (_tags.length > 6 || (_tags.length == 6 && !hasRating)) {
       return _kyaru.reply(update, 'You can specify up to six tags, sorry.');
     }
 
@@ -111,13 +112,13 @@ class KonachanModule implements IModule {
     });
 
     if (!AdminUtils.isNsfwAllowed(_kyaru, update.message!.chat)) {
-      tags.removeWhere((t) => t.contains('rating:'));
-      tags.add('rating:s');
+      _tags.removeWhere((t) => t.contains('rating:'));
+      _tags.add('rating:s');
     }
 
     await _kyaru.brain.bot.sendChatAction(cid, ChatAction.uploadPhoto);
 
-    var posts = await konachanClient.getPosts(tags: tags);
+    var posts = await konachanClient.getPosts(tags: _tags);
     if (posts.isEmpty) {
       return _kyaru.reply(update, 'No post found with the specified tags');
     }

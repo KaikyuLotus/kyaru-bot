@@ -26,6 +26,8 @@ extension on Response {
 class RendererClient {
   String baseUrl;
 
+  final _timeout = const Duration(seconds: 30);
+
   final _client = Client();
 
   RendererClient(this.baseUrl);
@@ -46,7 +48,7 @@ class RendererClient {
             },
           ),
         )
-        .timeout(Duration(seconds: 120));
+        .timeout(_timeout);
     response.raiseForStatus();
     return response.bodyBytes;
   }
@@ -67,7 +69,7 @@ class RendererClient {
             },
           ),
         )
-        .timeout(Duration(seconds: 120));
+        .timeout(_timeout);
     response.raiseForStatus();
     return response.bodyBytes;
   }

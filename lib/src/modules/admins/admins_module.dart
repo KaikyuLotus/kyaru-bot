@@ -129,7 +129,7 @@ class AdminsModule implements IModule {
     if (args.isEmpty) {
       return _kyaru.reply(
         update,
-        'Please specify the command to be executed and which reply index',
+        'Please specify the command to be forgotten and which reply index',
       );
     }
 
@@ -353,6 +353,11 @@ class AdminsModule implements IModule {
     }
 
     if (customCommand.commandType == CommandType.text) {
+      if (customCommand.text == null) {
+        // Due to an old bug, some welcome commands are bugged, remove them
+        _kyaru.brain.db.deleteCustomInstruction(instruction);
+        return;
+      }
       return _kyaru.reply(
         update,
         customCommand.text!,
@@ -575,7 +580,7 @@ class AdminsModule implements IModule {
     var customCommand = CustomCommand(
       command: null,
       commandType: commandType,
-      text: null,
+      text: update.message?.text,
       fileId: customFileId,
     );
 

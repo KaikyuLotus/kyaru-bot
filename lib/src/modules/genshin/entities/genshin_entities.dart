@@ -370,10 +370,17 @@ class DetailedAvatar extends Avatar {
         );
 
   static DetailedAvatar fromJson(Map<String, dynamic> json) {
+    var name = json['name'] as String;
+    var image = json['image'] as String;
+    if (name.isEmpty) {
+      name = GenshinModule.characterName(
+        image.split('_').last.split('.')[0].split("@")[0],
+      );
+    }
     return DetailedAvatar(
       id: json['id'],
-      image: json['image'],
-      name: json['name'],
+      image: image,
+      name: name,
       element: json['element'],
       fetter: json['fetter'],
       level: json['level'],

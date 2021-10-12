@@ -15,6 +15,15 @@ enum EndpointName {
   spiralAbyss,
 }
 
+class UnknownServerForGameIdException implements Exception {
+  final int uid;
+
+  UnknownServerForGameIdException(this.uid);
+
+  @override
+  String toString() => 'UnknownServerForGameIdException: $uid';
+}
+
 class ServerSettings {
   final String salt;
   final String host;
@@ -80,6 +89,21 @@ class HoyolabAPIException implements Exception {
   String toString() => 'HoyolabAPIException ($statusCode): $message';
 }
 
+extension on Request {
+  Request clone() {
+    return Request(method, url)
+      ..body = body
+      ..bodyFields = bodyFields
+      ..bodyBytes = bodyBytes
+      ..contentLength = contentLength
+      ..encoding = encoding
+      ..headers.addAll(headers)
+      ..persistentConnection = persistentConnection
+      ..followRedirects = followRedirects
+      ..maxRedirects = maxRedirects;
+  }
+}
+
 class HoyolabClient {
   final _log = Logger('HoyolabClient');
   final _client = Client();
@@ -104,19 +128,23 @@ class HoyolabClient {
     if (params != null) {
       final query = Uri(queryParameters: params).query.split('&')..sort();
       q = query.join('&');
-      print(q);
     }
     final c = md5.convert(utf8.encode('salt=$salt&t=$t&r=$r&b=$b&q=$q'));
     return '$t,$r,$c';
   }
 
+  String? tryRecognizeServer(int gameId) {
+    try {
+      return recognizeServer(gameId);
+    } on UnknownServerForGameIdException {
+      return null;
+    }
+  }
+
   String recognizeServer(int gameId) {
     final server = _servers[int.parse('$gameId'[0])]; // first digit
     if (server == null) {
-      throw Exception(
-        "UID $gameId isn't associated with "
-        "any server, an in-game id is required",
-      );
+      throw UnknownServerForGameIdException(gameId);
     }
     return server;
   }
@@ -135,7 +163,7 @@ class HoyolabClient {
         rethrow;
       }
       await Future.delayed(const Duration(seconds: 1));
-      return _requestWithRetry(request, retry: retry + 1);
+      return _requestWithRetry(request.clone(), retry: retry + 1);
     }
   }
 
