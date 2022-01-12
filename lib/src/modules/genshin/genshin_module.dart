@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
-import 'components/credentials_distributor.dart';
-import 'components/hoyolab_client.dart';
+import 'components/genshin_client.dart';
 import 'components/renderer_client.dart';
 import 'entities/genshin_entities.dart';
 
@@ -37,18 +35,16 @@ class GenshinModule implements IModule {
   final _log = Logger('GenshinModule');
 
   final Kyaru _kyaru;
-  late HoyolabClient _hoyolabClient;
+  late GenshinClient _genshinClient;
   late RendererClient _rendererClient;
-  late CredentialsDistributor _credDistrib;
 
   late List<ModuleFunction> _moduleFunctions;
 
   GenshinModule(this._kyaru) {
-    _hoyolabClient = HoyolabClient();
+    _genshinClient = GenshinClient(_kyaru);
     _rendererClient = RendererClient(
       _kyaru.brain.db.settings.genshinRendererUrl ?? '',
     );
-    _credDistrib = CredentialsDistributor.withDatabase(_kyaru.brain.db);
 
     _moduleFunctions = [
       ModuleFunction(
@@ -88,11 +84,6 @@ class GenshinModule implements IModule {
         core: true,
       ),
       ModuleFunction(
-        addCredentials,
-        'Owner only command that adds Hoyolab credentials',
-        'add_genshin_cred',
-      ),
-      ModuleFunction(
         setRendererUrl,
         'Owner only command that sets genshin renderer url',
         'set_renderer_url',
@@ -106,88 +97,6 @@ class GenshinModule implements IModule {
   @override
   bool isEnabled() {
     return true;
-  }
-
-  // Admin only
-  Future addCredentials(Update update, _) async {
-    final parts = update.message!.text!.split('\n');
-    parts.removeAt(0);
-    if (parts.isEmpty) {
-      return _kyaru.reply(
-        update,
-        'Please send new credentials like this:\n'
-        '/add_genshin_cred\n'
-        'token: TOKEN\n'
-        'uid: UID\n'
-        'cn: true/false',
-      );
-    }
-    if (parts.length < 3) {
-      return _kyaru.reply(
-        update,
-        "I didn't find all the required parts",
-      );
-    }
-    Map<String, String> map;
-    try {
-      map = <String, String>{
-        for (var pair in parts.map((e) => e.split(':')))
-          pair[0].trim(): pair[1].trim()
-      };
-    } on RangeError {
-      return _kyaru.reply(
-        update,
-        "Your input contains malformed value pair...",
-      );
-    }
-
-    final requiredKeys = ['token', 'uid', 'cn'];
-    for (final key in requiredKeys) {
-      if (!map.containsKey(key)) {
-        return _kyaru.reply(
-          update,
-          "I didn't find '$key' please check your message",
-        );
-      }
-    }
-
-    final token = map['token']!;
-
-    final uid = int.tryParse(map['uid'] ?? '');
-    if (uid == null) {
-      return _kyaru.reply(
-        update,
-        "uid is not a valid ID, it's not an integer",
-      );
-    }
-
-    final cnStr = map['cn']?.toLowerCase();
-    if (!['true', 'false'].contains(cnStr)) {
-      return _kyaru.reply(
-        update,
-        "cn is not a valid bool, it's either not 'true' and 'false'",
-      );
-    }
-    final cn = cnStr == 'true';
-    final cred = HoyolabCredentials(
-      token: token,
-      uid: uid,
-      isCn: cn,
-    );
-
-    if (_credDistrib.exists(token: token)) {
-      return _kyaru.reply(
-        update,
-        "This token is already present!",
-      );
-    }
-
-    _credDistrib.addCredentials(cred);
-
-    return _kyaru.reply(
-      update,
-      "Added credentials:\n${JsonEncoder.withIndent('  ').convert(cred)}",
-    );
   }
 
   Future setRendererUrl(Update update, _) async {
@@ -244,7 +153,7 @@ class GenshinModule implements IModule {
       );
     }
 
-    final server = _hoyolabClient.tryRecognizeServer(id);
+    final server = _genshinClient.tryRecognizeServer(id);
     if (server == null) {
       return _kyaru.reply(
         update,
@@ -255,10 +164,8 @@ class GenshinModule implements IModule {
 
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
-    var credentials = _credDistrib.forUser(id);
-    var fullInfo = await _hoyolabClient.getUserData(
+    var fullInfo = await _genshinClient.getUserData(
       gameId: id,
-      credentials: credentials,
     );
 
     if (fullInfo.current.retcode != 0) {
@@ -364,10 +271,8 @@ class GenshinModule implements IModule {
     }
 
     final gameId = userData['id'];
-    final credentials = _credDistrib.forUser(gameId);
-    var abyssCachedData = await _hoyolabClient.getSpiralAbyss(
+    var abyssCachedData = await _genshinClient.getSpiralAbyss(
       gameId: gameId,
-      credentials: credentials,
     );
 
     if (abyssCachedData.currentPeriod.current.retcode != 0 ||
@@ -420,10 +325,8 @@ class GenshinModule implements IModule {
     }
 
     final gameId = userData['id'];
-    final credentials = _credDistrib.forUser(gameId);
-    var userCachedData = await _hoyolabClient.getUserData(
+    var userCachedData = await _genshinClient.getUserData(
       gameId: gameId,
-      credentials: credentials,
     );
 
     if (userCachedData.current.retcode != 0) {
@@ -546,10 +449,8 @@ class GenshinModule implements IModule {
         return;
       }
       final gameId = userData['id'];
-      final credentials = _credDistrib.forUser(gameId);
-      var userDataCache = await _hoyolabClient.getUserData(
+      var userDataCache = await _genshinClient.getUserData(
         gameId: gameId,
-        credentials: credentials,
       );
 
       if (userDataCache.current.retcode != 0) {
@@ -560,9 +461,8 @@ class GenshinModule implements IModule {
       }
 
       final ids = userDataCache.current.data!.avatars.map((a) => a.id).toList();
-      final charactersCache = await _hoyolabClient.getCharacters(
+      final charactersCache = await _genshinClient.getCharacters(
         gameId: gameId,
-        credentials: credentials,
         characterIdsJson: ids,
       );
 
@@ -618,10 +518,8 @@ class GenshinModule implements IModule {
     String? msg = 'Something went wrong...';
     try {
       final gameId = userData['id'];
-      final credentials = _credDistrib.forUser(gameId);
-      var userCachedData = await _hoyolabClient.getUserData(
+      var userCachedData = await _genshinClient.getUserData(
         gameId: gameId,
-        credentials: credentials,
       );
 
       if (userCachedData.current.retcode != 0) {

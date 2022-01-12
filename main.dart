@@ -36,6 +36,7 @@ void main(List<String> arguments) async {
       SteamModule(kyaru),
       VideogameModule(kyaru),
       GenshinDataModule(kyaru),
+      HoyolabModule(kyaru),
     ];
 
     kyaru.useModules(modules);

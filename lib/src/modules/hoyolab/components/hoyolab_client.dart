@@ -2,11 +2,10 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart';
-import 'package:kyaru_bot/kyaru.dart';
 import 'package:kyaru_bot/src/entities/cache_system.dart';
 import 'package:logging/logging.dart';
 
-import '../entities/genshin_entities.dart';
+import '../../../../kyaru.dart';
 import 'credentials_distributor.dart';
 
 enum EndpointName {
@@ -44,41 +43,6 @@ class ServerSettings {
 
 const _timeout = Duration(seconds: 10);
 
-const _servers = <int, String>{
-  1: 'cn_gf01',
-  5: 'cn_qd01',
-  6: 'os_usa',
-  7: 'os_euro',
-  8: 'os_asia',
-  9: 'os_cht',
-};
-
-const _settingsEu = ServerSettings(
-  salt: "6cqshh5dhw73bzxn20oexa9k516chk7s",
-  host: "bbs-api-os.hoyolab.com",
-  rpcVer: "1.5.0",
-  clientType: "4",
-  lang: 'en-us',
-  endpoints: {
-    EndpointName.indexPage: "/game_record/genshin/api/index",
-    EndpointName.character: "/game_record/genshin/api/character",
-    EndpointName.spiralAbyss: "/game_record/genshin/api/spiralAbyss",
-  },
-);
-
-const _settingsCn = ServerSettings(
-  salt: "xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs",
-  host: "api-takumi.mihoyo.com",
-  rpcVer: "2.11.1",
-  clientType: "5",
-  lang: 'zh-CN,en-US;q=0.8',
-  endpoints: {
-    EndpointName.indexPage: "/game_record/app/genshin/api/index",
-    EndpointName.character: "/game_record/app/genshin/api/character",
-    EndpointName.spiralAbyss: "/game_record/app/genshin/api/spiralAbyss",
-  },
-);
-
 class HoyolabAPIException implements Exception {
   final String message;
   final int statusCode;
@@ -108,6 +72,12 @@ class HoyolabClient {
   final _log = Logger('HoyolabClient');
   final _client = Client();
   final _cacheSys = CacheSystem(systemKey: 'hoyolab-api');
+  final Kyaru _kyaru;
+  late CredentialsDistributor _credDistrib;
+
+  HoyolabClient(this._kyaru) {
+    _credDistrib = CredentialsDistributor.withDatabase(_kyaru.brain.db);
+  }
 
   String _generateDsTokenEu(String salt) {
     final t = DateTime.now().millisecondsSinceEpoch ~/ 1000; // current seconds
@@ -133,24 +103,6 @@ class HoyolabClient {
     return '$t,$r,$c';
   }
 
-  String? tryRecognizeServer(int gameId) {
-    try {
-      return recognizeServer(gameId);
-    } on UnknownServerForGameIdException {
-      return null;
-    }
-  }
-
-  String recognizeServer(int gameId) {
-    final server = _servers[int.parse('$gameId'[0])]; // first digit
-    if (server == null) {
-      throw UnknownServerForGameIdException(gameId);
-    }
-    return server;
-  }
-
-  bool isChineseServer(String server) => server.startsWith(RegExp(r'(cn|1|5)'));
-
   Future<StreamedResponse> _requestWithRetry(
     Request request, {
     int retries = 3,
@@ -167,23 +119,20 @@ class HoyolabClient {
     }
   }
 
-  Future<CachedResult> _request({
+  Future<CachedResult> request({
     required EndpointName endpoint,
     required int gameId,
     required String server,
-    required int uid,
-    required String token,
+    required ServerSettings settings,
     Map<String, dynamic>? body,
     Map<String, String>? params,
+    bool chinese = false,
     String method = 'GET',
   }) async {
     final key = '$endpoint|$gameId|${json.encode(body)}|${json.encode(params)}';
     return _cacheSys.cacheOutput(
       key: key,
       function: () async {
-        final chinese = isChineseServer(server);
-        final settings = chinese ? _settingsCn : _settingsEu;
-
         String ds;
         if (chinese) {
           ds = _generateDsTokenCn(settings.salt, params: params, body: body);
@@ -198,6 +147,12 @@ class HoyolabClient {
         if (body != null) {
           request.body = json.encode(body);
         }
+
+        final credentials = _credDistrib.forUser(gameId);
+
+        var token = credentials.token;
+        var uid = credentials.uid;
+
         request.headers.addAll(
           <String, String>{
             "Cookie": "ltoken=$token; ltuid=$uid;",
@@ -228,83 +183,6 @@ class HoyolabClient {
         final jsonString = await response.stream.bytesToString();
         return json.decode(jsonString);
       },
-    );
-  }
-
-  Future<CachedAPIResponse<UserInfo>> getUserData({
-    required int gameId,
-    required HoyolabCredentials credentials,
-  }) async {
-    final server = recognizeServer(gameId);
-    var cachedResult = await _request(
-      endpoint: EndpointName.indexPage,
-      params: {'server': server, 'role_id': '$gameId'},
-      gameId: gameId,
-      uid: credentials.uid,
-      token: credentials.token,
-      server: server,
-    );
-    return CachedAPIResponse.fromCachedResult<UserInfo>(
-      cachedResult,
-      UserInfo.fromJson,
-    );
-  }
-
-  Future<CachedAPIResponse<UserCharacters>> getCharacters({
-    required int gameId,
-    required HoyolabCredentials credentials,
-    required List<int> characterIdsJson,
-  }) async {
-    final server = recognizeServer(gameId);
-    var cachedResult = await _request(
-      endpoint: EndpointName.character,
-      body: {
-        'character_ids': characterIdsJson,
-        'server': server,
-        'role_id': gameId
-      },
-      gameId: gameId,
-      uid: credentials.uid,
-      token: credentials.token,
-      server: server,
-      method: 'POST',
-    );
-    return CachedAPIResponse.fromCachedResult<UserCharacters>(
-      cachedResult,
-      UserCharacters.fromJson,
-    );
-  }
-
-  Future<FullAbyssInfo> getSpiralAbyss({
-    required int gameId,
-    required HoyolabCredentials credentials,
-  }) async {
-    final server = recognizeServer(gameId);
-    final current = await _request(
-      endpoint: EndpointName.spiralAbyss,
-      params: {'server': server, 'role_id': '$gameId', 'schedule_type': '1'},
-      gameId: gameId,
-      uid: credentials.uid,
-      token: credentials.token,
-      server: server,
-    );
-    final previous = await _request(
-      endpoint: EndpointName.spiralAbyss,
-      params: {'server': server, 'role_id': '$gameId', 'schedule_type': '2'},
-      gameId: gameId,
-      uid: credentials.uid,
-      token: credentials.token,
-      server: server,
-    );
-    return FullAbyssInfo(
-      currentPeriod: CachedAPIResponse.fromCachedResult(
-        current,
-        AbyssInfo.fromJson,
-      ),
-      previousPeriod: CachedAPIResponse.fromCachedResult(
-        previous,
-        AbyssInfo.fromJson,
-      ),
     );
   }
 }
