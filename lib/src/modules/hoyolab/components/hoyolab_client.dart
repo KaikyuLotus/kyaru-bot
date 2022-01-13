@@ -12,6 +12,8 @@ enum EndpointName {
   indexPage,
   character,
   spiralAbyss,
+  elysianRealm,
+  arena,
 }
 
 class UnknownServerForGameIdException implements Exception {
@@ -122,7 +124,6 @@ class HoyolabClient {
   Future<CachedResult> request({
     required EndpointName endpoint,
     required int gameId,
-    required String server,
     required ServerSettings settings,
     Map<String, dynamic>? body,
     Map<String, String>? params,
@@ -148,7 +149,7 @@ class HoyolabClient {
           request.body = json.encode(body);
         }
 
-        final credentials = _credDistrib.forUser(gameId);
+        final credentials = _credDistrib.forUser(gameId, chinese);
 
         var token = credentials.token;
         var uid = credentials.uid;

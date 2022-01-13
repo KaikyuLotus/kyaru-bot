@@ -55,7 +55,6 @@ class GenshinClient extends HoyolabClient {
         params: {'server': server, 'role_id': '$gameId'},
         gameId: gameId,
         settings: settings,
-        server: server,
         chinese: chinese);
     return CachedAPIResponse.fromCachedResult<UserInfo>(
       cachedResult,
@@ -94,7 +93,6 @@ class GenshinClient extends HoyolabClient {
         'role_id': gameId
       },
       gameId: gameId,
-      server: server,
       settings: settings,
       chinese: chinese,
       method: 'POST',
@@ -115,7 +113,6 @@ class GenshinClient extends HoyolabClient {
       endpoint: EndpointName.spiralAbyss,
       params: {'server': server, 'role_id': '$gameId', 'schedule_type': '1'},
       gameId: gameId,
-      server: server,
       settings: settings,
       chinese: chinese,
     );
@@ -123,7 +120,6 @@ class GenshinClient extends HoyolabClient {
       endpoint: EndpointName.spiralAbyss,
       params: {'server': server, 'role_id': '$gameId', 'schedule_type': '2'},
       gameId: gameId,
-      server: server,
       settings: settings,
       chinese: chinese,
     );

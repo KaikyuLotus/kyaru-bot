@@ -95,15 +95,13 @@ class CredentialsDistributor {
     return db.credentialsWithToken(token) != null;
   }
 
-  bool isChineseServer(String server) => server.startsWith(RegExp(r'(cn|1|5)'));
-
-  HoyolabCredentials forUser(int gameId) {
+  HoyolabCredentials forUser(int gameId, bool chinese) {
     final credentials = db.credentialsForUser(gameId);
     if (credentials != null) {
       return credentials;
     }
 
-    final lessUsedCred = db.lessUsedCredentials(cn: isChineseServer('$gameId'));
+    final lessUsedCred = db.lessUsedCredentials(cn: chinese);
     lessUsedCred.gameIds.add(gameId);
     db.updateCredentials(lessUsedCred);
     return lessUsedCred;
