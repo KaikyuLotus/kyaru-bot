@@ -15,11 +15,11 @@ const settingsEu = ServerSettings(
 class HonkaiClient extends HoyolabClient {
   HonkaiClient(Kyaru _kyaru) : super(_kyaru);
 
-  // TODO
-  Future<Map> getCharacters() async {
-    var gameId = 123;
+  //TODO: Cached results
+  Future<Map<String, dynamic>> getCharacters(int gameId) async {
     var cachedResult = await request(
       endpoint: EndpointName.character,
+      //TODO: Server
       params: {'server': 'eur01', 'role_id': '$gameId'},
       gameId: gameId,
       settings: settingsEu,

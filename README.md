@@ -15,6 +15,7 @@ Kyaru is an utility bot made mainly for groups.
             "videogame_token": "String",
             "genshin_data_url": "String",
             "genshin_renderer_url": "String",
+            "honkai_renderer_url": "String",
             "github_token": "github_token",
             "owner_id": "int"
         }
@@ -33,5 +34,6 @@ All fields, except the token and the owner_id, can be empty or omitted.
 `videogame_token`: RAWG api key, obtainable [here](https://rawg.io/apidocs)<br>
 `genshin_data_url`<br>
 `genshin_renderer_url`: [repo](https://github.com/KaikyuLotus/genshin-renderer)<br>
+`honkai_renderer_url`<br>
 `github_token`: obtainable [here](https://github.com/settings/tokens)<br>
 `owner_id`: Your telegram id<br>
