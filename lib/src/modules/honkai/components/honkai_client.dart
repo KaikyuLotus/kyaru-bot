@@ -21,12 +21,13 @@ class HonkaiClient extends HoyolabClient {
     required int gameId,
   }) async {
     var cachedResult = await request(
-        endpoint: EndpointName.character,
-        //TODO: Server
-        params: {'server': 'eur01', 'role_id': '$gameId'},
-        gameId: gameId,
-        settings: settingsEu,
-        userId: userId);
+      endpoint: EndpointName.character,
+      //TODO: Server
+      params: {'server': 'eur01', 'role_id': '$gameId'},
+      gameId: gameId,
+      settings: settingsEu,
+      userId: userId,
+    );
 
     return cachedResult.current;
   }

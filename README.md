@@ -34,6 +34,6 @@ All fields, except the token and the owner_id, can be empty or omitted.
 `videogame_token`: RAWG api key, obtainable [here](https://rawg.io/apidocs)<br>
 `genshin_data_url`<br>
 `genshin_renderer_url`: [repo](https://github.com/KaikyuLotus/genshin-renderer)<br>
-`honkai_renderer_url`<br>
+`honkai_renderer_url`: [repo](https://github.com/ale183/honkai_renderer)<br>
 `github_token`: obtainable [here](https://github.com/settings/tokens)<br>
 `owner_id`: Your telegram id<br>
