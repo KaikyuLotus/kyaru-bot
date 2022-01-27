@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart';
 
+import '../entities/honkai_entities.dart';
+
 class RendererException implements Exception {
   String message;
   int statusCode;
@@ -30,11 +32,13 @@ class RendererClient {
 
   RendererClient(this.baseUrl);
 
-  Future<Uint8List> getCharacters(Map<String, dynamic> data) async {
+  Future<Uint8List> getCharacters(UserCharacters characters) async {
     var response = await _client
         .post(
           Uri.http(baseUrl, '/honkai_characters'),
-          body: json.encode(data),
+          body: json.encode({
+            'data': characters,
+          }),
         )
         .timeout(_timeout);
     response.raiseForStatus();

@@ -95,7 +95,16 @@ class HonkaiModule implements IModule {
       userId: userId,
       gameId: userData['id'],
     );
-    var image = await _rendererClient.getCharacters(data);
+
+    if (data.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your characters, retry later.\n"
+        "Code: ${data.current.retcode}",
+      );
+    }
+
+    var image = await _rendererClient.getCharacters(data.current.data!);
 
     return _kyaru.replyPhoto(
       update,

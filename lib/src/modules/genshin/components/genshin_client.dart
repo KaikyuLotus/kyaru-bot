@@ -1,5 +1,6 @@
 import '../../../../kyaru.dart';
 import '../../hoyolab/components/hoyolab_client.dart';
+import '../../hoyolab/entities/api_cache.dart';
 import '../entities/genshin_entities.dart';
 
 const settingsEu = ServerSettings(

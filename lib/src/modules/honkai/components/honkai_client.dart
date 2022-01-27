@@ -1,5 +1,7 @@
 import '../../../../kyaru.dart';
 import '../../hoyolab/components/hoyolab_client.dart';
+import '../../hoyolab/entities/api_cache.dart';
+import '../entities/honkai_entities.dart';
 
 const settingsEu = ServerSettings(
   salt: "6s25p5ox5y14umn1p61aqyyvbvvl3lrt",
@@ -15,8 +17,7 @@ const settingsEu = ServerSettings(
 class HonkaiClient extends HoyolabClient {
   HonkaiClient(Kyaru _kyaru) : super(_kyaru);
 
-  //TODO: Cached results
-  Future<Map<String, dynamic>> getCharacters({
+  Future<CachedAPIResponse<UserCharacters>> getCharacters({
     required int userId,
     required int gameId,
   }) async {
@@ -29,6 +30,9 @@ class HonkaiClient extends HoyolabClient {
       userId: userId,
     );
 
-    return cachedResult.current;
+    return CachedAPIResponse.fromCachedResult<UserCharacters>(
+      cachedResult,
+      UserCharacters.fromJson,
+    );
   }
 }
