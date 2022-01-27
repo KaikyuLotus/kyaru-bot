@@ -43,6 +43,7 @@ class GenshinClient extends HoyolabClient {
   GenshinClient(Kyaru _kyaru) : super(_kyaru);
 
   Future<CachedAPIResponse<UserInfo>> getUserData({
+    required int userId,
     required int gameId,
   }) async {
     final server = recognizeServer(gameId);
@@ -55,7 +56,8 @@ class GenshinClient extends HoyolabClient {
         params: {'server': server, 'role_id': '$gameId'},
         gameId: gameId,
         settings: settings,
-        chinese: chinese);
+        chinese: chinese,
+        userId: userId);
     return CachedAPIResponse.fromCachedResult<UserInfo>(
       cachedResult,
       UserInfo.fromJson,
@@ -79,6 +81,7 @@ class GenshinClient extends HoyolabClient {
   }
 
   Future<CachedAPIResponse<UserCharacters>> getCharacters({
+    required int userId,
     required int gameId,
     required List<int> characterIdsJson,
   }) async {
@@ -95,6 +98,7 @@ class GenshinClient extends HoyolabClient {
       gameId: gameId,
       settings: settings,
       chinese: chinese,
+      userId: userId,
       method: 'POST',
     );
     return CachedAPIResponse.fromCachedResult<UserCharacters>(
@@ -104,6 +108,7 @@ class GenshinClient extends HoyolabClient {
   }
 
   Future<FullAbyssInfo> getSpiralAbyss({
+    required int userId,
     required int gameId,
   }) async {
     final server = recognizeServer(gameId);
@@ -115,6 +120,7 @@ class GenshinClient extends HoyolabClient {
       gameId: gameId,
       settings: settings,
       chinese: chinese,
+      userId: userId,
     );
     final previous = await request(
       endpoint: EndpointName.spiralAbyss,
@@ -122,6 +128,7 @@ class GenshinClient extends HoyolabClient {
       gameId: gameId,
       settings: settings,
       chinese: chinese,
+      userId: userId,
     );
     return FullAbyssInfo(
       currentPeriod: CachedAPIResponse.fromCachedResult(

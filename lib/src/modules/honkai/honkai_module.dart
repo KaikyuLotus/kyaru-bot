@@ -85,12 +85,16 @@ class HonkaiModule implements IModule {
   }
 
   Future characters(Update update, _) async {
-    var userData = _kyaru.brain.db.getHonkaiUser(update.message!.from!.id);
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getHonkaiUser(userId);
     if (userData == null) {
       return _kyaru.reply(update, 'ID not found');
     }
 
-    var data = await _honkaiClient.getCharacters(userData['id']);
+    var data = await _honkaiClient.getCharacters(
+      userId: userId,
+      gameId: userData['id'],
+    );
     var image = await _rendererClient.getCharacters(data);
 
     return _kyaru.replyPhoto(

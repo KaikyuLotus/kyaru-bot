@@ -20,6 +20,12 @@ class HoyolabModule implements IModule {
         'Owner only command that adds Hoyolab credentials',
         'add_hoyolab_cred',
       ),
+      ModuleFunction(
+        addUserCredentials,
+        'Command that adds Hoyolab credentials',
+        'hoyolab_cred',
+        core: true,
+      ),
     ];
   }
 
@@ -31,25 +37,30 @@ class HoyolabModule implements IModule {
     return true;
   }
 
-  // Admin only
-  Future addCredentials(Update update, _) async {
+  Future<HoyolabCredentials?> checkCred(
+    Update update, {
+    bool user = false,
+  }) async {
     final parts = update.message!.text!.split('\n');
     parts.removeAt(0);
     if (parts.isEmpty) {
-      return _kyaru.reply(
+      var command = user ? '/hoyolab_cred' : '/add_genshin_cred';
+      _kyaru.reply(
         update,
         'Please send new credentials like this:\n'
-        '/add_genshin_cred\n'
+        '$command\n'
         'token: TOKEN\n'
         'uid: UID\n'
         'cn: true/false',
       );
+      return null;
     }
     if (parts.length < 3) {
-      return _kyaru.reply(
+      _kyaru.reply(
         update,
         "I didn't find all the required parts",
       );
+      return null;
     }
     Map<String, String> map;
     try {
@@ -58,19 +69,21 @@ class HoyolabModule implements IModule {
           pair[0].trim(): pair[1].trim()
       };
     } on RangeError {
-      return _kyaru.reply(
+      _kyaru.reply(
         update,
         "Your input contains malformed value pair...",
       );
+      return null;
     }
 
     final requiredKeys = ['token', 'uid', 'cn'];
     for (final key in requiredKeys) {
       if (!map.containsKey(key)) {
-        return _kyaru.reply(
+        _kyaru.reply(
           update,
           "I didn't find '$key' please check your message",
         );
+        return null;
       }
     }
 
@@ -78,38 +91,64 @@ class HoyolabModule implements IModule {
 
     final uid = int.tryParse(map['uid'] ?? '');
     if (uid == null) {
-      return _kyaru.reply(
+      _kyaru.reply(
         update,
         "uid is not a valid ID, it's not an integer",
       );
+      return null;
     }
 
     final cnStr = map['cn']?.toLowerCase();
     if (!['true', 'false'].contains(cnStr)) {
-      return _kyaru.reply(
+      _kyaru.reply(
         update,
         "cn is not a valid bool, it's either not 'true' and 'false'",
       );
+      return null;
     }
     final cn = cnStr == 'true';
+    final userId = update.message!.from!.id;
     final cred = HoyolabCredentials(
       token: token,
       uid: uid,
+      userId: user ? userId : 0,
       isCn: cn,
     );
 
-    if (_credDistrib.exists(token: token)) {
-      return _kyaru.reply(
+    if (_credDistrib.exists(token: token, user: user)) {
+      _kyaru.reply(
         update,
         "This token is already present!",
       );
+      return null;
     }
+    return cred;
+  }
 
-    _credDistrib.addCredentials(cred);
+  // Admin only
+  Future addCredentials(Update update, _) async {
+    var cred = await checkCred(update);
 
-    return _kyaru.reply(
-      update,
-      "Added credentials:\n${JsonEncoder.withIndent('  ').convert(cred)}",
-    );
+    if (cred != null) {
+      _credDistrib.addCredentials(cred);
+
+      return _kyaru.reply(
+        update,
+        "Added credentials:\n${JsonEncoder.withIndent('  ').convert(cred)}",
+      );
+    }
+  }
+
+  Future addUserCredentials(Update update, _) async {
+    var cred = await checkCred(update, user: true);
+
+    if (cred != null) {
+      _credDistrib.addUserCredentials(cred);
+
+      return _kyaru.reply(
+        update,
+        "Added credentials:\n${JsonEncoder.withIndent('  ').convert(cred)}",
+      );
+    }
   }
 }

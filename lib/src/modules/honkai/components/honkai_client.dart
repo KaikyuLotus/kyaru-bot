@@ -16,14 +16,17 @@ class HonkaiClient extends HoyolabClient {
   HonkaiClient(Kyaru _kyaru) : super(_kyaru);
 
   //TODO: Cached results
-  Future<Map<String, dynamic>> getCharacters(int gameId) async {
+  Future<Map<String, dynamic>> getCharacters({
+    required int userId,
+    required int gameId,
+  }) async {
     var cachedResult = await request(
-      endpoint: EndpointName.character,
-      //TODO: Server
-      params: {'server': 'eur01', 'role_id': '$gameId'},
-      gameId: gameId,
-      settings: settingsEu,
-    );
+        endpoint: EndpointName.character,
+        //TODO: Server
+        params: {'server': 'eur01', 'role_id': '$gameId'},
+        gameId: gameId,
+        settings: settingsEu,
+        userId: userId);
 
     return cachedResult.current;
   }

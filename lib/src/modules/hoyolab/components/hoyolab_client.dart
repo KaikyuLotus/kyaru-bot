@@ -128,6 +128,7 @@ class HoyolabClient {
     Map<String, dynamic>? body,
     Map<String, String>? params,
     bool chinese = false,
+    required userId,
     String method = 'GET',
   }) async {
     final key = '$endpoint|$gameId|${json.encode(body)}|${json.encode(params)}';
@@ -149,7 +150,7 @@ class HoyolabClient {
           request.body = json.encode(body);
         }
 
-        final credentials = _credDistrib.forUser(gameId, chinese);
+        final credentials = _credDistrib.forUser(userId, gameId, chinese);
 
         var token = credentials.token;
         var uid = credentials.uid;

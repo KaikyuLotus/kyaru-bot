@@ -165,6 +165,7 @@ class GenshinModule implements IModule {
     var sentMessage = await _kyaru.reply(update, 'Please wait...', quote: true);
 
     var fullInfo = await _genshinClient.getUserData(
+      userId: update.message!.from!.id,
       gameId: id,
     );
 
@@ -272,6 +273,7 @@ class GenshinModule implements IModule {
 
     final gameId = userData['id'];
     var abyssCachedData = await _genshinClient.getSpiralAbyss(
+      userId: update.message!.from!.id,
       gameId: gameId,
     );
 
@@ -318,7 +320,8 @@ class GenshinModule implements IModule {
   }
 
   Future genshin(Update update, _) async {
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getGenshinUser(userId);
     if (userData == null) {
       await warnUseGenshinIdFirst(update);
       return;
@@ -326,6 +329,7 @@ class GenshinModule implements IModule {
 
     final gameId = userData['id'];
     var userCachedData = await _genshinClient.getUserData(
+      userId: userId,
       gameId: gameId,
     );
 
@@ -442,14 +446,16 @@ class GenshinModule implements IModule {
 
     final sentMsg = await _kyaru.reply(update, 'Please wait...');
     String? msg = 'Something went wrong...';
+    var userId = update.message!.from!.id;
     try {
-      var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+      var userData = _kyaru.brain.db.getGenshinUser(userId);
       if (userData == null) {
         await warnUseGenshinIdFirst(update);
         return;
       }
       final gameId = userData['id'];
       var userDataCache = await _genshinClient.getUserData(
+        userId: userId,
         gameId: gameId,
       );
 
@@ -462,6 +468,7 @@ class GenshinModule implements IModule {
 
       final ids = userDataCache.current.data!.avatars.map((a) => a.id).toList();
       final charactersCache = await _genshinClient.getCharacters(
+        userId: userId,
         gameId: gameId,
         characterIdsJson: ids,
       );
@@ -508,7 +515,8 @@ class GenshinModule implements IModule {
   }
 
   Future characters(Update update, _) async {
-    var userData = _kyaru.brain.db.getGenshinUser(update.message!.from!.id);
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getGenshinUser(userId);
     if (userData == null) {
       await warnUseGenshinIdFirst(update);
       return;
@@ -519,6 +527,7 @@ class GenshinModule implements IModule {
     try {
       final gameId = userData['id'];
       var userCachedData = await _genshinClient.getUserData(
+        userId: userId,
         gameId: gameId,
       );
 
