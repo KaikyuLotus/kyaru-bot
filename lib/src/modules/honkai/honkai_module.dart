@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dart_telegram_bot/telegram_entities.dart';
 
 import '../../../kyaru.dart';
+import 'entities/honkai_entities.dart';
 import 'components/honkai_client.dart';
 import 'components/renderer_client.dart';
 
@@ -50,7 +51,13 @@ class HonkaiModule implements IModule {
       ModuleFunction(
         characters,
         'Gets your characters from HoYoLAB',
-        'honkai_characters',
+        'honkai_chars',
+        core: true,
+      ),
+      ModuleFunction(
+        character,
+        'Gets one of yours characters from HoYoLAB',
+        'honkai_char',
         core: true,
       ),
     ];
@@ -109,6 +116,59 @@ class HonkaiModule implements IModule {
     return _kyaru.replyPhoto(
       update,
       HttpFile.fromBytes('characters.png', Uint8List.fromList(image)),
+      quote: true,
+    );
+  }
+
+  Future character(Update update, _) async {
+    var args = update.message!.text!.split(' ')..removeAt(0);
+    if (args.isEmpty) {
+      return _kyaru.reply(
+        update,
+        'This command requires a character name as argument:\n'
+        '/honkai_char Starchasm Nyx',
+      );
+    }
+
+    var characterName = args.join(' ').toLowerCase();
+
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getHonkaiUser(userId);
+    if (userData == null) {
+      return _kyaru.reply(update, 'ID not found');
+    }
+
+    var data = await _honkaiClient.getCharacters(
+      userId: userId,
+      gameId: userData['id'],
+    );
+
+    if (data.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your characters, retry later.\n"
+        "Code: ${data.current.retcode}",
+      );
+    }
+
+    Character? avatar;
+
+    for (var character in data.current.data!.characters) {
+      if (character.avatar.name.toLowerCase() == characterName) {
+        avatar = character;
+      }
+    }
+
+    if (avatar == null) {
+      _kyaru.reply(update, "It seems like you don't have that character...");
+      return;
+    }
+
+    var image = await _rendererClient.getCharacter(avatar);
+
+    return _kyaru.replyPhoto(
+      update,
+      HttpFile.fromBytes('character.png', Uint8List.fromList(image)),
       quote: true,
     );
   }

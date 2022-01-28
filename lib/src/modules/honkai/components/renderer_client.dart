@@ -36,9 +36,26 @@ class RendererClient {
     var response = await _client
         .post(
           Uri.http(baseUrl, '/honkai_characters'),
-          body: json.encode({
-            'data': characters,
-          }),
+          body: json.encode(
+            {
+              'data': characters,
+            },
+          ),
+        )
+        .timeout(_timeout);
+    response.raiseForStatus();
+    return response.bodyBytes;
+  }
+
+  Future<Uint8List> getCharacter(Character character) async {
+    var response = await _client
+        .post(
+          Uri.http(baseUrl, '/honkai_character'),
+          body: json.encode(
+            {
+              'data': character,
+            },
+          ),
         )
         .timeout(_timeout);
     response.raiseForStatus();
