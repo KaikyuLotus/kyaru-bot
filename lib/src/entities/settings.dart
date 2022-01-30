@@ -11,6 +11,7 @@ class Settings {
   final String? videogameToken;
   final String? genshinRendererUrl;
   final String? genshinDataUrl;
+  final String? honkaiRendererUrl;
   final String? githubToken;
 
   Settings({
@@ -24,6 +25,7 @@ class Settings {
     this.videogameToken,
     this.genshinDataUrl,
     this.genshinRendererUrl,
+    this.honkaiRendererUrl,
     this.githubToken,
   });
 
@@ -38,6 +40,7 @@ class Settings {
       videogameToken: json['videogame_token'],
       genshinDataUrl: json['genshin_data_url'],
       genshinRendererUrl: json['genshin_renderer_url'],
+      honkaiRendererUrl: json['honkai_renderer_url'],
       githubToken: json['github_token'],
       ownerId: ChatID(json['owner_id']),
     );
@@ -54,6 +57,7 @@ class Settings {
     String? videogameToken,
     String? genshinDataUrl,
     String? genshinRendererUrl,
+    String? honkaiRendererUrl,
     String? githubToken,
   }) {
     return Settings(
@@ -66,6 +70,7 @@ class Settings {
       videogameToken: videogameToken ?? this.videogameToken,
       genshinDataUrl: genshinDataUrl ?? this.genshinDataUrl,
       genshinRendererUrl: genshinRendererUrl ?? this.genshinRendererUrl,
+      honkaiRendererUrl: honkaiRendererUrl ?? this.honkaiRendererUrl,
       githubToken: githubToken ?? this.githubToken,
       ownerId: ownerId ?? this.ownerId,
     );
@@ -82,6 +87,7 @@ class Settings {
       'videogame_token': videogameToken,
       'genshin_data_url': genshinDataUrl,
       'genshin_renderer_url': genshinRendererUrl,
+      'honkai_renderer_url': honkaiRendererUrl,
       'github_token': githubToken,
       'owner_id': ownerId.chatId,
     };
