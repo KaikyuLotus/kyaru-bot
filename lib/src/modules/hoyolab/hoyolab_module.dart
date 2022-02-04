@@ -44,7 +44,7 @@ class HoyolabModule implements IModule {
     final parts = update.message!.text!.split('\n');
     parts.removeAt(0);
     if (parts.isEmpty) {
-      var command = user ? '/hoyolab_cred' : '/add_genshin_cred';
+      var command = user ? '/hoyolab_cred' : '/add_hoyolab_cred';
       _kyaru.reply(
         update,
         'Please send new credentials like this:\n'
