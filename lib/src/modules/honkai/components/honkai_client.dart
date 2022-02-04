@@ -35,4 +35,20 @@ class HonkaiClient extends HoyolabClient {
       UserCharacters.fromJson,
     );
   }
+
+  Future<CachedAPIResponse<UserInfo>> getUserData({
+    required int userId,
+    required int gameId,
+  }) async {
+    var cachedResult = await request(
+        endpoint: EndpointName.indexPage,
+        params: {'server': 'eur01', 'role_id': '$gameId'},
+        userId: userId,
+        gameId: gameId,
+        settings: settingsEu);
+    return CachedAPIResponse.fromCachedResult<UserInfo>(
+      cachedResult,
+      UserInfo.fromJson,
+    );
+  }
 }

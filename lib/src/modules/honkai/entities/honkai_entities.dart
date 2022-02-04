@@ -198,3 +198,9 @@ class UserCharacters {
     };
   }
 }
+
+class UserInfo {
+  static UserInfo fromJson(Map<String, dynamic> json) {
+    return UserInfo();
+  }
+}

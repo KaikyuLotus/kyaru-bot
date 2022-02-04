@@ -85,7 +85,22 @@ class HonkaiModule implements IModule {
       );
     }
 
-    // TODO: Add check for id
+    var fullInfo = await _honkaiClient.getUserData(
+      userId: update.message!.from!.id,
+      gameId: id,
+    );
+
+    if (fullInfo.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        'Failed to get user (error ${fullInfo.current.retcode}).\n'
+        '\n'
+        'Error Details:\n'
+        '${fullInfo.current.message}'
+        '\n\n'
+        'To avoid caching issues, please retry in 60 minutes.',
+      );
+    }
 
     _kyaru.brain.db.addHonkaiUser(update.message!.from!.id, id);
     return _kyaru.reply(update, 'ID added');
