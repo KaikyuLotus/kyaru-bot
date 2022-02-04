@@ -10,6 +10,7 @@ const settingsEu = ServerSettings(
   clientType: "5",
   lang: 'en-us',
   endpoints: {
+    EndpointName.indexPage: "/game_record/honkai3rd/api/index",
     EndpointName.character: "/game_record/honkai3rd/api/characters",
   },
 );
