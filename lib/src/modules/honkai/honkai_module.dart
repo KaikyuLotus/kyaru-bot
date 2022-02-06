@@ -49,6 +49,12 @@ class HonkaiModule implements IModule {
         core: true,
       ),
       ModuleFunction(
+        honkai,
+        'Gets your hoyolab.com public info',
+        'honkai',
+        core: true,
+      ),
+      ModuleFunction(
         characters,
         'Gets your characters from HoYoLAB',
         'honkai_chars',
@@ -104,6 +110,41 @@ class HonkaiModule implements IModule {
 
     _kyaru.brain.db.addHonkaiUser(update.message!.from!.id, id);
     return _kyaru.reply(update, 'ID added');
+  }
+
+  Future honkai(Update update, _) async {
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getHonkaiUser(userId);
+    if (userData == null) {
+      return _kyaru.reply(
+        update,
+        'Please use /honkai_id command first.\n\n'
+        'honkai_id command requires an in-game ID.\n'
+        'Make sure your information on Hoyolab is public!',
+      );
+    }
+
+    final gameId = userData['id'];
+    var userCachedData = await _honkaiClient.getUserData(
+      userId: userId,
+      gameId: gameId,
+    );
+
+    var current = userCachedData.current;
+
+    if (current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your user data, retry later.\n"
+        "Code: ${userCachedData.current.retcode}"
+        "Details: ${userCachedData.current.message}",
+      );
+    }
+    var currentData = current.data!;
+    return _kyaru.reply(
+      update,
+      '${currentData.nickname} (Lvl. ${currentData.level})',
+    );
   }
 
   Future characters(Update update, _) async {

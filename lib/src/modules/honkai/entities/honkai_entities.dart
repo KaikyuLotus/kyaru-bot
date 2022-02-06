@@ -200,7 +200,28 @@ class UserCharacters {
 }
 
 class UserInfo {
+  final String avatarUrl;
+  final String nickname;
+  final String region;
+  final int level;
+
+  UserInfo(
+    this.avatarUrl,
+    this.nickname,
+    this.region,
+    this.level,
+  );
+
   static UserInfo fromJson(Map<String, dynamic> json) {
-    return UserInfo();
+    var role = json['role'];
+    // var stats = json['stats'];
+    // var preference = json['preference'];
+
+    return UserInfo(
+      role['AvatarUrl'],
+      role['nickname'],
+      role['region'],
+      role['level'],
+    );
   }
 }
