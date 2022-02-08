@@ -49,6 +49,12 @@ class HonkaiModule implements IModule {
         core: true,
       ),
       ModuleFunction(
+        honkai,
+        'Gets your hoyolab.com public info',
+        'honkai',
+        core: true,
+      ),
+      ModuleFunction(
         characters,
         'Gets your characters from HoYoLAB',
         'honkai_chars',
@@ -85,10 +91,65 @@ class HonkaiModule implements IModule {
       );
     }
 
-    // TODO: Add check for id
+    var fullInfo = await _honkaiClient.getUserData(
+      userId: update.message!.from!.id,
+      gameId: id,
+    );
+
+    if (fullInfo.current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        'Failed to get user (error ${fullInfo.current.retcode}).\n'
+        '\n'
+        'Error Details:\n'
+        '${fullInfo.current.message}'
+        '\n\n'
+        'To avoid caching issues, please retry in 60 minutes.',
+      );
+    }
 
     _kyaru.brain.db.addHonkaiUser(update.message!.from!.id, id);
     return _kyaru.reply(update, 'ID added');
+  }
+
+  Future honkai(Update update, _) async {
+    var userId = update.message!.from!.id;
+    var userData = _kyaru.brain.db.getHonkaiUser(userId);
+    if (userData == null) {
+      return _kyaru.reply(
+        update,
+        'Please use /honkai_id command first.\n\n'
+        'honkai_id command requires an in-game ID.\n'
+        'Make sure your information on Hoyolab is public!',
+      );
+    }
+
+    final gameId = userData['id'];
+    var userCachedData = await _honkaiClient.getUserData(
+      userId: userId,
+      gameId: gameId,
+    );
+
+    var current = userCachedData.current;
+
+    if (current.retcode != 0) {
+      return _kyaru.reply(
+        update,
+        "I couldn't retrieve your user data, retry later.\n"
+        "Code: ${userCachedData.current.retcode}"
+        "Details: ${userCachedData.current.message}",
+      );
+    }
+    var curr = current.data!;
+    // TODO improve
+    return _kyaru.reply(
+      update,
+      '${curr.nickname} (Lvl. ${curr.level})\n'
+      '${curr.activeDayNumber} Active Days\n'
+      '${curr.battlesuit} Battlesuits (${curr.sssBattlesuit} SSS)\n'
+      '${curr.weapon} Weapons (${curr.fiveStarWeapon} 5*)\n'
+      '${curr.stigmata} Stigmatas (${curr.fiveStarStigmata} 5*)\n',
+    );
   }
 
   Future characters(Update update, _) async {
