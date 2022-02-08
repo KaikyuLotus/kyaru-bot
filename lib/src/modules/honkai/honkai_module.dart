@@ -140,10 +140,15 @@ class HonkaiModule implements IModule {
         "Details: ${userCachedData.current.message}",
       );
     }
-    var currentData = current.data!;
+    var curr = current.data!;
+    // TODO improve
     return _kyaru.reply(
       update,
-      '${currentData.nickname} (Lvl. ${currentData.level})',
+      '${curr.nickname} (Lvl. ${curr.level})\n'
+      '${curr.activeDayNumber} Active Days\n'
+      '${curr.battlesuit} Battlesuits (${curr.sssBattlesuit} SSS)\n'
+      '${curr.weapon} Weapons (${curr.fiveStarWeapon} 5*)\n'
+      '${curr.stigmata} Stigmatas (${curr.fiveStarStigmata} 5*)\n',
     );
   }
 

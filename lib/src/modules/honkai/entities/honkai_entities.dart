@@ -204,17 +204,55 @@ class UserInfo {
   final String nickname;
   final String region;
   final int level;
+  final int activeDayNumber;
+  final int outfit;
+  final int achievement;
+  final int stigmata;
+  final int battlesuit;
+  final int sssBattlesuit;
+  final String battleFieldRankingPercentage;
+  final int weapon;
+  final int godWarMaxPunishLevel;
+  final int godWarMaxExtraItem;
+  final int godWarMaxChallengeScore;
+  final int godWarMaxChallengeLevel;
+  final int fiveStarWeapon;
+  final int fiveStarStigmata;
+  final int godWarMaxLevelAvatar;
+  final int battleFildArea;
+  final int battleFieldScore;
+  final int abyssScore;
+  final int battleFieldRank;
 
   UserInfo(
     this.avatarUrl,
     this.nickname,
     this.region,
     this.level,
+    this.activeDayNumber,
+    this.outfit,
+    this.achievement,
+    this.stigmata,
+    this.battlesuit,
+    this.sssBattlesuit,
+    this.battleFieldRankingPercentage,
+    this.weapon,
+    this.godWarMaxPunishLevel,
+    this.godWarMaxExtraItem,
+    this.godWarMaxChallengeScore,
+    this.godWarMaxChallengeLevel,
+    this.fiveStarWeapon,
+    this.fiveStarStigmata,
+    this.godWarMaxLevelAvatar,
+    this.battleFildArea,
+    this.battleFieldScore,
+    this.abyssScore,
+    this.battleFieldRank,
   );
 
   static UserInfo fromJson(Map<String, dynamic> json) {
     var role = json['role'];
-    // var stats = json['stats'];
+    var stats = json['stats'];
     // var preference = json['preference'];
 
     return UserInfo(
@@ -222,6 +260,25 @@ class UserInfo {
       role['nickname'],
       role['region'],
       role['level'],
+      stats['active_day_number'],
+      stats['suit_number'],
+      stats['achievement_number'],
+      stats['stigmata_number'],
+      stats['armor_number'],
+      stats['sss_armor_number'],
+      stats['battle_field_ranking_percentage'],
+      stats['weapon_number'],
+      stats['god_war_max_punish_level'],
+      stats['god_war_extra_item_number'],
+      stats['god_war_max_challenge_score'],
+      stats['god_war_max_challenge_level'],
+      stats['five_star_weapon_number'],
+      stats['five_star_stigmata_number'],
+      stats['god_war_max_level_avatar_number'],
+      stats['battle_field_area'],
+      stats['battle_field_score'],
+      stats['abyss_score'],
+      stats['battle_field_rank'],
     );
   }
 }
