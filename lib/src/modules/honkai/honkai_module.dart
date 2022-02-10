@@ -37,9 +37,8 @@ class HonkaiModule implements IModule {
 
   HonkaiModule(this._kyaru) {
     _honkaiClient = HonkaiClient(_kyaru);
-    _rendererClient = RendererClient(
-      _kyaru.brain.db.settings.honkaiRendererUrl ?? '',
-    );
+    var rendererUrl = _kyaru.brain.db.settings.honkaiRendererUrl ?? '';
+    _rendererClient = RendererClient(rendererUrl);
 
     _moduleFunctions = [
       ModuleFunction(
@@ -54,19 +53,24 @@ class HonkaiModule implements IModule {
         'honkai',
         core: true,
       ),
-      ModuleFunction(
-        characters,
-        'Gets your characters from HoYoLAB',
-        'honkai_chars',
-        core: true,
-      ),
-      ModuleFunction(
-        character,
-        'Gets one of yours characters from HoYoLAB',
-        'honkai_char',
-        core: true,
-      ),
     ];
+
+    if (rendererUrl != '') {
+      _moduleFunctions.addAll([
+        ModuleFunction(
+          characters,
+          'Gets your characters from HoYoLAB',
+          'honkai_chars',
+          core: true,
+        ),
+        ModuleFunction(
+          character,
+          'Gets one of yours characters from HoYoLAB',
+          'honkai_char',
+          core: true,
+        ),
+      ]);
+    }
   }
 
   @override
