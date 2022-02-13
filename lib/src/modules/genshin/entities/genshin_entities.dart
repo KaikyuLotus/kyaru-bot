@@ -1,6 +1,7 @@
 import 'package:dart_telegram_bot/telegram_entities.dart';
-import 'package:kyaru_bot/kyaru.dart';
-import 'package:kyaru_bot/src/modules/hoyolab/entities/api_cache.dart';
+
+import '../../../../kyaru.dart';
+import '../../hoyolab/entities/api_cache.dart';
 
 class AbyssInfo {
   final int scheduleId;

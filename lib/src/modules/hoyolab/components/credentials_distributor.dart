@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:kyaru_bot/kyaru.dart';
 import 'package:logging/logging.dart';
+
+import '../../../../kyaru.dart';
 
 extension on KyaruDB {
   static const collection = 'hoyolab_credentials';

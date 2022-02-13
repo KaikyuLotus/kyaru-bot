@@ -1,4 +1,4 @@
-import 'package:kyaru_bot/src/entities/cache_system.dart';
+import '../../../entities/cache_system.dart';
 
 class APIResponse<T> {
   final int retcode;

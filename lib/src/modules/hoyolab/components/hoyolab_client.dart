@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart';
-import 'package:kyaru_bot/src/entities/cache_system.dart';
 import 'package:logging/logging.dart';
 
 import '../../../../kyaru.dart';
+import '../../../entities/cache_system.dart';
 import 'credentials_distributor.dart';
 
 enum EndpointName {
