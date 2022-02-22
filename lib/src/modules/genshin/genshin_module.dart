@@ -223,6 +223,7 @@ class GenshinModule implements IModule {
       'Ayaka': 'Kamisato Ayaka',
       'Kokomi': 'Sangonomiya Kokomi',
       'Sara': 'Kujou Sara',
+      'Yunjin': 'Yun Jin',
     };
     return characters[character] ?? character;
   }
