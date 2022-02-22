@@ -145,14 +145,31 @@ class HonkaiModule implements IModule {
       );
     }
     var curr = current.data!;
-    // TODO improve
+
+    var reply = [
+      '• *Info* •',
+      '*${curr.nickname}* (Lvl. *${curr.level}*)',
+      '*${curr.activeDayNumber}* Active Days',
+      '*${curr.battlesuit}* Battlesuits (${curr.sssBattlesuit} SSS)',
+      '*${curr.weapon}* Weapons (${curr.fiveStarWeapon} 5\\*)',
+      '*${curr.stigmata}* Stigmatas (${curr.fiveStarStigmata} 5\\*)',
+      'Abyss Score ${curr.abyssScore}',
+      '',
+      '• *Memorial Arena* •',
+      'Score *${curr.battleFieldScore}*',
+      '',
+      '• *Elysian Realm* •',
+      'Hardest Difficulty Cleared *${curr.godWarMaxPunishLevel}*',
+      'Best Challenge Achievement *${curr.godWarMaxChallengeLevel}*'
+          ' Floor *${curr.godWarMaxChallengeScore}* Score',
+      '*${curr.godWarMaxExtraItem}* Rememberance Sigils',
+      '*${curr.godWarMaxLevelAvatar}* Fully Upgraded Battlesuits',
+    ].join('\n');
+
     return _kyaru.reply(
       update,
-      '${curr.nickname} (Lvl. ${curr.level})\n'
-      '${curr.activeDayNumber} Active Days\n'
-      '${curr.battlesuit} Battlesuits (${curr.sssBattlesuit} SSS)\n'
-      '${curr.weapon} Weapons (${curr.fiveStarWeapon} 5*)\n'
-      '${curr.stigmata} Stigmatas (${curr.fiveStarStigmata} 5*)\n',
+      reply,
+      parseMode: ParseMode.markdown,
     );
   }
 
