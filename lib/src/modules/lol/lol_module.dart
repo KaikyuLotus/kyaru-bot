@@ -58,7 +58,7 @@ class LoLModule implements IModule {
       return _kyaru.reply(update, 'Player not found.');
     }
 
-    var matches = await _client.getMatches(summoner.accountId);
+    var matches = await _client.getMatches(summoner.puuid);
     if (matches.isEmpty) {
       return _kyaru.reply(update, 'Player has no recent matches.');
     }
@@ -70,16 +70,12 @@ class LoLModule implements IModule {
       );
     }
 
-    var selectedGameId = matches[playIndexInt].gameId;
+    var selectedGameId = matches[playIndexInt];
 
     var matchInfo = await _client.getMatch(selectedGameId);
 
-    var summonerIdentity = matchInfo.participantIdentities.firstWhere(
-      (i) => i.player.accountId == summoner.accountId,
-    );
-
     var participant = matchInfo.participants.firstWhere(
-      (p) => p.participantId == summonerIdentity.participantId,
+      (p) => p.summonerId == summoner.id,
     );
 
     var masteries = await _client.getChampionsMasteryBySummonerId(summoner.id);
@@ -95,9 +91,9 @@ class LoLModule implements IModule {
     var durationMinutes = matchInfo.gameDuration ~/ 60;
     var durationSeconds = matchInfo.gameDuration.remainder(60);
 
-    var kda = '${participant.stats.kills}/'
-        '${participant.stats.deaths}/'
-        '${participant.stats.assists}';
+    var kda = '${participant.kills}/'
+        '${participant.deaths}/'
+        '${participant.assists}';
 
     var creationDate = '${matchInfo.gameCreation}'.split('.')[0];
     var ymd = creationDate.split(' ')[0];
@@ -121,7 +117,7 @@ class LoLModule implements IModule {
     var message = '$firstPart\n\n*$matchPhrase*\nPlayed'
         ' at *$hm* on the *$ymd* with *${usedChampion.name}*\n'
         '*${matchInfo.gameMode}* - $kda -'
-        ' *${participant.stats.win! ? 'Win' : 'Lost'}*\n'
+        ' *${participant.win ? 'Win' : 'Lost'}*\n'
         'Match lasted $durationMinutes minutes and $durationSeconds seconds';
 
     return _kyaru.reply(update, message, parseMode: ParseMode.markdown);

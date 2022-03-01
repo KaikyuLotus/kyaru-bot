@@ -1,55 +1,37 @@
+import 'objective.dart';
+
 class Team {
   int? teamId;
-  String? win;
-  bool? firstBlood;
-  bool? firstTower;
-  bool? firstInhibitor;
-  bool? firstBaron;
-  bool? firstDragon;
-  bool? firstRiftHerald;
-  int? towerKills;
-  int? inhibitorKills;
-  int? baronKills;
-  int? dragonKills;
-  int? vilemawKills;
-  int? riftHeraldKills;
-  int? dominionVictoryScore;
+  bool? win;
+  Objective baron;
+  Objective champion;
+  Objective dragon;
+  Objective inhibitor;
+  Objective riftHerald;
+  Objective tower;
 
   Team(
     this.teamId,
     this.win,
-    this.towerKills,
-    this.inhibitorKills,
-    this.baronKills,
-    this.dragonKills,
-    this.vilemawKills,
-    this.riftHeraldKills,
-    this.dominionVictoryScore, {
-    this.firstBaron,
-    this.firstDragon,
-    this.firstRiftHerald,
-    this.firstInhibitor,
-    this.firstTower,
-    this.firstBlood,
-  });
+    this.baron,
+    this.champion,
+    this.dragon,
+    this.inhibitor,
+    this.riftHerald,
+    this.tower,
+  );
 
   static Team fromJson(Map<String, dynamic> json) {
+    var objectives = json['objectives'];
     return Team(
       json['teamId'],
       json['win'],
-      json['towerKills'],
-      json['inhibitorKills'],
-      json['baronKills'],
-      json['dragonKills'],
-      json['vilemawKills'],
-      json['riftHeraldKills'],
-      json['dominionVictoryScore'],
-      firstBlood: json['firstBlood'],
-      firstTower: json['firstTower'],
-      firstInhibitor: json['firstInhibitor'],
-      firstBaron: json['firstBaron'],
-      firstDragon: json['firstDragon'],
-      firstRiftHerald: json['firstRiftHerald'],
+      Objective.fromJson(objectives['baron']),
+      Objective.fromJson(objectives['champion']),
+      Objective.fromJson(objectives['dragon']),
+      Objective.fromJson(objectives['inhibitor']),
+      Objective.fromJson(objectives['riftHerald']),
+      Objective.fromJson(objectives['tower']),
     );
   }
 
