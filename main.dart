@@ -37,7 +37,7 @@ void main(List<String> arguments) async {
       VideogameModule(kyaru),
       HoyolabModule(kyaru),
       GenshinDataModule(kyaru),
-      HonkaiModule(kyaru),
+      // HonkaiModule(kyaru),
     ];
 
     kyaru.useModules(modules);

@@ -351,6 +351,7 @@ class GenshinModule implements IModule {
 
     var liyuePerc = userInfo.liyue.percentage;
     var mondstadtPerc = userInfo.mondstadt.percentage;
+    var enkanomiyaPerc = userInfo.enkanomiya.percentage;
 
     var inazumaPerc = userInfo.inazuma.percentage;
     var inazumaTreeLvl = userInfo.inazumaTree.level;
@@ -360,6 +361,7 @@ class GenshinModule implements IModule {
 
     var liyuePercOld = oldUserInfo?.liyue.percentage;
     var mondstadtPercOld = oldUserInfo?.mondstadt.percentage;
+    var enkanomiyaPercOld = oldUserInfo?.enkanomiya.percentage;
 
     var inazumaPercOld = oldUserInfo?.inazuma.percentage;
     var inazumaTreeLvlOld = oldUserInfo?.inazumaTree.level;
@@ -404,6 +406,7 @@ class GenshinModule implements IModule {
       'Spiral Abyss ${change(curr.spiralAbyss, old?.spiralAbyss)}',
       '',
       '• *Chests* •',
+      imp('Remarkable', curr.magicChestNumber, old?.magicChestNumber),
       imp('Luxurious', curr.luxuriousChestNumber, old?.luxuriousChestNumber),
       imp('Precious', curr.preciousChestNumber, old?.preciousChestNumber),
       imp('Exquisite', curr.exquisiteChestNumber, old?.exquisiteChestNumber),
@@ -424,11 +427,28 @@ class GenshinModule implements IModule {
         inazumaTreeLvl,
         inazumaTreeLvlOld,
       ),
-    ].join('\n');
+      impCityPerc('Enkanomiya', enkanomiyaPerc, enkanomiyaPercOld),
+    ];
+
+    if (userInfo.homes.isNotEmpty) {
+      final curHome = userInfo.homes.first;
+      final oldHome =
+          oldUserInfo?.homes.isEmpty ?? true ? null : oldUserInfo?.homes.first;
+      reply.addAll([
+        '',
+        '• *Teapot* •',
+        change(curHome.name, oldHome?.name),
+        imp2('Level', curHome.level, oldHome?.level) +
+            ' (${change(curHome.comfortLevelName, oldHome?.comfortLevelName)})',
+        imp2('Comfort', curHome.comfortNum, oldHome?.comfortNum),
+        imp2('Visits', curHome.visitNum, oldHome?.visitNum),
+        imp2('Items', curHome.itemNum, oldHome?.itemNum),
+      ]);
+    }
 
     return _kyaru.reply(
       update,
-      reply,
+      reply.join('\n'),
       parseMode: ParseMode.markdown,
     );
   }
@@ -490,7 +510,7 @@ class GenshinModule implements IModule {
       }
 
       if (avatar == null) {
-        msg = "It seems like you don't have that character...";
+        msg = "That character is not in your top 8, or you don't have it.";
         return;
       }
 

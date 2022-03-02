@@ -727,6 +727,7 @@ class Stats {
   final int exquisiteChestNumber;
   final int commonChestNumber;
   final int electroculusNumber;
+  final int magicChestNumber;
 
   Stats({
     required this.activeDayNumber,
@@ -743,6 +744,7 @@ class Stats {
     required this.exquisiteChestNumber,
     required this.commonChestNumber,
     required this.electroculusNumber,
+    required this.magicChestNumber,
   });
 
   static Stats fromJson(Map<String, dynamic> json) {
@@ -761,6 +763,7 @@ class Stats {
       exquisiteChestNumber: json['exquisite_chest_number'],
       commonChestNumber: json['common_chest_number'],
       electroculusNumber: json['electroculus_number'],
+      magicChestNumber: json['magic_chest_number'],
     );
   }
 
@@ -821,6 +824,8 @@ class UserInfo {
   WorldExploration get dragonspine => worldExplorationWithID(3);
 
   WorldExploration get inazuma => worldExplorationWithID(4);
+
+  WorldExploration get enkanomiya => worldExplorationWithID(5);
 
   Offering get inazumaTree => inazuma.offerings.first;
 

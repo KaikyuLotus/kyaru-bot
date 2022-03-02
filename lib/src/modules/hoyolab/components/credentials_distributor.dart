@@ -32,8 +32,9 @@ extension on KyaruDB {
 
   HoyolabCredentials? credentialsForUser(int userId, int gameId) {
     var userCred = database[userCollection].findOneAs(
-        HoyolabCredentials.fromJson,
-        callback: (c) => c['user_id'] == userId);
+      HoyolabCredentials.fromJson,
+      callback: (c) => c['user_id'] == userId,
+    );
     if (userCred != null) {
       return userCred;
     }

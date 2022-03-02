@@ -24,7 +24,6 @@ class HoyolabModule implements IModule {
         addUserCredentials,
         'Command that adds Hoyolab credentials',
         'hoyolab_cred',
-        core: true,
       ),
     ];
   }
