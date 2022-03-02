@@ -1,8 +1,6 @@
 import 'package:dart_mongo_lite/dart_mongo_lite.dart';
 
 import '../../../kyaru.dart';
-import '../instruction.dart';
-import '../settings.dart';
 
 class KyaruDB {
   static const _settingsCollection = 'settings';

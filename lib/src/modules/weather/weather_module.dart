@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:openweathermap/openweathermap.dart';
@@ -22,18 +21,6 @@ extension on KyaruDB {
   bool removeCity(int chatId) {
     return database[_weatherCollection].delete(filter: {'chat_id': chatId});
   }
-}
-
-Future _eventsIsolateLoop(SendPort sendPort) async {
-  var _db = KyaruDB();
-
-  void timerFunction() {
-    _db.syncDb();
-    _db.getCities().forEach((e) => sendPort.send(e.toJson()));
-    return;
-  }
-
-  Timer.periodic(Duration(hours: 1), (_) => timerFunction());
 }
 
 class WeatherModule implements IModule {
@@ -68,7 +55,7 @@ class WeatherModule implements IModule {
     ];
 
     if (isEnabled()) {
-      startEventIsolate();
+      startBroadcast();
     }
   }
 
@@ -167,22 +154,17 @@ class WeatherModule implements IModule {
     return _kyaru.reply(update, 'City removed.');
   }
 
-  void startEventIsolate() {
-    var receivePort = ReceivePort();
-    Isolate.spawn(
-      _eventsIsolateLoop,
-      receivePort.sendPort,
-      errorsAreFatal: false,
-    );
-    receivePort.listen(onSocketMessage);
+  Future<void> startBroadcast() async {
+    Timer.periodic(const Duration(hours: 2), broadcast);
   }
 
-  void onSocketMessage(dynamic data) async {
-    var broadcast = Broadcast.fromJson(data);
-    var message = await weatherMessage(broadcast.city);
-    _kyaru.brain.bot.sendMessage(
-      ChatID(broadcast.chatId),
-      message,
-    );
+  Future<void> broadcast(Timer? timer) async {
+    _kyaru.brain.db.getCities().forEach((b) async {
+      var message = await weatherMessage(b.city);
+      _kyaru.brain.bot.sendMessage(
+        ChatID(b.chatId),
+        message,
+      );
+    });
   }
 }

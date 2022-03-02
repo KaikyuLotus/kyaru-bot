@@ -1,30 +1,34 @@
-import 'participant_stats.dart';
-
 class Participant {
   int? participantId;
+  String summonerId;
   int? teamId;
   int? championId;
-  int? spell1Id;
-  int? spell2Id;
-  ParticipantStats stats;
+  bool win;
+  int kills;
+  int deaths;
+  int assists;
 
   Participant(
     this.participantId,
+    this.summonerId,
     this.teamId,
     this.championId,
-    this.spell1Id,
-    this.spell2Id,
-    this.stats,
+    this.win,
+    this.kills,
+    this.deaths,
+    this.assists,
   );
 
   static Participant fromJson(Map<String, dynamic> json) {
     return Participant(
       json['participantId'],
+      json['summonerId'],
       json['teamId'],
       json['championId'],
-      json['spell1Id'],
-      json['spell2Id'],
-      ParticipantStats.fromJson(json['stats']),
+      json['win'],
+      json['kills'],
+      json['deaths'],
+      json['assists'],
     );
   }
 

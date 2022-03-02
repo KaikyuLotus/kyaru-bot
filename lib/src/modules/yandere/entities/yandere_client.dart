@@ -4,7 +4,7 @@ import 'package:http/http.dart';
 
 import 'post.dart';
 
-class YandereException {
+class YandereException implements Exception {
   final String message;
 
   YandereException(this.message);

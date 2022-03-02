@@ -13,8 +13,9 @@ Kyaru is an utility bot made mainly for groups.
             "weather_token": "String",
             "steam_token": "String",
             "videogame_token": "String",
-            "genshin_url": "String",
             "genshin_data_url": "String",
+            "genshin_renderer_url": "String",
+            "honkai_renderer_url": "String",
             "github_token": "github_token",
             "owner_id": "int"
         }
@@ -31,7 +32,8 @@ All fields, except the token and the owner_id, can be empty or omitted.
 `weather_token`: OpenWeather api key, obtainable [here](https://openweathermap.org/api)<br>
 `steam_token`: Steam api key, obtainable [here](https://steamcommunity.com/dev/apikey)<br>
 `videogame_token`: RAWG api key, obtainable [here](https://rawg.io/apidocs)<br>
-`genshin_url`<br>
 `genshin_data_url`<br>
+`genshin_renderer_url`: [repo](https://github.com/KaikyuLotus/genshin-renderer)<br>
+`honkai_renderer_url`: [repo](https://github.com/ale183/honkai_renderer)<br>
 `github_token`: obtainable [here](https://github.com/settings/tokens)<br>
 `owner_id`: Your telegram id<br>

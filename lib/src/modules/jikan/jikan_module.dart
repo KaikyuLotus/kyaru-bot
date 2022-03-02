@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:dart_telegram_bot/telegram_entities.dart';
-import 'package:kyaru_bot/src/modules/jikan/entities/character.dart';
 
 import '../../../kyaru.dart';
 import 'entities/anime.dart';
+import 'entities/character.dart';
 import 'entities/jikan_client.dart';
 
 class JikanModule implements IModule {

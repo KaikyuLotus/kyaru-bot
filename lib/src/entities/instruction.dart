@@ -2,7 +2,6 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../kyaru.dart';
-import 'enums/enums.dart';
 
 class InstructionAlias {
   final InstructionType instructionType;

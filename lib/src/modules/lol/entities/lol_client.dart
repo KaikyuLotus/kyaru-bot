@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 
 import 'champion.dart';
 import 'champion_mastery.dart';
-import 'match.dart';
 import 'match_info.dart';
 import 'summoner.dart';
 
@@ -14,6 +13,7 @@ class LOLClient {
 
   final String dataBaseUrl = 'ddragon.leagueoflegends.com';
   final String apiBaseUrl = 'euw1.api.riotgames.com';
+  final String apiBaseUrl2 = 'europe.api.riotgames.com';
 
   final _client = Client();
 
@@ -100,27 +100,27 @@ class LOLClient {
     return _get(
       Uri.https(apiBaseUrl, '/lol/summoner/v4/summoners/by-name/$name'),
       mapMapper: (d) {
-        if ((d['status_code'] ?? 200) == 404) return null;
+        if ((d['status']?['status_code'] ?? 200) == 404) return null;
         return Summoner.fromJson(d);
       },
     );
   }
 
-  Future<List<Match>> getMatches(String? summonerAccount) async {
+  Future<List<String>> getMatches(String? summonerAccount) async {
     return _get(
       Uri.https(
-        apiBaseUrl,
-        '/lol/match/v4/matchlists/by-account/$summonerAccount',
+        apiBaseUrl2,
+        '/lol/match/v5/matches/by-puuid/$summonerAccount/ids',
       ),
-      mapMapper: (d) => Match.listFromJsonArray(d['matches'] ?? []),
+      listMapper: (d) => List.from(d),
     );
   }
 
-  Future<MatchInfo> getMatch(int matchId) async {
+  Future<MatchInfo> getMatch(String matchId) async {
     return _get(
       Uri.https(
-        apiBaseUrl,
-        '/lol/match/v4/matches/$matchId',
+        apiBaseUrl2,
+        '/lol/match/v5/matches/$matchId',
       ),
       mapMapper: MatchInfo.fromJson,
     );
