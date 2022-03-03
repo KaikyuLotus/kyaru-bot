@@ -351,7 +351,7 @@ class GenshinModule implements IModule {
 
     var liyuePerc = userInfo.liyue.percentage;
     var mondstadtPerc = userInfo.mondstadt.percentage;
-    var enkanomiyaPerc = userInfo.enkanomiya.percentage;
+    var enkanomiyaPerc = userInfo.enkanomiya?.percentage;
 
     var inazumaPerc = userInfo.inazuma.percentage;
     var inazumaTreeLvl = userInfo.inazumaTree.level;
@@ -361,7 +361,7 @@ class GenshinModule implements IModule {
 
     var liyuePercOld = oldUserInfo?.liyue.percentage;
     var mondstadtPercOld = oldUserInfo?.mondstadt.percentage;
-    var enkanomiyaPercOld = oldUserInfo?.enkanomiya.percentage;
+    var enkanomiyaPercOld = oldUserInfo?.enkanomiya?.percentage;
 
     var inazumaPercOld = oldUserInfo?.inazuma.percentage;
     var inazumaTreeLvlOld = oldUserInfo?.inazumaTree.level;
@@ -427,7 +427,12 @@ class GenshinModule implements IModule {
         inazumaTreeLvl,
         inazumaTreeLvlOld,
       ),
-      impCityPerc('Enkanomiya', enkanomiyaPerc, enkanomiyaPercOld),
+      if (enkanomiyaPerc != null)
+        impCityPerc(
+          'Enkanomiya',
+          enkanomiyaPerc,
+          enkanomiyaPercOld,
+        ),
     ];
 
     if (userInfo.homes.isNotEmpty) {

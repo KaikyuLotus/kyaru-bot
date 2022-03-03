@@ -817,15 +817,15 @@ class UserInfo {
   final List<WorldExploration> worldExplorations;
   final List<Home> homes;
 
-  WorldExploration get mondstadt => worldExplorationWithID(1);
+  WorldExploration get mondstadt => worldExplorationWithID(1)!;
 
-  WorldExploration get liyue => worldExplorationWithID(2);
+  WorldExploration get liyue => worldExplorationWithID(2)!;
 
-  WorldExploration get dragonspine => worldExplorationWithID(3);
+  WorldExploration get dragonspine => worldExplorationWithID(3)!;
 
-  WorldExploration get inazuma => worldExplorationWithID(4);
+  WorldExploration get inazuma => worldExplorationWithID(4)!;
 
-  WorldExploration get enkanomiya => worldExplorationWithID(5);
+  WorldExploration? get enkanomiya => worldExplorationWithID(5);
 
   Offering get inazumaTree => inazuma.offerings.first;
 
@@ -844,8 +844,10 @@ class UserInfo {
     required this.homes,
   });
 
-  WorldExploration worldExplorationWithID(int id) {
-    return worldExplorations.firstWhere((e) => e.id == id);
+  WorldExploration? worldExplorationWithID(int id) {
+    final matching = worldExplorations.where((e) => e.id == id);
+    if (matching.isEmpty) return null;
+    return matching.first;
   }
 
   static UserInfo fromJson(Map<String, dynamic> json) {
