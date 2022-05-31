@@ -349,25 +349,34 @@ class GenshinModule implements IModule {
     var curr = userInfo.stats;
     var old = oldUserInfo?.stats;
 
-    var liyuePerc = userInfo.liyue.percentage;
-    var mondstadtPerc = userInfo.mondstadt.percentage;
+    var liyuePerc = userInfo.liyue?.percentage;
+    var mondstadtPerc = userInfo.mondstadt?.percentage;
     var enkanomiyaPerc = userInfo.enkanomiya?.percentage;
 
-    var inazumaPerc = userInfo.inazuma.percentage;
-    var inazumaTreeLvl = userInfo.inazumaTree.level;
+    var inazumaPerc = userInfo.inazuma?.percentage;
+    var inazumaTreeLvl = userInfo.inazumaTree?.level;
 
-    var dragonspinePerc = userInfo.dragonspine.percentage;
-    var dragonspineTreeLvl = userInfo.dragonspineTree.level;
+    var dragonspinePerc = userInfo.dragonspine?.percentage;
+    var dragonspineTreeLvl = userInfo.dragonspineTree?.level;
 
-    var liyuePercOld = oldUserInfo?.liyue.percentage;
-    var mondstadtPercOld = oldUserInfo?.mondstadt.percentage;
+    var theChasmPerc = userInfo.theChasm?.percentage;
+    var theChasmUndergroundPerc = userInfo.theChasmUndergroundMines?.percentage;
+    var theChasmOfferingLvl = userInfo.theChasmLumenstoneAdjuvant?.level;
+
+    var liyuePercOld = oldUserInfo?.liyue?.percentage;
+    var mondstadtPercOld = oldUserInfo?.mondstadt?.percentage;
     var enkanomiyaPercOld = oldUserInfo?.enkanomiya?.percentage;
 
-    var inazumaPercOld = oldUserInfo?.inazuma.percentage;
-    var inazumaTreeLvlOld = oldUserInfo?.inazumaTree.level;
+    var inazumaPercOld = oldUserInfo?.inazuma?.percentage;
+    var inazumaTreeLvlOld = oldUserInfo?.inazumaTree?.level;
 
-    var dragonspinePercOld = oldUserInfo?.dragonspine.percentage;
-    var dragonspineTreeLvlOld = oldUserInfo?.dragonspineTree.level;
+    var dragonspinePercOld = oldUserInfo?.dragonspine?.percentage;
+    var dragonspineTreeLvlOld = oldUserInfo?.dragonspineTree?.level;
+
+    var theChasmPercOld = oldUserInfo?.theChasm?.percentage;
+    var theChasmUndergroundPercOld =
+        oldUserInfo?.theChasmUndergroundMines?.percentage;
+    var theChasmOfferingLvlOld = oldUserInfo?.theChasmLumenstoneAdjuvant?.level;
 
     String imp(String name, int current, int? old) {
       if (old == null) return '*$current* $name';
@@ -413,25 +422,48 @@ class GenshinModule implements IModule {
       imp('Common', curr.commonChestNumber, old?.commonChestNumber),
       '',
       '• *Exploration* •',
-      impCityPerc('Mondstadt', mondstadtPerc, mondstadtPercOld),
-      impCityPerc('Liyue', liyuePerc, liyuePercOld),
-      impCityPerc('Dragonspine', dragonspinePerc, dragonspinePercOld),
-      imp2(
-        '  *Frostbearing Tree* level',
-        dragonspineTreeLvl,
-        dragonspineTreeLvlOld,
-      ),
-      impCityPerc('Inazuma', inazumaPerc, inazumaPercOld),
-      imp2(
-        "  *Sacred Sakura's Favor* level ",
-        inazumaTreeLvl,
-        inazumaTreeLvlOld,
-      ),
+      if (mondstadtPerc != null)
+        impCityPerc('Mondstadt', mondstadtPerc, mondstadtPercOld),
+      if (liyuePerc != null) impCityPerc('Liyue', liyuePerc, liyuePercOld),
+      if (dragonspinePerc != null)
+        impCityPerc('Dragonspine', dragonspinePerc, dragonspinePercOld),
+      if (dragonspineTreeLvl != null)
+        imp2(
+          '  *Frostbearing Tree* level',
+          dragonspineTreeLvl,
+          dragonspineTreeLvlOld,
+        ),
+      if (inazumaPerc != null)
+        impCityPerc('Inazuma', inazumaPerc, inazumaPercOld),
+      if (inazumaTreeLvl != null)
+        imp2(
+          "  *Sacred Sakura's Favor* level ",
+          inazumaTreeLvl,
+          inazumaTreeLvlOld,
+        ),
       if (enkanomiyaPerc != null)
         impCityPerc(
           'Enkanomiya',
           enkanomiyaPerc,
           enkanomiyaPercOld,
+        ),
+      if (theChasmPerc != null)
+        impCityPerc(
+          'The Chasm',
+          theChasmPerc,
+          theChasmPercOld,
+        ),
+      if (theChasmUndergroundPerc != null)
+        impCityPerc(
+          'The Chasm: Underground Mines',
+          theChasmUndergroundPerc,
+          theChasmUndergroundPercOld,
+        ),
+      if (theChasmOfferingLvl != null)
+        imp2(
+          "  *Lumenstone Adjuvant* level ",
+          theChasmOfferingLvl,
+          theChasmOfferingLvlOld,
         ),
     ];
 

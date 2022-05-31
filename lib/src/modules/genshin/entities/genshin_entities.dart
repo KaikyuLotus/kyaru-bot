@@ -849,23 +849,31 @@ class UserInfo {
   final List<WorldExploration> worldExplorations;
   final List<Home> homes;
 
-  WorldExploration get mondstadt => worldExplorationWithID(1)!;
+  WorldExploration? get mondstadt => worldExplorationWithID(1);
 
-  WorldExploration get liyue => worldExplorationWithID(2)!;
+  WorldExploration? get liyue => worldExplorationWithID(2);
 
-  WorldExploration get dragonspine => worldExplorationWithID(3)!;
+  WorldExploration? get dragonspine => worldExplorationWithID(3);
 
-  WorldExploration get inazuma => worldExplorationWithID(4)!;
+  WorldExploration? get inazuma => worldExplorationWithID(4);
 
   WorldExploration? get enkanomiya => worldExplorationWithID(5);
 
-  Offering get inazumaTree => inazuma.offerings.first;
+  WorldExploration? get theChasm => worldExplorationWithID(6);
+
+  WorldExploration? get theChasmUndergroundMines => worldExplorationWithID(7);
+
+  Offering? get inazumaTree => inazuma?.offerings.first;
 
   String get inazumaTreeName => "Sacred Sakura's Favor";
 
-  Offering get dragonspineTree => dragonspine.offerings.first;
+  Offering? get dragonspineTree => dragonspine?.offerings.first;
 
   String get dragonspineTreeName => "Frostbearing Tree";
+
+  Offering? get theChasmLumenstoneAdjuvant => theChasm?.offerings.first;
+
+  String get theChasmOfferingName => "Lumenstone Adjuvant";
 
   UserInfo({
     required this.role,
