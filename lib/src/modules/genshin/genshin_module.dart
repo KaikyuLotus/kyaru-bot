@@ -472,7 +472,6 @@ class GenshinModule implements IModule {
           theChasmOfferingLvl,
           theChasmOfferingLvlOld,
         ),
-
       if (sumeruPerc != null)
         impCityPerc(
           'Sumeru',
