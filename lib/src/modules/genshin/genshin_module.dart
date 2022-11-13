@@ -363,6 +363,9 @@ class GenshinModule implements IModule {
     var theChasmUndergroundPerc = userInfo.theChasmUndergroundMines?.percentage;
     var theChasmOfferingLvl = userInfo.theChasmLumenstoneAdjuvant?.level;
 
+    var sumeruPerc = userInfo.sumeru?.percentage;
+    var sumeruOfferingLvl = userInfo.sumeruTreeOfDreams?.level;
+
     var liyuePercOld = oldUserInfo?.liyue?.percentage;
     var mondstadtPercOld = oldUserInfo?.mondstadt?.percentage;
     var enkanomiyaPercOld = oldUserInfo?.enkanomiya?.percentage;
@@ -377,6 +380,9 @@ class GenshinModule implements IModule {
     var theChasmUndergroundPercOld =
         oldUserInfo?.theChasmUndergroundMines?.percentage;
     var theChasmOfferingLvlOld = oldUserInfo?.theChasmLumenstoneAdjuvant?.level;
+
+    var sumeruPercOld = oldUserInfo?.sumeru?.percentage;
+    var sumeruOfferingLvlOld = oldUserInfo?.theChasmLumenstoneAdjuvant?.level;
 
     String imp(String name, int current, int? old) {
       if (old == null) return '*$current* $name';
@@ -409,6 +415,7 @@ class GenshinModule implements IModule {
       imp('Characters', curr.avatarNumber, old?.avatarNumber),
       imp('Waypoints', curr.wayPointNumber, old?.wayPointNumber),
       imp('Domains', curr.domainNumber, old?.domainNumber),
+      imp('Dendroculus', curr.dendroculusNumber, old?.dendroculusNumber),
       imp('Electroculus', curr.electroculusNumber, old?.electroculusNumber),
       imp('Anemoculus', curr.anemoculusNumber, old?.anemoculusNumber),
       imp('Geoculus', curr.geoculusNumber, old?.geoculusNumber),
@@ -464,6 +471,19 @@ class GenshinModule implements IModule {
           "  *Lumenstone Adjuvant* level ",
           theChasmOfferingLvl,
           theChasmOfferingLvlOld,
+        ),
+
+      if (sumeruPerc != null)
+        impCityPerc(
+          'Sumeru',
+          sumeruPerc,
+          sumeruPercOld,
+        ),
+      if (sumeruOfferingLvl != null)
+        imp2(
+          "  *Tree Of Dreams* level ",
+          sumeruOfferingLvl,
+          sumeruOfferingLvlOld,
         ),
     ];
 

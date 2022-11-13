@@ -727,6 +727,7 @@ class Stats {
   final int exquisiteChestNumber;
   final int commonChestNumber;
   final int electroculusNumber;
+  final int dendroculusNumber;
   final int magicChestNumber;
 
   Stats({
@@ -744,6 +745,7 @@ class Stats {
     required this.exquisiteChestNumber,
     required this.commonChestNumber,
     required this.electroculusNumber,
+    required this.dendroculusNumber,
     required this.magicChestNumber,
   });
 
@@ -763,6 +765,7 @@ class Stats {
       exquisiteChestNumber: json['exquisite_chest_number'],
       commonChestNumber: json['common_chest_number'],
       electroculusNumber: json['electroculus_number'],
+      dendroculusNumber: json['dendroculus_number'],
       magicChestNumber: json['magic_chest_number'],
     );
   }
@@ -783,6 +786,7 @@ class Stats {
       'exquisite_chest_number': exquisiteChestNumber,
       'common_chest_number': commonChestNumber,
       'electroculus_number': electroculusNumber,
+      'dendroculus_number': dendroculusNumber,
     };
   }
 }
@@ -863,6 +867,8 @@ class UserInfo {
 
   WorldExploration? get theChasmUndergroundMines => worldExplorationWithID(7);
 
+  WorldExploration? get sumeru => worldExplorationWithID(8);
+
   Offering? get inazumaTree => inazuma?.offerings.first;
 
   String get inazumaTreeName => "Sacred Sakura's Favor";
@@ -874,6 +880,10 @@ class UserInfo {
   Offering? get theChasmLumenstoneAdjuvant => theChasm?.offerings.first;
 
   String get theChasmOfferingName => "Lumenstone Adjuvant";
+
+  Offering? get sumeruTreeOfDreams => sumeru?.offerings.first;
+
+  String get sumeruOfferingName => "Tree Of Dreams";
 
   UserInfo({
     required this.role,
