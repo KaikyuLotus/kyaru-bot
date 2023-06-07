@@ -218,7 +218,7 @@ class StarRailModule implements IModule {
       var image = await _renderer.getCharacters(
         userData,
         avatarsData.current.data!,
-        pixelRatio: 2.5,
+        pixelRatio: 1.5,
       );
 
       await _kyaru.replyPhoto(
