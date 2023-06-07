@@ -1,4 +1,5 @@
 import 'package:kyaru_bot/kyaru.dart';
+import 'package:kyaru_bot/src/modules/starrail/star_rail_module.dart';
 import 'package:logging/logging.dart';
 
 void main(List<String> arguments) async {
@@ -26,6 +27,7 @@ void main(List<String> arguments) async {
       JikanModule(kyaru),
       ApexModule(kyaru),
       GenshinModule(kyaru),
+      StarRailModule(kyaru),
       GithubModule(kyaru),
       DatabaseModule(kyaru),
       QuotesModule(kyaru),

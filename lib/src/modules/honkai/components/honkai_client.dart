@@ -10,8 +10,8 @@ const settingsEu = ServerSettings(
   clientType: "5",
   lang: 'en-us',
   endpoints: {
-    EndpointName.indexPage: "/game_record/honkai3rd/api/index",
-    EndpointName.character: "/game_record/honkai3rd/api/characters",
+    EndpointName.h3dIndex: "/game_record/honkai3rd/api/index",
+    EndpointName.h3dCharacter: "/game_record/honkai3rd/api/characters",
   },
 );
 
@@ -23,7 +23,7 @@ class HonkaiClient extends HoyolabClient {
     required int gameId,
   }) async {
     var cachedResult = await request(
-      endpoint: EndpointName.character,
+      endpoint: EndpointName.h3dCharacter,
       //TODO: Server
       params: {'server': 'eur01', 'role_id': '$gameId'},
       gameId: gameId,
@@ -42,7 +42,7 @@ class HonkaiClient extends HoyolabClient {
     required int gameId,
   }) async {
     var cachedResult = await request(
-        endpoint: EndpointName.indexPage,
+        endpoint: EndpointName.h3dIndex,
         params: {'server': 'eur01', 'role_id': '$gameId'},
         userId: userId,
         gameId: gameId,

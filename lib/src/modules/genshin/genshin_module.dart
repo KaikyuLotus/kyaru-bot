@@ -5,6 +5,7 @@ import 'package:dart_telegram_bot/telegram_entities.dart';
 import 'package:logging/logging.dart';
 
 import '../../../kyaru.dart';
+import '../hoyolab/components/hoyolab_client.dart';
 import 'components/genshin_client.dart';
 import 'components/renderer_client.dart';
 import 'entities/genshin_entities.dart';
@@ -49,43 +50,43 @@ class GenshinModule implements IModule {
     _moduleFunctions = [
       ModuleFunction(
         saveId,
-        'Saves your hoyolab.com ID',
+        'Saves your hoyolab.com ID for Genshin',
         'genshin_id',
         core: true,
       ),
       ModuleFunction(
         genshin,
-        'Gets your hoyolab.com public info',
+        'Gets your hoyolab.com Genshin public info',
         'genshin',
         core: true,
       ),
       ModuleFunction(
         abyss,
-        'Gets your hoyolab.com public info',
+        'Gets your Genshin abyss info',
         'abyss',
         core: true,
       ),
       ModuleFunction(
         delGenshinUsers,
-        'Delete genshin users from db',
+        'Delete Genshin users from db',
         'del_genshin_users',
         core: false,
       ),
       ModuleFunction(
         characters,
-        'Gets your characters from HoYoLAB',
+        'Gets your Genshin characters from HoYoLAB',
         'genshin_chars',
         core: true,
       ),
       ModuleFunction(
         character,
-        'Gets one of yours characters from HoYoLAB',
+        'Gets one of yours Genshin characters from HoYoLAB',
         'genshin_char',
         core: true,
       ),
       ModuleFunction(
         setRendererUrl,
-        'Owner only command that sets genshin renderer url',
+        'Owner only command that sets Genshin renderer url',
         'set_renderer_url',
       ),
     ];
@@ -153,7 +154,7 @@ class GenshinModule implements IModule {
       );
     }
 
-    final server = _genshinClient.tryRecognizeServer(id);
+    final server = _genshinClient.tryRecognizeServer(id, genshinServers);
     if (server == null) {
       return _kyaru.reply(
         update,

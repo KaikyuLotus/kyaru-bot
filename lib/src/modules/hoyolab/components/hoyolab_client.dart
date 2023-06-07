@@ -9,11 +9,20 @@ import '../../../entities/cache_system.dart';
 import 'credentials_distributor.dart';
 
 enum EndpointName {
-  indexPage,
-  character,
-  spiralAbyss,
-  elysianRealm,
-  arena,
+
+  hsrIndex,
+  hsrInfo,
+  hsrNote,
+  hsrCharacter,
+
+  genshinIndex,
+  genshinCharacter,
+  genshinSpiralAbyss,
+
+  h3dCharacter,
+  h3dIndex,
+  h3dElysianRealm,
+  h3dArena,
 }
 
 class UnknownServerForGameIdException implements Exception {
@@ -24,6 +33,63 @@ class UnknownServerForGameIdException implements Exception {
   @override
   String toString() => 'UnknownServerForGameIdException: $uid';
 }
+
+const settingsEu = ServerSettings(
+  salt: "6cqshh5dhw73bzxn20oexa9k516chk7s",
+  host: "bbs-api-os.hoyolab.com",
+  rpcVer: "1.5.0",
+  clientType: "4",
+  lang: 'en-us',
+  endpoints: {
+    EndpointName.hsrIndex: "/game_record/hkrpg/api/index",
+    EndpointName.hsrInfo: "/game_record/hkrpg/api/avatar/info",
+    EndpointName.hsrNote: "/game_record/hkrpg/api/note",
+    EndpointName.hsrCharacter: "/game_record/hkrpg/api/index",
+
+    EndpointName.genshinIndex: "/game_record/genshin/api/index",
+    EndpointName.genshinCharacter: "/game_record/genshin/api/character",
+    EndpointName.genshinSpiralAbyss: "/game_record/genshin/api/spiralAbyss",
+  },
+);
+
+const settingsCn = ServerSettings(
+  salt: "xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs",
+  host: "api-takumi.mihoyo.com",
+  rpcVer: "2.11.1",
+  clientType: "5",
+  lang: 'zh-CN,en-US;q=0.8',
+  endpoints: {
+    EndpointName.hsrIndex: "/game_record/hkrpg/api/index",
+    EndpointName.hsrInfo: "/game_record/hkrpg/api/info",
+    EndpointName.hsrNote: "/game_record/hkrpg/api/note",
+    EndpointName.hsrCharacter: "/game_record/hkrpg/api/index",
+
+    EndpointName.genshinIndex: "/game_record/app/genshin/api/index",
+    EndpointName.genshinCharacter: "/game_record/app/genshin/api/character",
+    EndpointName.genshinSpiralAbyss: "/game_record/app/genshin/api/spiralAbyss",
+  },
+);
+
+const genshinServers = <int, String>{
+  1: 'cn_gf01',
+  5: 'cn_qd01',
+  6: 'os_usa',
+  7: 'os_euro',
+  8: 'os_asia',
+  9: 'os_cht',
+};
+
+const hsrServers = <int, String>{
+  1: "prod_gf_cn",
+  2: "prod_gf_cn",
+  5: "prod_qd_cn",
+  6: "prod_official_usa",
+  7: "prod_official_eur",
+  8: "prod_official_asia",
+  9: "prod_official_cht",
+};
+
+bool isChineseServer(String server) => server.startsWith(RegExp(r'(cn|1|5)'));
 
 class ServerSettings {
   final String salt;
@@ -121,6 +187,22 @@ class HoyolabClient {
     }
   }
 
+  String? tryRecognizeServer(int gameId, Map<int, String> servers) {
+    try {
+      return recognizeServer(gameId, servers);
+    } on UnknownServerForGameIdException {
+      return null;
+    }
+  }
+
+  String recognizeServer(int gameId, Map<int, String> servers) {
+    final server = servers[int.parse('$gameId'[0])]; // first digit
+    if (server == null) {
+      throw UnknownServerForGameIdException(gameId);
+    }
+    return server;
+  }
+
   Future<CachedResult> request({
     required EndpointName endpoint,
     required int gameId,
@@ -176,6 +258,7 @@ class HoyolabClient {
 
         _log.info('Sending request to ${settings.host} endp: $endpointString');
         final response = await _requestWithRetry(request);
+
         if (response.statusCode != 200) {
           throw HoyolabAPIException(
             await response.stream.bytesToString(),
