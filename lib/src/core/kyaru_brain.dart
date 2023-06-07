@@ -45,7 +45,6 @@ class KyaruBrain {
       await moduleFunction.function(update, null);
       _log.info('Function ${moduleFunction.name} executed');
     } catch (e, s) {
-
       if (e is APIException) {
         if (e.description.contains('replied message not found')) {
           // User deleted own message, ignore it

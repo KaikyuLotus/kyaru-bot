@@ -9,16 +9,13 @@ import '../../../entities/cache_system.dart';
 import 'credentials_distributor.dart';
 
 enum EndpointName {
-
   hsrIndex,
   hsrInfo,
   hsrNote,
   hsrCharacter,
-
   genshinIndex,
   genshinCharacter,
   genshinSpiralAbyss,
-
   h3dCharacter,
   h3dIndex,
   h3dElysianRealm,
@@ -45,7 +42,6 @@ const settingsEu = ServerSettings(
     EndpointName.hsrInfo: "/game_record/hkrpg/api/avatar/info",
     EndpointName.hsrNote: "/game_record/hkrpg/api/note",
     EndpointName.hsrCharacter: "/game_record/hkrpg/api/index",
-
     EndpointName.genshinIndex: "/game_record/genshin/api/index",
     EndpointName.genshinCharacter: "/game_record/genshin/api/character",
     EndpointName.genshinSpiralAbyss: "/game_record/genshin/api/spiralAbyss",
@@ -63,7 +59,6 @@ const settingsCn = ServerSettings(
     EndpointName.hsrInfo: "/game_record/hkrpg/api/info",
     EndpointName.hsrNote: "/game_record/hkrpg/api/note",
     EndpointName.hsrCharacter: "/game_record/hkrpg/api/index",
-
     EndpointName.genshinIndex: "/game_record/app/genshin/api/index",
     EndpointName.genshinCharacter: "/game_record/app/genshin/api/character",
     EndpointName.genshinSpiralAbyss: "/game_record/app/genshin/api/spiralAbyss",
